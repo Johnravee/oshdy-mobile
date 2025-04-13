@@ -7,6 +7,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import CountdownTimer from '@/components/coundown-timer';
+import * as SplashScreen from 'expo-splash-screen';
+
+
+SplashScreen.setOptions({
+  duration: 1000,
+  fade: true,
+});
+
 
 type Errors = {
   message: string;
@@ -103,7 +111,7 @@ export default function Login() {
             <View className="w-full flex justify-center items-center mt-10 px-5">
               <View className="w-full max-w-md">
                 <Text className="text-lg mb-2 text-[#333333] font-semibold">
-                  <FontAwesome name="envelope" size={20} color="#4089F8" />
+                  <FontAwesome name="envelope" size={20} color="#2E3A8C" />
                   {' '}Email
                 </Text>
                 <TextInput

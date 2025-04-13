@@ -1,14 +1,13 @@
 {
-  "name": "oshdy.catering",
+  "name": "oshdy",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "expo": {
     "web": {
       "bundler": "metro"
     },
-    "scheme": "oshdy.catering"
+    "scheme": "myapp"
   },
-  
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -52,7 +51,8 @@
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "tailwindcss": "^3.4.17",
-    "expo-auth-session": "~6.0.3"
+    "expo-auth-session": "~6.0.3",
+    "expo-dev-client": "~5.0.19"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

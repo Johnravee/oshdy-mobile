@@ -5,11 +5,13 @@ import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
 
 
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 const redirectTo = makeRedirectUri({
-  scheme : 'oshdy.catering'
+  scheme: "myapp",
+  path: "redirect"
 });
 
 const createSessionFromUrl = async (url: string) => {
@@ -73,24 +75,26 @@ export const sendMagicLink = async (email: string) => {
 };
 
 
-export  const useAuth  = () => {
-  const router = useRouter()
-  // Handle linking into app from email app.
-
-  // This is for the development
+export const useAuth = () => {
+  const router = useRouter();
   const url = Linking.useURL();
-  if (url?.includes('access_token')){
-    createSessionFromUrl(url).then(()=>{
-      router.replace('/(dashboard)/dashboard')
-    })
-  }
 
-  console.log("Url redirection path :", redirectTo);
-  console.log('Captured path :', url);
-  
-  
+  useEffect(() => {
+    if (url?.includes('access_token')) {
+      createSessionFromUrl(url)
+        .then(() => {
+          console.log("Redirecting to dashboard...");
+          router.replace('/(dashboard)/dashboard');
+        })
+        .catch(err => console.error('Auth error:', err));
+    }
+  }, [url]);
+
+  console.log("Redirect URI used:", redirectTo);
+  console.log("Captured deep link:", url);
+
   return {
     sendMagicLink,
     performOAuth
-  }
-}
+  };
+};
