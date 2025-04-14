@@ -9,7 +9,7 @@ module.exports = {
         primary: '#D4A83F',
         secondary: '#2E3A8C',
         danger: '#9E2A2F'
-      }
+      },
     },
   },
   plugins: [],
