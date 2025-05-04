@@ -11,7 +11,7 @@ import { useEffect } from "react";
 WebBrowser.maybeCompleteAuthSession(); // required for web only
 const redirectTo = makeRedirectUri({
   scheme: "myapp",
-  path: "redirect"
+  path: "dashboard"
 });
 
 const createSessionFromUrl = async (url: string) => {

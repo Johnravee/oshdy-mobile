@@ -148,7 +148,7 @@ export default function Login() {
                       <Text className="text-gray-300 text-lg text-center mt-4">{errorMessage?.message}</Text>
                     )}
                     {isCooldown && (
-                      <Text className="text-sm text-center mt-4 text-gray-800">
+                      <Text className="text-lg text-center p-2 text-gray-800">
                         Please wait {<CountdownTimer second={60} handleTimeStop={handleTimeStop} />} seconds before retrying.
                       </Text>
                     )}
