@@ -1,0 +1,179 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, StatusBar, TouchableHighlight, Modal, Pressable, ActivityIndicator, ImageBackground } from 'react-native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Calendar from "react-native-calendar-range-picker";
+import { FontAwesome } from '@expo/vector-icons';
+import FloatingTabBar from '@/components/ui/custom-tab';
+import { IMAGES } from '@/constants/Images';
+
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('home');
+
+  const handleTabPress = (tabName: string) => {
+    setActiveTab(tabName);
+  };
+
+  // Manage showing the calendar after modal opens
+  useEffect(() => {
+    if (modalVisible) {
+      const timeout = setTimeout(() => {
+        setShowCalendar(true);
+      }, 200);
+      return () => clearTimeout(timeout);
+    } else {
+      setShowCalendar(false);
+    }
+  }, [modalVisible]);
+
+  const cards = [
+    {
+      id: 1,
+      title: 'Schedule Your Event',
+      icon: "calendar-plus-o",
+      background: IMAGES.yellowcardbg,
+    },
+    {
+      id: 2,
+      title: 'Check Event Status',
+      icon: "clock-o",
+      background: IMAGES.tealroundedcardbg,
+    },
+    {
+      id: 3,
+      title: 'Review Past Bookings',
+      icon: "history",
+      background: IMAGES.orangecardbg,
+    },
+    {
+      id: 4,
+      title: 'Explore Event Designs',
+      icon: "magic",
+      background: IMAGES.lighttealboxcardbg,
+    },
+    {
+      id: 5,
+      title: 'Explore Event Packages',
+      icon: "compass",
+      background: IMAGES.navycardbg,
+    },
+    {
+      id: 6,
+      title: 'View Menu Options',
+      icon: "delicious",
+      background: IMAGES.yellowredcardbg,
+    }
+    ]
+
+  return (
+    <SafeAreaView className="flex-1 bg-primary">
+      <StatusBar hidden={true} />
+
+      {/* Header */}
+      <View className="flex justify-between items-start mt-5 gap-5 px-5">
+        <Text className="text-white text-4xl font-bold">
+          Welcome back! Let’s Plan Your Event.
+        </Text>
+
+        <TouchableHighlight
+          onPress={() => setModalVisible(true)}
+          underlayColor="#ddd"
+          className="rounded-full"
+          >
+          <View className="h-16 w-full bg-white rounded-lg flex-row items-center justify-between px-5">
+            <Text className="text-[#33333] text-lg font-semibold">Check Available Schedules</Text>
+            <FontAwesome name="calendar" size={20} color="#33333" />
+          </View>
+        </TouchableHighlight>
+      </View>
+
+      {/* Modal for Calendar */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View className="flex-1 bg-transparent justify-end">
+          {/* Background overlay to close modal on press */}
+          <Pressable className="flex-1 w-full" onPress={() => setModalVisible(false)} />
+          
+          <View className="w-full h-1/2 bg-white rounded-t-3xl p-5 relative shadow-lg">
+            {/* Close button */}
+            <Pressable
+              onPress={() => setModalVisible(false)}
+              className="absolute top-4 right-4 z-10"
+            >
+              <FontAwesome name="close" size={24} color="#333" />
+            </Pressable>
+
+            <Text className="text-lg font-bold mb-4 text-center">Select a Date</Text>
+
+            {/* Loading Spinner */}
+            {!showCalendar && (
+              <View className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#999" />
+                <Text className="mt-2 text-gray-600">Loading calendar...</Text>
+              </View>
+            )}
+
+            {/* Calendar Component */}
+            {showCalendar && (
+              <Calendar
+                singleSelectMode
+                onChange={(date) => console.log(date)}
+                pastYearRange={0}
+                startDate={new Date().toISOString().split('T')[0]}
+                disabledBeforeToday={true}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Main Content */}
+      <View className="h-full w-full rounded-t-2xl bg-white mt-10 ">
+        
+         <View className="w-full h-auto flex flex-row flex-wrap justify-center  bg-transparent items-center mt-10 py-10 px-4 ">
+               {cards.map((card) => (
+                 <Pressable  className="w-1/2 sm:w-full rounded-3xl overflow-hidden p-3" key={card.id}>
+                           <ImageBackground
+                             source={card.background}
+                             className="w-full aspect-[4/3] overflow-hidden px-5 py-4 justify-start"
+                             imageStyle={{ borderRadius: 24 }}
+                           >
+                             <Text className="text-white font-extrabold mt-2">
+                               <FontAwesome name={card.icon as keyof typeof FontAwesome.glyphMap} size={30} color="#ffffff" />
+                             </Text>
+                             <Text className="text-white text-xl font-bold mt-4">
+                               {card.title}
+                             </Text>
+                           </ImageBackground>
+                 </Pressable>
+               ))}
+               </View>
+         {/* Floating Tab Bar */}
+        <View className='w-full h-auto flex justify-center items-center py-safe-or-10 px-5'>
+          <View className='border rounded-full py-1 w-auto bg-transparent shadow-lg'>
+            <View className="absolute right-[-10%]">
+                <View className="h-10 w-10 bg-primary rounded-full opacity-40 top-[-80%] right-[90%]" />
+                <View className="h-14 w-14 bg-primary rounded-full opacity-50 top-[-70%] right-[5%]" />
+            </View>           
+
+            <FloatingTabBar onTabPress={handleTabPress} />
+            
+            <View className="absolute bottom-0 left-0 w-full h-[25%] items-start justify-end z-[-1]">
+              <View className="absolute w-[30%] aspect-square bg-primary rounded-full opacity-40 top-[-10%] left-[-10%]" />
+            </View>
+          </View>
+        </View>
+      </View>
+
+     
+    </SafeAreaView>
+  );
+}

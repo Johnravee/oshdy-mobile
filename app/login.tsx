@@ -22,13 +22,13 @@ type Errors = {
 }
 
 export default function Login() {
-  const { sendMagicLink } = useAuth();
+  const { sendMagicLink, performOAuth } = useAuth();
   const [email, setEmail] = useState('');
-  const [isAuth, setIsAuth] = useState(false);
   const [errorMessage, setErrorMessage] = useState<Errors | null>(null);
   const [isCooldown, setIsCooldown] = useState(false); // Track cooldown state
   const router = useRouter();
 
+  
   // Handle magic link
   const handleLogin = async () => {
     if (!email.trim()) {
@@ -63,6 +63,8 @@ export default function Login() {
         category: 'generic',
       });
     }
+
+    
   };
 
   // Reset cooldown state after timer expires
@@ -71,17 +73,25 @@ export default function Login() {
   }
 
   useEffect(() => {
+
     // Check if the user is authenticated
     const checkUserSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-
-      setIsAuth(true);
-      router.replace('/(dashboard)/dashboard'); // Redirect to dashboard if authenticated
+      router.replace('/(app)/dashboard'); // Redirect to dashboard if authenticated
     };
 
     checkUserSession();
   }, [router]);
+
+  const handleGoogleSignIn = async () => {
+  performOAuth('google')
+};
+
+
+    const handleIosSignIn = async () => { 
+      console.log(email)
+    }
 
   return (
     <SafeAreaView className="h-screen w-screen">
@@ -133,7 +143,7 @@ export default function Login() {
                   disabled={isCooldown} // Disable the button if in cooldown state
                 >
                   <View>
-                    {!isCooldown && <Text className="text-white font-bold text-lg text-center">Log In</Text>} 
+                    {!isCooldown && <Text className="text-white font-bold text-lg text-center">Sign In with Email</Text>} 
                     {errorMessage?.category === 'rate-limit' && (
                       <Text className="text-gray-300 text-lg text-center mt-4">{errorMessage?.message}</Text>
                     )}
@@ -157,34 +167,20 @@ export default function Login() {
 
               {/* Social login */}
               <View className="flex flex-row justify-center gap-10 w-full max-w-md mt-10">
-                <View>
-                  <TouchableHighlight
-                    onPress={handleLogin}
-                    underlayColor="#e0e0e0"
-                    className="w-auto bg-white py-3 px-7 rounded-md"
-                  >
-                    <FontAwesome name="google" size={30} color="#FF0000" />
-                  </TouchableHighlight>
+                  <View className="w-2/3">
+                    <TouchableHighlight
+                      onPress={handleGoogleSignIn}
+                      underlayColor="#e0e0e0"
+                      className="w-auto bg-white py-3 px-7 rounded-md flex-row items-center justify-center"
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <FontAwesome name="google" size={24} color="#FF0000" />
+                        <Text className="text-base text-[#333] font-semibold">Sign In with Google</Text>
+                      </View>
+                    </TouchableHighlight>
+                  </View>
                 </View>
-                <View>
-                  <TouchableHighlight
-                    onPress={handleLogin}
-                    underlayColor="#e0e0e0"
-                    className="w-auto bg-white py-3 px-7 rounded-md"
-                  >
-                    <FontAwesome name="facebook" size={30} color="#4089F8" />
-                  </TouchableHighlight>
-                </View>
-                <View>
-                  <TouchableHighlight
-                    onPress={handleLogin}
-                    underlayColor="#3b82f6"
-                    className="w-auto bg-white py-3 px-7"
-                  >
-                    <FontAwesome name="apple" size={30} color="#A3A3A3" />
-                  </TouchableHighlight>
-                </View>
-              </View>
+
 
               {/* Consent */}
               <Text className="text-center text-sm mt-5 text-gray-600">

@@ -1,26 +1,12 @@
-import { Stack } from 'expo-router';
-import '../global.css'; // Make sure this path is correct
-
+import '../global.css'
+import { Slot } from 'expo-router'
+import { AuthProvider } from '@/context/AuthContext'
+import { useAuth } from '@/hooks/useAuth';
 export default function RootLayout() {
+  useAuth(); // Mount this muna para gumana deep link
   return (
-    <Stack>
-      <Stack.Screen
-        name="index"
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="(onboarding)"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="(auth)"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="(dashboard)"
-        options={{ headerShown: false }}
-      />
-    </Stack>
+    <AuthProvider>
+        <Slot />
+    </AuthProvider>
   );
 }

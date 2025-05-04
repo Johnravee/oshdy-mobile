@@ -4,7 +4,7 @@ import * as QueryParams from "expo-auth-session/build/QueryParams";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { useEffect } from "react";
 
 
@@ -35,14 +35,15 @@ const createSessionFromUrl = async (url: string) => {
   return data.session;
 };
 
-export const performOAuth = async () => {
+export const performOAuth = async (provider : 'google') => {
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "github",
+    provider,
     options: {
       redirectTo,
       skipBrowserRedirect: true,
     },
   });
+
   if (error) throw error;
 
   const res = await WebBrowser.openAuthSessionAsync(
@@ -53,6 +54,7 @@ export const performOAuth = async () => {
   if (res.type === "success") {
     const { url } = res;
     await createSessionFromUrl(url);
+    router.replace('/(app)/dashboard')
   }
 };
 
@@ -84,7 +86,7 @@ export const useAuth = () => {
       createSessionFromUrl(url)
         .then(() => {
           console.log("Redirecting to dashboard...");
-          router.replace('/(dashboard)/dashboard');
+          router.replace('/(app)/dashboard');
         })
         .catch(err => console.error('Auth error:', err));
     }
