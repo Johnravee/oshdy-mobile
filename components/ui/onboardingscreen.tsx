@@ -10,7 +10,7 @@ export default function OnboardingScreen() {
 const router = useRouter();
 
   const handleDone = () => {
-    router.replace('/(auth)/login'); // Navigate to the login screen
+    router.replace('/login'); // Navigate to the login screen
     setItem('onboarding', 'true'); // Store onboarding completion status
   };
 

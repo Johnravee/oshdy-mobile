@@ -39,7 +39,7 @@ const FloatingTabBar = ({ onTabPress }: any) => {
    
 
   return (
-    <View className="w-full flex-row justify-around items-center p-3 h-auto bg-gray-400 mb-5 rounded-xl">
+    <View className="w-full flex-row justify-around items-center mt-4 h-auto bg-none mb-5 rounded-xl">
       {tabs.map((tab) => {
         const isActive = selectedTab === tab.key;
         return (

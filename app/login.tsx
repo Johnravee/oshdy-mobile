@@ -1,14 +1,15 @@
 import { IMAGES } from '@/constants/Images.js'
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StatusBar, TextInput, KeyboardAvoidingView, Platform, TouchableHighlight, TouchableWithoutFeedback } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StatusBar, TextInput, KeyboardAvoidingView, Platform, TouchableHighlight, TouchableWithoutFeedback, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import CountdownTimer from '@/components/coundown-timer';
 import * as SplashScreen from 'expo-splash-screen';
-
+import CustomModal from '@/components/ui/custom-modal';
+import LottieView from 'lottie-react-native';
+import isValidEmail from '@/utils/email-checker';
 
 SplashScreen.setOptions({
   duration: 1000,
@@ -26,18 +27,35 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState<Errors | null>(null);
   const [isCooldown, setIsCooldown] = useState(false); // Track cooldown state
+  const [modalVisibility, setModalVisibility] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   
   // Handle magic link
   const handleLogin = async () => {
     if (!email.trim()) {
-      setErrorMessage({ message: 'Please enter your email', category: 'email' });
+      setErrorMessage({
+        message: 'Email field cannot be empty. Please enter your email address.',
+        category: 'email'
+      });
       return;
-    };
+    }
 
+    if (!isValidEmail(email)) {
+      setErrorMessage({
+        message: 'The email address entered is not in a valid format. Please check and try again.',
+        category: 'email'
+      });
+      return;
+    }
+
+
+    setLoading(true)
     try {
       await sendMagicLink(email);
+      setLoading(!loading)
+      setModalVisibility(true)
       setErrorMessage(null);  // Clear error message on success
       setIsCooldown(true);    // Set cooldown active for rate limit protection
     } catch (error: any) {
@@ -62,6 +80,8 @@ export default function Login() {
         message: 'An error occurred. Please try again later.',
         category: 'generic',
       });
+    }finally {
+      setLoading(false)
     }
 
     
@@ -72,34 +92,84 @@ export default function Login() {
     setIsCooldown(false);
   }
 
-  useEffect(() => {
 
-    // Check if the user is authenticated
-    const checkUserSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      router.replace('/(app)/dashboard'); // Redirect to dashboard if authenticated
-    };
-
-    checkUserSession();
-  }, [router]);
 
   const handleGoogleSignIn = async () => {
   performOAuth('google')
 };
 
 
-    const handleIosSignIn = async () => { 
-      console.log(email)
-    }
-
   return (
     <SafeAreaView className="h-screen w-screen">
       <StatusBar hidden={true} />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="h-screen w-screen flex justify-center items-center"
       >
+
+      {/* Spinner */}
+      
+        {loading && (
+          <View className="absolute w-screen z-50 bg-white/15 flex flex-row justify-center h-screen items-center">
+          <LottieView
+            source={require('../assets/images/lottie/spinner.json')}
+            autoPlay
+            loop
+            style={{ width: 200, height: 200 }}
+          />
+        </View>
+        )}
+    
+
+      {/* Email sending modal  */}
+      <CustomModal
+        visible={modalVisibility}
+        onClose={() => setModalVisibility(false)}
+
+      >
+      <View className="flex-1 justify-center items-center bg-black/50">
+              <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
+                {/* Close icon */}
+                <Pressable
+                  onPress={() => setModalVisibility(false)}
+                  className="absolute top-2 right-2 p-2 rounded-full"
+                >
+                  <FontAwesome name="close" size={20} color="#333" />
+                </Pressable>
+      
+                {/* Lottie Animation */}
+                <LottieView
+                  source={require('../assets/images/lottie/success.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 150, height: 150 }}
+                />
+      
+                {/* Title */}
+                <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
+                  We’ve sent you a secure login link
+                </Text>
+      
+                {/* Message */}
+                <Text className="text-base text-center text-gray-600 mb-5">
+                  A secure one-time login link has been sent to{' '}
+                  <Text className="font-medium text-blue-700">{email}</Text>.{'\n'}
+                  Open your email to continue. Don’t forget to check your spam or junk folder.
+                </Text>
+      
+                {/* Divider */}
+                <View className="my-4 border-t border-gray-300 w-full" />
+      
+                {/* Retry Note */}
+                <Text className="text-base text-center text-gray-600">
+                  Didn't get the email? Wait 60 seconds before retrying.
+                </Text>
+              </View>
+            </View>
+      </CustomModal>
+
+        {/* Main content */}
         <View className="h-full w-full relative">
           {/* Decorative background circles */}
           <View className="absolute left-[-5%]">
@@ -131,11 +201,11 @@ export default function Login() {
                   onChangeText={(text) => setEmail(text)}
                   editable={!isCooldown} // Disable the input if in cooldown state
                 />
-                <Text className='text-md text-red-500'>{errorMessage?.category === 'email' && errorMessage?.message}</Text>
+                <Text className='text-base mt-3 text-red-500/95'>{errorMessage?.category === 'email' && errorMessage?.message}</Text>
               </View>
 
               {/* Login button */}
-              <View className="flex w-full max-w-md justify-center items-center mt-10">
+              <View className="flex w-full max-w-md justify-center items-center mt-5">
                 <TouchableHighlight
                   onPress={handleLogin}
                   underlayColor="#3b82f6"
@@ -171,7 +241,7 @@ export default function Login() {
                     <TouchableHighlight
                       onPress={handleGoogleSignIn}
                       underlayColor="#e0e0e0"
-                      className="w-auto bg-white py-3 px-7 rounded-md flex-row items-center justify-center"
+                      className="w-auto bg-white shadow-md py-3 px-7 rounded-md flex-row items-center justify-center"
                     >
                       <View className="flex-row items-center gap-3">
                         <FontAwesome name="google" size={24} color="#FF0000" />
