@@ -30,10 +30,16 @@ const FloatingTabBar = ({ onTabPress }: any) => {
       if (error) {
         console.error('Error signing out:', error.message);
         return
-      } 
+      }
       console.log("Logging out")
       console.log("Logged out successfully")
     }
+
+      if(key === "profile"){
+        router.push('/(app)/profile')
+      }
+
+      
   };
 
    

@@ -1,0 +1,118 @@
+import { View, Text, Image, StyleSheet, StatusBar, TouchableOpacity  } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link } from 'expo-router';
+import { FontAwesome } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
+
+
+export default function Profile() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        setError(error.message);
+      } else {
+        setUser(user);
+      }
+
+      console.log(user?.user_metadata);
+    };
+
+    fetchUser();
+  }, []);
+
+  return (
+    <SafeAreaView className='flex-1 h-screen w-screen'>
+      <StatusBar hidden={true} />
+         <View className='bg-primary h-1/2 w-screen'>
+           <View className="w-full flex flex-row">
+                <View className="absolute top-5 left-5">
+                    <Link replace href={'/(app)/dashboard'} className="text-3xl font-bold text-center">
+                        <FontAwesome name="arrow-left" size={20} color="#ffffff" />
+                    </Link>
+                </View>
+            </View>
+
+            <View className='w-screen h-full items-center justify-center flex-col gap-10'>
+              <View>
+                  <Image source={{uri : user?.user_metadata.avatar_url}} className='h-32 w-32 rounded-full' />
+              </View>
+
+              <View>
+                <Text className='font-bold text-white text-xl'>{user?.user_metadata?.name}</Text>
+                
+                <Text className='font-normal text-base text-white text-center'>Guest</Text>
+              </View>            
+            </View>
+
+            <View className='relative top-[-15%] w-screen h-1/3 flex justify-center items-center z-50'>
+              <View className='bg-white shadow-lg w-[90%] h-full rounded-lg flex justify-evenly items-center flex-row'>
+                  <View className='flex-row gap-3'>
+                    <View className='flex justify-center items-center'>
+                      <FontAwesome name="book" size={40} color="#2E3A8C" />
+                    </View>
+                    <View className='flex justify-center items-start'>
+                      {/* change nalang galing db dapat result nito  */}
+                      <Text className='text-2xl text-dark font-bold'>01</Text> 
+                      <Text className='text-base text-gray-400'>Total Bookings</Text>
+                    </View>
+                  </View>
+
+                  <View className='flex-row gap-3'>
+                    <View className='flex justify-center items-center'>
+                      <FontAwesome name="percent" size={40} color="#000" />
+                    </View>
+                    <View className='flex justify-center items-start'>
+                      {/* change nalang galing db dapat result nito  */}
+                      <Text className='text-2xl text-dark font-bold'>01</Text>  
+                      <Text className='text-base text-gray-400'>Ongoing</Text>
+                    </View>
+                  </View>
+              </View>
+            </View>
+         </View>
+
+        <View className='h-1/2 w-screen bg-white justify-center items-center flex-col'>
+      <View className='flex-col justify-center items-center space-y-4 w-2/3 gap-5'>
+
+        {/* Home */}
+        <TouchableOpacity className='w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2'
+        onPress={() => router.push('/(app)/dashboard')}
+        >
+          <FontAwesome name="home" size={20} color="#000" />
+          <Text className='text-dark font-bold'>Home</Text>
+        </TouchableOpacity>
+
+        {/* Profile */}
+        <TouchableOpacity className='w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2'
+        onPress={()=> router.push('/(app)/pDetails')}
+        >
+          <FontAwesome name="user" size={20} color="#000" />
+          <Text className='text-dark font-bold'>Profile Details</Text>
+        </TouchableOpacity>
+
+        {/* Receipt */}
+        <TouchableOpacity className='w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2'>
+          <FontAwesome name="file-text" size={20} color="#000" />
+          <Text className='text-dark font-bold'>Receipt</Text>
+        </TouchableOpacity>
+
+        {/* Delete Account */}
+        <TouchableOpacity className='w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2'>
+          <FontAwesome name="trash" size={20} color="red" />
+          <Text className='text-red-600 font-bold'>Delete Account</Text>
+        </TouchableOpacity>
+
+      </View>
+    </View>
+    </SafeAreaView>
+  );
+}

@@ -10,6 +10,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
 import isValidEmail from '@/utils/email-checker';
+import Spinner from '@/components/ui/spinner';
 
 SplashScreen.setOptions({
   duration: 1000,
@@ -110,16 +111,7 @@ export default function Login() {
 
       {/* Spinner */}
       
-        {loading && (
-          <View className="absolute w-screen z-50 bg-white/15 flex flex-row justify-center h-screen items-center">
-          <LottieView
-            source={require('../assets/images/lottie/spinner.json')}
-            autoPlay
-            loop
-            style={{ width: 200, height: 200 }}
-          />
-        </View>
-        )}
+        {loading && <Spinner />}
     
 
       {/* Email sending modal  */}
