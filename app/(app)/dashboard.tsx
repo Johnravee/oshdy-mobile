@@ -6,13 +6,20 @@ import Calendar from "react-native-calendar-range-picker";
 import { FontAwesome } from '@expo/vector-icons';
 import FloatingTabBar from '@/components/ui/custom-tab';
 import { IMAGES } from '@/constants/Images';
+import CustomModal from '@/components/ui/custom-modal';
+import LottieView from 'lottie-react-native';
 
 
 export default function Dashboard() {
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('home');
+  const [searchingModal, setSearchingModal ] = useState<boolean>(false)
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [searchResult, setSearchResult] = useState<boolean>(false); {/* temporary lang for demo */}
+  const [schedData, setSchedData] = useState<boolean>(false); {/* temporary lang for demo */}
+  
 
   const handleTabPress = (tabName: string) => {
     setActiveTab(tabName);
@@ -125,15 +132,115 @@ export default function Dashboard() {
             {showCalendar && (
               <Calendar
                 singleSelectMode
-                onChange={(date) => console.log(date)}
+                onChange={(date) => 
+                {
+                  setSelectedDate(date)
+                  setModalVisible(false)
+                  setShowCalendar(false)
+                  setSearchingModal(true)
+                }
+                }
                 pastYearRange={0}
                 startDate={new Date().toISOString().split('T')[0]}
                 disabledBeforeToday={true}
+                
               />
             )}
           </View>
         </View>
       </Modal>
+
+      {/* Searching Modal */}
+      <CustomModal
+        visible={searchingModal}
+        onClose={() => true}
+      >
+
+        <View className="flex-1 justify-center items-center bg-black/50">
+                      <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
+                        {/* Close icon */}
+                        <Pressable
+                          onPress={() => setSearchingModal(false)}
+                          className="absolute top-2 right-2 p-2 rounded-full"
+                        >
+                          <FontAwesome name="close" size={20} color="#333" />
+                        </Pressable>
+              
+                        {/* Lottie Animation */}
+                        <LottieView
+                          source={require('../../assets/images/lottie/searching.json')}
+                          autoPlay
+                          loop
+                          style={{ width: 150, height: 150 }}
+                        />
+              
+                        {/* Title */}
+                        <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
+                          Searching for Available Schedules
+                        </Text>
+              
+                        {/* Message */}
+                        <Text className="text-base text-center text-gray-600 mb-5">
+                        Please hold while we check our catering calendar for availability on {selectedDate}. This may take a few moments as we verify scheduling and ensure our team can accommodate your event requirements.
+                        </Text>
+              
+                        {/* Divider */}
+                        <View className="my-4 border-t border-gray-300 w-full" />
+              
+                        {/* Note */}
+                        <Text className="text-base text-center text-gray-600">
+                        You will be notified as soon as the scheduling results are ready. Please do not refresh or close this window during the process.
+                        </Text>
+                      </View>
+                    </View>
+
+      </CustomModal>
+
+      {/* Available Schedule Modal */}
+      <CustomModal
+        visible={searchResult}
+        onClose={() => true}
+      >
+
+        <View className="flex-1 justify-center items-center bg-black/50">
+                      <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
+                        {/* Close icon */}
+                        <Pressable
+                          onPress={() => setSearchingModal(false)}
+                          className="absolute top-2 right-2 p-2 rounded-full"
+                        >
+                          <FontAwesome name="close" size={20} color="#333" />
+                        </Pressable>
+              
+                        {/* Lottie Animation */}
+                        <LottieView
+                          source={schedData ? require('../../assets/images/lottie/check.json') : require('../../assets/images/lottie/notfound.json')}
+                          autoPlay
+                          loop
+                          style={{ width: 150, height: 150 }}
+                        />
+              
+                        {/* Title */}
+                        <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
+                          {schedData ? 'Confirmed Availability': 'Not Available'}
+                        </Text>
+              
+                        {/* Message */}
+                        <Text className="text-base text-center text-gray-600 mb-5">
+                        Your selected date is {selectedDate} {schedData ? 'available' : 'not available'}. Please proceed with your reservation or choose a different date if necessary.
+                        </Text>
+              
+                        {/* Divider */}
+                        <View className="my-4 border-t border-gray-300 w-full" />
+              
+                        {/* Note */}
+                        <Text className="text-base text-center text-gray-600">
+                        If you need to make any changes or select a different date, please do so now.
+                        </Text>
+                      </View>
+                    </View>
+
+      </CustomModal>
 
       {/* Main Content */}
       <View className="h-full w-full rounded-t-2xl bg-white mt-10 ">

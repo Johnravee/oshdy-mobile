@@ -118,7 +118,6 @@ export default function Login() {
       <CustomModal
         visible={modalVisibility}
         onClose={() => setModalVisibility(false)}
-
       >
       <View className="flex-1 justify-center items-center bg-black/50">
               <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
