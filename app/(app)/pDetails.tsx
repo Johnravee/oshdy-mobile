@@ -5,12 +5,14 @@ import { FontAwesome } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import Spinner from '@/components/ui/spinner';
 
 export default function ProfileDetails() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
       const fetchUser = async () => {
@@ -21,9 +23,8 @@ export default function ProfileDetails() {
           setName(user?.user_metadata.full_name);
           setEmail(user?.user_metadata.email);
           setPhone(user?.user_metadata.phone);
+          setLoading(false);
         }
-  
-        console.log(user?.user_metadata);
       };
   
       fetchUser();
@@ -33,6 +34,10 @@ export default function ProfileDetails() {
     // TODO: Connect to backend or Supabase
     console.log('Saving:', { name, email, phone });
   };
+
+  if(loading){
+    return <Spinner />
+  }
 
   return (
     <SafeAreaView className='flex-1 h-screen w-screen bg-white'>

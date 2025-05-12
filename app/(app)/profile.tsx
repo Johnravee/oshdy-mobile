@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Spinner from '@/components/ui/spinner';
 
 
 
@@ -13,6 +14,7 @@ export default function Profile() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -21,6 +23,7 @@ export default function Profile() {
         setError(error.message);
       } else {
         setUser(user);
+        setLoading(false);
       }
 
       console.log(user?.user_metadata);
@@ -28,6 +31,11 @@ export default function Profile() {
 
     fetchUser();
   }, []);
+
+  if(loading){
+   return <Spinner />
+    
+  };
 
   return (
     <SafeAreaView className='flex-1 h-screen w-screen'>
