@@ -8,6 +8,7 @@ import FloatingTabBar from '@/components/ui/custom-tab';
 import { IMAGES } from '@/constants/Images';
 import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
+import { insertUserToProfiles } from '@/hooks/useInsertProfile';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -23,6 +24,9 @@ export default function Dashboard() {
   const handleTabPress = (tabName: string) => {
     setActiveTab(tabName);
   };
+
+  insertUserToProfiles(); // lipat sa useauth 
+  
 
   useEffect(() => {
     if (modalVisible) {

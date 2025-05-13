@@ -7,32 +7,20 @@ import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Spinner from '@/components/ui/spinner';
+import { useAuthContext } from '@/context/AuthContext';
+import Avatar from '@/components/ui/avatar';
 
 
 
 export default function Profile() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { session } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) {
-        setError(error.message);
-      } else {
-        setUser(user);
-        setLoading(false);
-      }
 
-      console.log(user?.user_metadata);
-    };
 
-    fetchUser();
-  }, []);
 
-  if(loading){
+  if(!session){
    return <Spinner />
     
   };
@@ -50,15 +38,10 @@ export default function Profile() {
             </View>
 
             <View className='w-screen h-full items-center justify-center flex-col gap-10'>
-              <View>
-                  <Image source={{uri : user?.user_metadata.avatar_url}} className='h-32 w-32 rounded-full' />
-              </View>
-
-              <View>
-                <Text className='font-bold text-white text-xl'>{user?.user_metadata?.name}</Text>
-                
-                <Text className='font-normal text-base text-white text-center'>Guest</Text>
-              </View>            
+              <Avatar
+                avatarUrl={session?.user?.user_metadata?.avatar_url}
+                name={session?.user?.user_metadata?.name}
+              />            
             </View>
 
             <View className='relative top-[-15%] w-screen h-1/3 flex justify-center items-center z-50'>
