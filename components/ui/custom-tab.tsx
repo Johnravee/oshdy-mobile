@@ -14,7 +14,7 @@ const FloatingTabBar = ({ onTabPress }: any) => {
   { key: 'send', icon: 'send' },
   { key: 'bell', icon: 'bell' },
   { key: 'power', icon: 'power-off' },
-  { key: 'search', icon: 'question' },
+  { key: 'question', icon: 'question' },
   { key: 'profile', icon: 'user' },
 ];
 
@@ -36,8 +36,15 @@ const FloatingTabBar = ({ onTabPress }: any) => {
     }
 
       if(key === "profile"){
-        router.push('/(app)/profile')
+        return router.push('/(app)/profile')
+        
       }
+
+      if(key === "question"){
+        return router.push('/(app)/reservation');
+      }
+
+
 
       
   };

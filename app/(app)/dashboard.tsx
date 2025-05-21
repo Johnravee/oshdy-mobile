@@ -40,7 +40,7 @@ export default function Dashboard() {
   }, [modalVisible]);
 
   const cards = [
-    { id: 1, title: 'Schedule Your Event', icon: "calendar-plus-o", background: IMAGES.yellowcardbg },
+    { id: 1, title: 'Schedule Your Event', icon: "calendar-plus-o", background: IMAGES.yellowcardbg,  },
     { id: 2, title: 'Check Event Status', icon: "clock-o", background: IMAGES.tealroundedcardbg },
     { id: 3, title: 'Review Past Bookings', icon: "history", background: IMAGES.orangecardbg },
     { id: 4, title: 'Explore Event Designs', icon: "magic", background: IMAGES.lighttealboxcardbg },

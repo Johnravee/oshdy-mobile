@@ -1,10 +1,11 @@
-import { View, Text, TextInput, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import Spinner from '@/components/ui/spinner';
+import InputComponent from '@/components/ui/inputText';
 import { useAuthContext } from '@/context/AuthContext';
 
 export default function ProfileDetails() {
@@ -97,68 +98,52 @@ export default function ProfileDetails() {
       <View className="flex-1 items-center bg-primary rounded-3xl">
         <View className="bg-white relative top-[-10%] w-[80%] shadow-lg rounded-xl p-5">
 
-          {/* Name */}
-          <View className="mb-4">
-            <Text className="text-dark font-semibold mb-1">Name</Text>
-            <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-4 bg-white"
-              value={form.name}
-              onChangeText={(val) => handleChange('name', val)}
-              placeholder="Enter your name"
-              placeholderTextColor="#999"
-            />
-          </View>
+          <InputComponent
+            label="Name"
+            value={form.name}
+            onChangeText={(val) => handleChange('name', val)}
+            placeholder="Enter your name"
+            placeholderTextColor="#999"
+          />
 
-          {/* Email (non-editable) */}
-          <View className="mb-4">
-            <Text className="text-dark font-semibold mb-1">Email</Text>
-            <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-4 bg-gray-200"
-              value={form.email}
-              editable={false}
-              keyboardType="email-address"
-              placeholder="Enter your email"
-              placeholderTextColor="#999"
-            />
-          </View>
+          <InputComponent
+            label="Email"
+            value={form.email}
+            editable={false}
+            keyboardType="email-address"
+            placeholder="Enter your email"
+            placeholderTextColor="#999"
+            className="bg-gray-200"
+          />
 
-          {/* Phone */}
-          <View className="mb-4">
-            <Text className="text-dark font-semibold mb-1">Phone Number</Text>
-            <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-4 bg-white"
-              value={form.phone}
-              onChangeText={(val) => handleChange('phone', val)}
-              keyboardType="phone-pad"
-              placeholder="Enter your phone number"
-              placeholderTextColor="#999"
-            />
-          </View>
+          <InputComponent
+            label="Phone Number"
+            value={form.phone}
+            onChangeText={(val) => handleChange('phone', val)}
+            keyboardType="phone-pad"
+            placeholder="Enter your phone number"
+            placeholderTextColor="#999"
+          />
 
-          {/* Address */}
-          <View className="mb-6">
-            <Text className="text-dark font-semibold mb-1">Address</Text>
-            <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-4 bg-white h-36"
-              value={form.address}
-              onChangeText={(val) => handleChange('address', val)}
-              multiline
-              numberOfLines={10}
-              textAlignVertical="top"
-              placeholder="Enter your address"
-              placeholderTextColor="#999"
-            />
-          </View>
+          <InputComponent
+            label="Address"
+            value={form.address}
+            onChangeText={(val) => handleChange('address', val)}
+            multiline
+            numberOfLines={10}
+            textAlignVertical="top"
+            placeholder="Enter your address"
+            placeholderTextColor="#999"
+            className="h-36"
+          />
 
-          {/* Error */}
           {error && (
             <Text className="text-red-600 text-sm mb-2">{error}</Text>
           )}
 
-          {/* Save Button */}
           <TouchableOpacity
             onPress={handleSave}
-            className="bg-secondary py-3 rounded-lg items-center"
+            className="bg-secondary py-3 rounded-lg items-center mt-4"
           >
             <Text className="text-white font-bold text-lg">Save</Text>
           </TouchableOpacity>
