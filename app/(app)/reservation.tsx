@@ -5,7 +5,9 @@ import CustomAlert from '@/components/ui/alert';
 import { useAuthContext } from '@/context/AuthContext';
 import InputComponent from '@/components/ui/inputText';
 import SignatureBoard from '@/components/ui/signature-board';
-
+import Dropdown from '@/components/ui/dropdown';
+import { EventPackages, EventTypeBaptismal, EventTypeWedding } from '@/constants/EventData';
+import { EventPackagesType } from '@/types/event';
 
 export default function Reservation() {
   const { profile, session } = useAuthContext();
@@ -166,27 +168,35 @@ export default function Reservation() {
               />
             </View>
 
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                label="Event"
-                value={personalInfo.email}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setEventDetails((prev) => ({ ...prev, event: text }))
+            <View className="relative bg-white w-[90%] mt-4">
+              <Text className="absolute -top-2 left-6 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
+                Packages
+              </Text>
+              <Dropdown<EventPackagesType>
+                items={EventPackages}
+                onSelect={(selected) =>
+                  setEventDetails((prev) => ({ ...prev, pkg: selected.title }))
                 }
+                labelExtractor={(item) => item.title}
               />
             </View>
-
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                label="Package"
-                value={personalInfo.email}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setEventDetails((prev) => ({ ...prev, pkg: text }))
+    
+            <View className="relative bg-white w-[90%] mt-4">
+              <Text className="absolute -top-2 left-6 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
+                Events
+              </Text>
+              <Dropdown<EventPackagesType>
+                items={
+                  eventDetails.pkg === 'Wedding'
+                    ? EventTypeWedding
+                    : eventDetails.pkg === 'Baptismal' 
+                    ? EventTypeBaptismal
+                    : [] // Default to an empty array if no condition matches
                 }
+                onSelect={(selected) =>
+                  setEventDetails((prev) => ({ ...prev, event: selected.title }))
+                }
+                labelExtractor={(item) => item.title}
               />
             </View>
 
