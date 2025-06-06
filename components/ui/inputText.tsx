@@ -37,7 +37,7 @@ function InputComponent(props: FancyInputProps) {
 
   return (
     <View className="relative mt-5">
-      <View className="border border-zinc-300 bg-white rounded-xl px-4 pt-5 pb-2 shadow-sm">
+      <View className="border border-zinc-300 bg-white rounded-xl px-4 pt-5 pb-5  shadow-sm">
         <Animated.Text style={labelStyle}>{label}</Animated.Text>
         <TextInput
           value={value}
