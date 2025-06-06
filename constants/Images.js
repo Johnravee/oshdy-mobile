@@ -5,6 +5,7 @@ import lighttealboxcardbg from '../assets/images/lightealboxcardbg.jpg'
 import orangecardbg from '../assets/images/orangecardbg.png'
 import navycardbg from '../assets/images/navycardbg.png'
 import yellowredcardbg from '../assets/images/yellowredcardbg.jpg'
+import contract  from '../assets/images/contract.png'
 
 export const IMAGES = {
     oshdyLogo, 
@@ -13,5 +14,6 @@ export const IMAGES = {
     lighttealboxcardbg,
     orangecardbg,
     navycardbg,
-    yellowredcardbg
+    yellowredcardbg,
+    contract
 }

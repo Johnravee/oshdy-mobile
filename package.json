@@ -36,6 +36,7 @@
     "expo-dev-client": "~5.0.20",
     "expo-font": "~13.0.4",
     "expo-haptics": "~14.0.1",
+    "expo-image-picker": "~16.0.6",
     "expo-linking": "~7.0.5",
     "expo-router": "^4.0.20",
     "expo-splash-screen": "~0.29.22",
@@ -62,10 +63,10 @@
     "react-native-signature-canvas": "^4.7.4",
     "react-native-svg": "15.8.0",
     "react-native-url-polyfill": "^2.0.0",
+    "react-native-view-shot": "^4.0.3",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "tailwindcss": "^3.4.17",
-    "expo-image-picker": "~16.0.6"
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@babel/core": "^7.26.10",

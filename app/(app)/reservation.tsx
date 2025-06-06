@@ -12,6 +12,7 @@ import Checkbox from '@/components/ui/checkbox';
 import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
+
 const initialReservationData: ReservationData = {
   personal: {
     name: '',
@@ -167,13 +168,6 @@ export default function Reservation() {
     return true;
   };
   
-  
-
-
-
-
-  
-
  
   return (
     <View className="flex-1 bg-white h-screen w-screen">
@@ -299,7 +293,7 @@ export default function Reservation() {
           buttonPreviousText="Back"
           buttonNextTextColor='#00000'
           onNext={handleEventStep}
-          errors={!reservationData.event.venue || !reservationData.event.eventDate || !reservationData.event.eventTime || !reservationData.event.pkg || !reservationData.event.theme}
+          errors={!reservationData.event.venue || !reservationData.event.eventDate || !reservationData.event.eventTime || !reservationData.event.pkg || !reservationData.event.theme || !reservationData.event.location}
         >
           <View className="h-full w-screen flex justify-evenly gap-5 ">
           <Text className="text-dark font-bold text-2xl">Event Details</Text>
