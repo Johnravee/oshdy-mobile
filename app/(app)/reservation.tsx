@@ -6,7 +6,7 @@ import { useAuthContext } from '@/context/AuthContext';
 import InputComponent from '@/components/ui/inputText';
 import SignatureBoard from '@/components/ui/signature-board';
 import Dropdown from '@/components/ui/dropdown';
-import { EventPackages, EventTypeBaptismal, EventTypeWedding, PastaMenu, RequestCategory } from '@/constants/EventData';
+import { BeefMenu, ChickenMenu, Dessert, Drinks, EventPackages, EventTypeBaptismal, EventTypeWedding, FishMenu, PastaMenu, PorkMenu, RequestCategory, VegetableMenu } from '@/constants/EventData';
 import { EventPackagesType, Menu, ReservationData, Category } from '@/types/reservation';
 import Checkbox from '@/components/ui/checkbox';
 import { FontAwesome } from '@expo/vector-icons';
@@ -515,7 +515,7 @@ export default function Reservation() {
         Vegetables
       </Text>
       <Dropdown<Menu>
-        items={EventPackages}
+        items={VegetableMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
@@ -531,7 +531,7 @@ export default function Reservation() {
         Chicken
       </Text>
       <Dropdown<Menu>
-        items={EventPackages}
+        items={ChickenMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
@@ -547,7 +547,7 @@ export default function Reservation() {
         Pork
       </Text>
       <Dropdown<Menu>
-        items={EventPackages}
+        items={PorkMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
@@ -563,7 +563,7 @@ export default function Reservation() {
         Beef
       </Text>
       <Dropdown<Menu>
-        items={EventPackages}
+        items={BeefMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
@@ -579,7 +579,7 @@ export default function Reservation() {
         Fillet
       </Text>
       <Dropdown<Menu>
-        items={EventPackages}
+        items={FishMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
@@ -598,7 +598,7 @@ export default function Reservation() {
         Dessert
       </Text>
       <Dropdown<Menu>
-        items={EventPackages}
+        items={Dessert}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
@@ -617,7 +617,7 @@ export default function Reservation() {
         Juice Drinks
       </Text>
       <Dropdown<Menu>
-        items={EventPackages}
+        items={Drinks}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
