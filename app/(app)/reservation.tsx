@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Modal, Alert } from 'react-native';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
 import CustomAlert from '@/components/ui/alert';
 import { useAuthContext } from '@/context/AuthContext';
@@ -11,6 +11,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ReservationPreview from '@/components/reservation-preview';
 import { Link } from 'expo-router';
+import Spinner from '@/components/ui/spinner';
 
 const initialReservationData: ReservationData = {
   personal: {
@@ -47,7 +48,7 @@ const initialReservationData: ReservationData = {
 };
 
 export default function Reservation() {
-  const { profile, session } = useAuthContext();
+  const { profile } = useAuthContext();
   const [alertVisible, setAlertVisible] = useState({firstForm: false, secondForm: false, datepicker: false, timePicker: false});
   const [isFilled, setIsFilled] = useState(false)
   const [error, setError] = useState<boolean>(false);
@@ -126,6 +127,10 @@ export default function Reservation() {
   };
   
  
+  // if(!profile) return <Spinner />;
+
+
+
   return (
     <View className="flex-1 bg-white h-screen w-screen">
       {alertVisible.firstForm && (
