@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, Pressable, Modal } from 'react-native';
+import { View, Text, Pressable, Modal, Alert } from 'react-native';
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
 import CustomAlert from '@/components/ui/alert';
 import { useAuthContext } from '@/context/AuthContext';
 import InputComponent from '@/components/ui/inputText';
-import SignatureBoard from '@/components/ui/signature-board';
 import Dropdown from '@/components/ui/dropdown';
-import { BeefMenu, ChickenMenu, Dessert, Drinks, EventPackages, EventTypeBaptismal, EventTypeWedding, FishMenu, PastaMenu, PorkMenu, RequestCategory, VegetableMenu } from '@/constants/EventData';
-import { EventPackagesType, Menu, ReservationData, Category } from '@/types/reservation';
-import Checkbox from '@/components/ui/checkbox';
+import { BeefMenu, ChickenMenu, Dessert, Drinks, EventPackages, BaptismalTheme, WedingTheme, DebutTheme, KiddieTheme, CorporateTheme, BirthdayTheme, FishMenu, PastaMenu, PorkMenu, VegetableMenu } from '@/constants/EventData';
+import { EventPackagesType, Menu, ReservationData } from '@/types/reservation';
 import { FontAwesome } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-
+import DateTimePicker from '@react-native-community/datetimepicker';
+import ReservationPreview from '@/components/reservation-preview';
+import { Link } from 'expo-router';
 
 const initialReservationData: ReservationData = {
   personal: {
     name: '',
     email: '',
     contact: '',
-    celebrant: '',
     address: '',
   },
   event: {
+    celebrant: '',
     pkg: '',
     theme: '',
     venue: '',
@@ -44,66 +43,23 @@ const initialReservationData: ReservationData = {
     dessert: '',
     juice: '',
   },
-  request: {
-    category: '',
-    requestSlip: '',
-    imageFile: '',
-  },
-  chickenMenu: {},
+
 };
 
 export default function Reservation() {
   const { profile, session } = useAuthContext();
-  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertVisible, setAlertVisible] = useState({firstForm: false, secondForm: false, datepicker: false, timePicker: false});
   const [isFilled, setIsFilled] = useState(false)
-  const [modalVisible, setModalVisible] = useState(false); //Request image modal visibility
   const [error, setError] = useState<boolean>(false);
-
   const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData); 
 
 
 
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [9, 16],
-      quality: 1,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-      setReservationData(prev => ({
-        ...prev,
-        request:{
-          ...prev.request,
-          imageFile: result.assets[0].uri
-        }
-      }));
-    }
-  };
-
-
-
-
-  // for checkbox menu
-  // const updateChickenMenu = (label: string, isChecked: boolean) => {
-  //   setChickenMenu(prev => {
-  //     const updated = { ...prev };
-  //     if (isChecked) {
-  //       updated[label] = true;
-  //     } else {
-  //       delete updated[label];
-  //     }
-  //     return updated;
-  //   });
-  // };
-
   useEffect(() => {
     if (profile && !isFilled) {
-      setAlertVisible(true);
+      setAlertVisible((prev) => ({
+        ...prev, firstForm: true,
+      }));
     }
   }, [profile])
 
@@ -117,19 +73,20 @@ export default function Reservation() {
         name: profile?.name || '',
         email: profile?.email || '',
         contact: profile?.contact_number || '',
-        celebrant:  '',
         address: profile?.address || '',
       },
       
     }));
     setIsFilled(true)
-    setAlertVisible(false);
+    setAlertVisible((prev) => ({
+      ...prev, firstForm: false,
+    }));
   };
 
   const next = () => {
-    const { name, email, contact, celebrant, address } = reservationData.personal;
+    const { name, email, contact, address } = reservationData.personal;
   
-    if (!name || !email || !contact || !celebrant || !address) {
+    if (!name || !email || !contact || !address) {
       setError(true);
       alert("Please fill in all required fields.");
       return false;
@@ -171,34 +128,43 @@ export default function Reservation() {
  
   return (
     <View className="flex-1 bg-white h-screen w-screen">
-      {alertVisible && (
+      {alertVisible.firstForm && (
         <CustomAlert
-          visible={alertVisible}
+          visible={alertVisible.firstForm}
           title="Use Existing Profile Data?"
           message="This will allow you to quickly fill other fields using your existing information"
-          onClose={() => setAlertVisible(false)}
-          onCancel={() => setAlertVisible(false)}
+          onClose={() => setAlertVisible((prev) => ({
+            ...prev, firstForm: false,
+          }))} 
+          onCancel={() => setAlertVisible((prev) => ({
+            ...prev, firstForm: false,
+          }))}
           onOk={handleAutofill}
         />
       )}
 
 
       <View className='flex-1 w-full h-screen justify-center items-center'>
+        <View className="absolute top-5 left-5">
+            <Link replace href={'/(app)/dashboard'} className="text-3xl font-bold text-center">
+                <FontAwesome name="arrow-left" size={20} color="#333333" />
+            </Link>
+        </View>
       <ProgressSteps
         activeStepIconBorderColor="#D4A83F"
         completedStepIconColor="#2E3A8C"
         completedProgressBarColor="#2E3A8C"
-        activeLabelColor="#333333"
+        activeLabelColor="#D4A83F"
       >
 
         {/* Personal info form */}
         <ProgressStep
           label="Personal Info"
           buttonNextText="Next"
-          buttonPreviousText="" 
+          buttonPreviousText="Exit" 
           buttonNextTextColor='#00000'
           onNext={next}
-          errors={!reservationData.personal.name || !reservationData.personal.email || !reservationData.personal.contact || !reservationData.personal.celebrant || !reservationData.personal.address}
+          errors={!reservationData.personal.name || !reservationData.personal.email || !reservationData.personal.contact || !reservationData.personal.address}
         >
           <View className="h-full w-screen flex justify-evenly gap-5 ">
           <Text className="text-dark font-bold text-2xl">Personal Info</Text>
@@ -253,21 +219,6 @@ export default function Reservation() {
 
             <View className='bg-white w-[90%]'>
                 <InputComponent
-                label="Celebrant"
-                value={reservationData.personal.celebrant}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    personal: { ...prev.personal, celebrant: text },
-                  }))
-                }
-              />
-            </View>
-
-            <View className='bg-white w-[90%]'>
-                <InputComponent
                   label="Address"
                   value={reservationData.personal.address}
                   multiline
@@ -301,6 +252,87 @@ export default function Reservation() {
           <Text className="text-sm text-gray-500 w-[90%] ">
           Welcome back! Please review and update your event details below. Make sure the venue, date, time, and event type reflect your latest plans. If you’re repeating a previous setup, that’s okay — just confirm everything is still accurate to avoid delays in processing your reservation.
           </Text>
+
+          <View className="relative bg-white w-[90%] mt-4">
+              <Text className="absolute -top-2 left-6 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
+                Event Packages
+              </Text>
+              <Dropdown<EventPackagesType>
+                value={reservationData.event.pkg}
+                items={EventPackages}
+                onSelect={(selected) =>
+                  setReservationData((prev) => ({
+                    ...prev,
+                    event: { ...prev.event, pkg: selected.title },
+                  }))
+                }
+                labelExtractor={(item) => item.title}
+              />
+            </View>
+
+            <View className="relative bg-white w-[90%] mt-4">
+  <Text className="absolute -top-2 left-5 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
+    Theme/Motif
+  </Text>
+
+  {reservationData.event.pkg ? (
+    // ✅ Show the dropdown when pkg is selected
+    <Dropdown<EventPackagesType>
+      value={reservationData.event.theme}
+      items={
+        reservationData.event.pkg === 'Wedding'
+          ? WedingTheme
+          : reservationData.event.pkg === 'Baptismal'
+          ? BaptismalTheme
+          : reservationData.event.pkg === 'Debut'
+          ? DebutTheme
+          : reservationData.event.pkg === 'Kiddie Party'
+          ? KiddieTheme
+          : reservationData.event.pkg === 'Birthday'
+          ? BirthdayTheme
+          : reservationData.event.pkg === 'Corporate'
+          ? CorporateTheme
+          : []
+      }
+      onSelect={(selected) =>
+        setReservationData((prev) => ({
+          ...prev,
+          event: { ...prev.event, theme: selected.title },
+        }))
+      }
+      labelExtractor={(item) => item.title}
+    />
+  ) : (
+    // ❌ Show alert trigger if pkg is empty
+    <Pressable
+      onPress={() => {
+        Alert.alert('Missing Theme', 'Please select a theme based on your event package');
+      }}
+    >
+      <View className="border border-zinc-300 rounded-md px-4 py-3">
+        <Text className="text-zinc-400">Select a theme (choose a package first)</Text>
+      </View>
+    </Pressable>
+  )}
+</View>
+
+        <View className="relative bg-white w-[90%] mt-4">
+          <InputComponent
+                label="Celebrant"
+                value={reservationData.event.celebrant}
+                placeholderTextColor="#999"
+                className='w-full'
+                onChangeText={(text) =>
+                  setReservationData((prev) => ({
+                    ...prev,
+                    event: { ...prev.event, celebrant: text },
+                  }))
+                }
+                placeholder="Leave blank if none or not applicable"
+              />
+            </View>
+
+
             <View className='bg-white w-[90%]'>
                 <InputComponent
                 label="Venue"
@@ -313,83 +345,95 @@ export default function Reservation() {
                     event: { ...prev.event, venue: text },
                   }))
                 }
-              />
-
-              
-            </View>
-
-            <View className="relative bg-white w-[90%] mt-4">
-              <Text className="absolute -top-2 left-6 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
-                Packages
-              </Text>
-              <Dropdown<EventPackagesType>
-                items={EventPackages}
-                onSelect={(selected) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: { ...prev.event, pkg: selected.title },
-                  }))
-                }
-                labelExtractor={(item) => item.title}
-              />
+                placeholder='e.g. Coral Vine '
+              /> 
             </View>
     
-            <View className="relative bg-white w-[90%] mt-4">
-              <Text className="absolute -top-2 left-6 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
-                Theme/Motif
-              </Text>
-              <Dropdown<EventPackagesType>
-                items={
-                  reservationData.event.pkg === 'Wedding'
-                    ? EventTypeWedding
-                    : reservationData.event.pkg === 'Baptismal' 
-                    ? EventTypeBaptismal
-                    : [] // Default to an empty array if no condition matches
-                }
-                onSelect={(selected) =>
+            <View className='bg-white w-[90%]'>
+            {
+              alertVisible.datepicker && 
+              <DateTimePicker 
+              mode="date" 
+              value={new Date()} 
+              display='calendar' 
+              onChange={(event, selectedDate) => {
+                if (event.type === 'set' && selectedDate) {
+                  // User confirmed the date
                   setReservationData((prev) => ({
                     ...prev,
-                    event: { ...prev.event, theme: selected.title },
-                  }))
+                    event: {
+                      ...prev.event,
+                      eventDate: selectedDate.toLocaleDateString(),
+                    },
+                  }));
                 }
-                labelExtractor={(item) => item.title}
-              />
-            </View>
+              
+                // In both cases (set or dismiss), close the date picker
+                setAlertVisible((prev) => ({
+                  ...prev,
+                  datepicker: false,
+                }));
+              }}
+              
+              
+               />
+            }
 
-
-            <View className='bg-white w-[90%]'>
                 <InputComponent
-                label="Date"
+                label="Date of Function"
                 value={reservationData.event.eventDate}
                 placeholderTextColor="#999"
                 className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: { ...prev.event, eventDate: text },
-                  }))
-                }
+                onPress={() => setAlertVisible((prev) => ({
+                  ...prev, datepicker: true,} ))}
+                
               />
             </View>
 
             <View className='bg-white w-[90%]'>
+
+            {
+              alertVisible.timePicker && 
+              <DateTimePicker 
+              mode="time" 
+              value={new Date()} 
+              display='clock' 
+              onChange={(event, selectedTime) => {
+                if (event.type === 'set' && selectedTime) {
+                  // User confirmed the date
+                  setReservationData((prev) => ({
+                    ...prev,
+                    event: {
+                      ...prev.event,
+                      eventTime: selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    },
+                  }));
+                }
+              
+                // In both cases (set or dismiss), close the date picker
+                setAlertVisible((prev) => ({
+                  ...prev,
+                  timePicker: false,
+                }));
+              }}
+              
+              
+               />
+            }
+
                 <InputComponent
                 label="Time"
                 value={reservationData.event.eventTime}
                 placeholderTextColor="#999"
                 className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: { ...prev.event, eventTime: text },
-                  }))
-                }
+                onPress={() => setAlertVisible((prev) => ({
+                  ...prev, timePicker: true,} ))}
               />
             </View>
 
             <View className='bg-white w-[90%]'>
                 <InputComponent
-                  label="Event Function Address"
+                  label="Location"
                   value={reservationData.event.location}
                   multiline
                   numberOfLines={10}
@@ -402,6 +446,7 @@ export default function Reservation() {
                       event: { ...prev.event, location: text },
                     }))
                   }
+                  placeholder='e.g. 123 Main St, City, Country'
               />
             </View>
 
@@ -440,6 +485,7 @@ export default function Reservation() {
                   }))
                 }
                 keyboardType="phone-pad"
+                placeholder='e.g. 100'
               />
 
               <InputComponent
@@ -454,6 +500,7 @@ export default function Reservation() {
                   }))
                 }
                 keyboardType="phone-pad"
+                placeholder='e.g. 50'
               />
 
               <InputComponent
@@ -468,6 +515,7 @@ export default function Reservation() {
                   }))
                 }
                 keyboardType="phone-pad"
+                placeholder='e.g. 50'
               />
             
             <Text className="text-xs text-gray-400 w-full py-5 text-center">
@@ -486,7 +534,7 @@ export default function Reservation() {
         >
   <View className="h-full w-screen flex justify-evenly gap-5">
     
-    <Text className="text-dark font-bold text-2xl">Menu</Text>
+    <Text className="text-dark font-bold text-2xl">Menu (Pick One)</Text>
     <Text className="text-sm text-gray-500 w-[90%]">
       Welcome back! As a returning guest, feel free to select your preferred dishes—one from each category. If you have favorite items from a previous event, you’re welcome to choose them again or try something new. Make sure your selections match your current event's preferences.
     </Text>
@@ -499,6 +547,7 @@ export default function Reservation() {
         Pasta
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.pasta}
         items={PastaMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
@@ -515,6 +564,7 @@ export default function Reservation() {
         Vegetables
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.vegetable}
         items={VegetableMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
@@ -531,6 +581,7 @@ export default function Reservation() {
         Chicken
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.chicken}
         items={ChickenMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
@@ -547,6 +598,7 @@ export default function Reservation() {
         Pork
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.pork}
         items={PorkMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
@@ -563,12 +615,13 @@ export default function Reservation() {
         Beef
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.beef}
         items={BeefMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
             ...prev,
             menu: { ...prev.menu, beef: selected.title },
-          }))
+          })) 
         }
         labelExtractor={(item) => item.title}
       />
@@ -579,6 +632,7 @@ export default function Reservation() {
         Fillet
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.fillet}
         items={FishMenu}
         onSelect={(selected) =>
           setReservationData((prev) => ({
@@ -598,6 +652,7 @@ export default function Reservation() {
         Dessert
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.dessert}
         items={Dessert}
         onSelect={(selected) =>
           setReservationData((prev) => ({
@@ -617,6 +672,7 @@ export default function Reservation() {
         Juice Drinks
       </Text>
       <Dropdown<Menu>
+        value={reservationData.menu.juice}
         items={Drinks}
         onSelect={(selected) =>
           setReservationData((prev) => ({
@@ -628,115 +684,20 @@ export default function Reservation() {
       />
     </View>
   </View>
-</ProgressStep>
-
-
-      {/* Contract form */}
-        <ProgressStep
-          label="Contract"
-          buttonNextText="Next"
-          buttonPreviousText="Back"
-          buttonNextTextColor="#000000"
-        >
-          <View className="flex-1 items-center justify-center px-4 py-6 bg-white">
-            <Text className="text-xl font-semibold text-center text-gray-800 mb-4">
-              Event Contract Signature
-            </Text>
-            <View className="w-full h-[400px] rounded-2xl overflow-hidden border border-gray-300 shadow-lg">
-              <SignatureBoard />
-            </View>
-            <Text className="mt-4 text-sm text-gray-500 text-center">
-              Please provide your signature above to confirm your agreement.
-            </Text>
-          </View>
         </ProgressStep>
 
-        {/* Request form */}
+        {/* Preview form */}
         <ProgressStep
-          label="Request"
-          buttonNextText="Next"
-          buttonPreviousText="Back"
-          buttonNextTextColor='#00000'
+          label="Final Review"
+          buttonFinishText="Submit"
+          buttonPreviousText="Back" 
+          buttonFinishTextColor='#D4A83F'
         >
           <View className="h-full w-screen flex justify-evenly gap-5 ">
-
-            <Text className='text-dark font-bold text-3xl py-2'>
-                Request
-            </Text>
-
-          <Text className="text-sm text-gray-500 mb-2 w-[90%]">
-            Note: Please enter the full details of your request, including any relevant information that may help us understand your needs better. The more specific and clear you are, the faster and more accurately we can process your request and provide the appropriate response or service.
-          </Text>
-
-          <View className="relative bg-white w-[90%] mt-4">
-            <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-              Category  
-            </Text>
-            <Dropdown<Category>
-              items={RequestCategory}
-              onSelect={(selected) =>
-                setReservationData((prev) => ({
-                  ...prev,
-                  request: { ...prev.request, category: selected.title },
-                }))
-              }
-              labelExtractor={(item) => item.title}
-            />
-          </View>
-
             <View className='bg-white w-[90%]'>
-                  <InputComponent
-                    label="Request Slip"
-                    value={''}
-                    multiline
-                    numberOfLines={10}
-                    textAlignVertical="top"
-                    placeholderTextColor="#999"
-                    className="h-36"
-                    onChangeText={(text) =>
-                     setReservationData((prev) => ({
-                      ...prev,
-                      request: { ...prev.request, requestSlip: text },
-                    })
-                  )}
-                />
-              </View>
-
-              <Text className='text-dark text-sm'>Attach a file (optional)</Text>
-                <Pressable className='mt-3 py-3 bg-gray-200  p-2 rounded-lg w-[90%]' onPress={pickImage} >
-
-                  <View className='flex-row items-center justify-center gap-2 '>
-                    <Text className='text-dark'><FontAwesome name='paperclip' size={20} color="#333" />  Attach a file</Text>
-                  </View>
-                </Pressable>
-
-                {reservationData.request.imageFile ? (
-                      <>
-                        <Pressable onPress={() => setModalVisible(true)} className="w-[90%] mt-2">
-                          <Image
-                            source={{ uri: reservationData.request.imageFile }}
-                            className="w-full h-60 rounded-lg"
-                            resizeMode="cover"
-                          />
-                        </Pressable>
-
-                        <Modal visible={modalVisible} transparent={true}>
-                          <View className="flex-1 bg-black justify-center items-center">
-                            <Pressable onPress={() => setModalVisible(false)} className="absolute top-5 right-5 z-10 p-1 bg-white rounded-full">
-                              <FontAwesome name="close" size={24} color="black" />
-                            </Pressable>
-                            <Image
-                              source={{ uri: reservationData.request.imageFile }}
-                              style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
-                            />
-                          </View>
-                        </Modal>
-                      </>
-                    ) : (
-                      <Text className="text-gray-500 text-sm mt-2">No file attached</Text>
-                    )}
-
-                </View>
+                <ReservationPreview reservationData={reservationData} />
+            </View>
+          </View>
         </ProgressStep>
       </ProgressSteps>
       </View>

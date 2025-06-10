@@ -5,6 +5,7 @@ export type EventPackagesType = {
 
 
   export type EventDetails = {
+    celebrant: string;
     pkg: string;
     theme: string;
     venue: string;
@@ -19,17 +20,13 @@ export type EventPackagesType = {
     title: string;
   }
 
-  export type Category = {
-    id: number;
-    title: string;
-  }
+ 
 
 
   export type PersonalInfo = {
     name: string;
     email: string;
     contact: string;
-    celebrant: string;
     address: string;
   };
   
@@ -51,17 +48,10 @@ export type EventPackagesType = {
     juice: string;
   };
   
-  export type RequestInfo = {
-    category: string;
-    requestSlip: string;
-    imageFile: string;
-  };
-  
+
   export type ReservationData = {
     personal: PersonalInfo;
     event: EventDetails;
     guests: GuestDetails;
     menu: MenuSelection;
-    request: RequestInfo;
-    chickenMenu: { [key: string]: boolean };
   };

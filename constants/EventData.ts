@@ -1,8 +1,10 @@
-import { Category, EventPackagesType, Menu } from "@/types/reservation";
+import {EventPackagesType, Menu } from "@/types/reservation";
+
 
 
 export const EventPackages: EventPackagesType[] = [
   { id: 1, title: 'Birthday' },
+  { id: 1, title: 'Kiddie Party' },
   { id: 2, title: 'Debut' },
   { id: 3, title: 'Wedding' },
   { id: 4, title: 'Baptismal' },
@@ -10,28 +12,46 @@ export const EventPackages: EventPackagesType[] = [
 ];
 
 
-export const EventTypeBaptismal: EventPackagesType[] = [
+export const BaptismalTheme: EventPackagesType[] = [
   { id: 1, title: 'Rainbow' },
   { id: 2, title: 'Stars' },
   { id: 3, title: 'Clouds' },
 ]
 
-export const EventTypeWedding: EventPackagesType[] = [
+export const WedingTheme: EventPackagesType[] = [
     { id: 1, title: 'Elegant' },
     { id: 2, title: 'Modern' },
     { id: 3, title: 'Classic' },
 ]
-
-
-
-export const RequestCategory: Category[] = [
-  { id: 1, title: 'Catering' },
-  { id: 2, title: 'Theme' },
-  { id: 3, title: 'Design' },
-  { id: 4, title: 'Food' },
-  { id: 5, title: 'Contract' },
-  
+export const DebutTheme: EventPackagesType[] = [
+  { id: 1, title: 'Pink' },
+  { id: 2, title: 'Blue' },
+  { id: 3, title: 'Gold' },
 ]
+
+export const KiddieTheme: EventPackagesType[] = [
+  { id: 1, title: 'Superhero' },
+  { id: 2, title: 'Princess' },
+  { id: 3, title: 'Pirate' },
+]
+
+
+export const BirthdayTheme: EventPackagesType[] = [
+  { id: 1, title: 'Boho Garden' },
+  { id: 2, title: 'Neon Party' },
+  { id: 3, title: 'Hollywood Glam' },
+]
+
+export const CorporateTheme: EventPackagesType[] = [
+  { id: 1, title: 'Business Casual' },
+  { id: 2, title: 'Formal' },
+  { id: 3, title: 'Themed' },
+]
+
+
+
+
+
 export const PastaMenu: Menu[] = [
   {id: 1, title: "Creamy Carbonara"},
   {id: 2, title: "Tuna Creamy Carbonara"},

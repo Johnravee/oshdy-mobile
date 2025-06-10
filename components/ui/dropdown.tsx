@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 
@@ -7,6 +7,7 @@ type DropdownProps<T> = {
   onSelect: (selectedItem: T) => void;
   labelExtractor: (item: T) => string;
   placeholder?: string;
+  value?: string; // the selected value's label
 };
 
 export default function Dropdown<T>({
@@ -14,36 +15,42 @@ export default function Dropdown<T>({
   onSelect,
   labelExtractor,
   placeholder = 'Select an option',
+  value,
 }: DropdownProps<T>) {
+  // Memoize finding the default item so it doesn't recalc on every render
+  const defaultItem = useMemo(() => {
+    if (value == null) return undefined;
+    // Find the item whose label matches the given value
+    return items.find((item) => labelExtractor(item) === value);
+  }, [value, items, labelExtractor]);
+
   return (
     <View>
       <SelectDropdown
         data={items}
         onSelect={onSelect}
+        defaultValue={defaultItem}
         renderButton={(selectedItem?: T) => (
-          <View
-            style={{
-              padding: 12,
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 8,
-              backgroundColor: '#fff',
-            }}
-          >
-            <Text className='text-md text-zinc-600'>
-              {selectedItem ? labelExtractor(selectedItem) : placeholder}
+          <View className="p-3 border border-zinc-300 rounded-lg bg-white">
+            <Text
+              className={`text-base ${
+                selectedItem ? 'text-zinc-800' : 'text-zinc-500'
+              }`}
+            >
+              {selectedItem
+                ? labelExtractor(selectedItem)
+                : placeholder}
             </Text>
           </View>
         )}
         renderItem={(item: T, index: number, isSelected: boolean) => (
           <View
             key={index}
-            style={{
-              padding: 12,
-              backgroundColor: isSelected ? '#eee' : '#fff',
-            }}
+            className={`p-3 ${isSelected ? 'bg-zinc-100' : 'bg-white'}`}
           >
-            <Text className='font-semibold text-md text-dark'>{labelExtractor(item)}</Text>
+            <Text className="text-base text-zinc-600 font-medium">
+              {labelExtractor(item)}
+            </Text>
           </View>
         )}
         dropdownStyle={{
