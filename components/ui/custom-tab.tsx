@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, } from 'react-native';
+import { View, TouchableOpacity, Alert, } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
@@ -41,7 +41,7 @@ const FloatingTabBar = ({ onTabPress }: any) => {
       }
 
       if(key === "question"){
-        return router.push('/(app)/reservation');
+        return Alert.alert("Help section not implemented yet");
       }
 
 

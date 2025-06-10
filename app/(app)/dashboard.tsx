@@ -10,6 +10,18 @@ import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
 import { insertUserToProfiles } from '@/hooks/useInsertProfile';
 
+
+
+interface Card {
+  id: number;
+  title: string;
+  icon: string;
+  background: any;
+  path: string; // optional when feature not implemented
+}
+
+
+
 export default function Dashboard() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
@@ -39,13 +51,13 @@ export default function Dashboard() {
     }
   }, [modalVisible]);
 
-  const cards = [
-    { id: 1, title: 'Schedule Your Event', icon: "calendar-plus-o", background: IMAGES.yellowcardbg,  },
-    { id: 2, title: 'Check Event Status', icon: "clock-o", background: IMAGES.tealroundedcardbg },
-    { id: 3, title: 'Review Past Bookings', icon: "history", background: IMAGES.orangecardbg },
-    { id: 4, title: 'Explore Event Designs', icon: "magic", background: IMAGES.lighttealboxcardbg },
-    { id: 5, title: 'Explore Event Packages', icon: "compass", background: IMAGES.navycardbg },
-    { id: 6, title: 'View Menu Options', icon: "delicious", background: IMAGES.yellowredcardbg }
+  const cards: Card[] = [
+    { id: 1, title: 'Schedule Your Event', icon: "calendar-plus-o", background: IMAGES.yellowcardbg, path: '/(app)/reservation'  },
+    { id: 2, title: 'Check Event Status', icon: "clock-o", background: IMAGES.tealroundedcardbg, path: '' },
+    { id: 3, title: 'Review Past Bookings', icon: "history", background: IMAGES.orangecardbg, path: '' },
+    { id: 4, title: 'Explore Event Designs', icon: "magic", background: IMAGES.lighttealboxcardbg, path: ''  },
+    { id: 5, title: 'Explore Event Packages', icon: "compass", background: IMAGES.navycardbg, path: '' },
+    { id: 6, title: 'View Menu Options', icon: "delicious", background: IMAGES.yellowredcardbg, path: ''  }
   ];
 
   return (
@@ -160,7 +172,8 @@ export default function Dashboard() {
       <View className="h-full w-full rounded-t-2xl bg-white mt-10">
         <View className="w-full h-auto flex flex-row flex-wrap justify-center bg-transparent items-center mt-10 py-10 px-4">
           {cards.map((card) => (
-            <Pressable className="w-1/2 sm:w-full rounded-3xl overflow-hidden p-3" key={card.id}>
+            <Pressable  className="w-1/2 sm:w-full rounded-3xl overflow-hidden p-3" key={card.id} onPress={() => router.push(card.path as any)}  >
+
               <ImageBackground
                 source={card.background}
                 className="w-full aspect-[4/3] overflow-hidden px-5 py-4 justify-start"
