@@ -151,7 +151,7 @@ export default function Reservation() {
 
       <View className='flex-1 w-full h-screen justify-center items-center'>
         <View className="absolute top-5 left-5">
-            <Link replace href={'/(app)/dashboard'} className="text-3xl font-bold text-center">
+            <Link replace href={'/(app)/(tabs)/dashboard'} className="text-3xl font-bold text-center">
                 <FontAwesome name="arrow-left" size={20} color="#333333" />
             </Link>
         </View>

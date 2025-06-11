@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Calendar from 'react-native-calendar-range-picker';
 import { FontAwesome } from '@expo/vector-icons';
-import FloatingTabBar from '@/components/ui/custom-tab';
 import { IMAGES } from '@/constants/Images';
 import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
@@ -40,7 +39,6 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState('');
   const [searchResult, setSearchResult] = useState(false);
   const [schedData, setSchedData] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>('home');
 
   insertUserToProfiles(); // Move this into useAuth later
 
@@ -57,7 +55,7 @@ export default function Dashboard() {
 
   const cards: Card[] = [
     { id: 1, title: 'Schedule Your Event', icon: 'calendar-plus-o', background: IMAGES.yellowcardbg, path: '/(app)/reservation' },
-    { id: 2, title: 'Check Event Status', icon: 'clock-o', background: IMAGES.tealroundedcardbg, path: '' },
+    { id: 2, title: 'Check Reservation Status', icon: 'clock-o', background: IMAGES.tealroundedcardbg, path: '' },
     { id: 3, title: 'Review Past Bookings', icon: 'history', background: IMAGES.orangecardbg, path: '' },
     { id: 4, title: 'Explore Event Designs', icon: 'magic', background: IMAGES.lighttealboxcardbg, path: '' },
     { id: 5, title: 'Explore Event Packages', icon: 'compass', background: IMAGES.navycardbg, path: '' },
@@ -65,16 +63,15 @@ export default function Dashboard() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-primary">
-      <StatusBar hidden />
-      <View className="flex justify-between items-start mt-5 gap-5 px-5">
+    <SafeAreaView className="flex-1 h-full bg-primary relative flex justify-center">
+      <View className="flex justify-between items-start mt-5 mb-5  px-5 bg-primary p-5">
         <Text className="text-white text-4xl font-bold">
           Welcome back! Let’s Plan Your Event.
         </Text>
         <TouchableHighlight
           onPress={() => setModalVisible(true)}
           underlayColor="#ddd"
-          className="rounded-full"
+          className="rounded-full mt-5"
         >
           <View className="h-16 w-full bg-white rounded-lg flex-row items-center justify-between px-5">
             <Text className="text-[#33333] text-lg font-semibold">Check Available Schedules</Text>
@@ -123,7 +120,7 @@ export default function Dashboard() {
               <FontAwesome name="close" size={20} color="#333" />
             </Pressable>
             <LottieView
-              source={require('../../assets/images/lottie/searching.json')}
+              source={require('../../../assets/images/lottie/searching.json')}
               autoPlay
               loop
               style={{ width: 150, height: 150 }}
@@ -151,8 +148,8 @@ export default function Dashboard() {
             </Pressable>
             <LottieView
               source={schedData
-                ? require('../../assets/images/lottie/check.json')
-                : require('../../assets/images/lottie/notfound.json')}
+                ? require('../../../assets/images/lottie/check.json')
+                : require('../../../assets/images/lottie/notfound.json')}
               autoPlay
               loop
               style={{ width: 150, height: 150 }}
@@ -172,34 +169,30 @@ export default function Dashboard() {
       </CustomModal>
 
       {/* Main Content */}
-      <View className="flex-1 bg-white mt-10 rounded-t-2xl">
-        <View className="w-full flex-row flex-wrap justify-between items-start px-4 py-10 gap-y-4">
-  {cards.map((card) => (
-    <Pressable
-      key={card.id}
-      onPress={() => card.path && router.push(card.path as any)}
-      className="w-[48%] rounded-3xl overflow-hidden"
-    >
-      <ImageBackground
-        source={card.background}
-        className="w-full aspect-[4/3] px-5 py-4 justify-start"
-        imageStyle={{ borderRadius: 24 }}
-      >
-        <Text className="text-white font-extrabold mt-2">
-          <FontAwesome name={card.icon as keyof typeof FontAwesome.glyphMap} size={30} color="#ffffff" />
-        </Text>
-        <Text className="text-white text-lg font-bold mt-4">{card.title}</Text>
-      </ImageBackground>
-    </Pressable>
-  ))}
-</View>
-
-        {/* Tab Bar */}
-        <View className="w-full justify-center items-center py-4 px-5">
-          <View className="border rounded-full py-1 w-auto bg-transparent shadow-lg">
-            <FloatingTabBar onTabPress={setActiveTab} />
-          </View>
+      <View className="flex-1 justify-center items-center  rounded-t-2xl bg-white shadow-lg relative overflow-hidden py-5">
+        <ScrollView>
+        <View className="w-full flex-row flex-wrap justify-between items-start px-4 gap-y-10">
+          {cards.map((card) => (
+            <Pressable
+              key={card.id}
+              onPress={() => card.path && router.push(card.path as any)}
+              className="w-[48%] rounded-3xl overflow-hidden"
+            >
+              <ImageBackground
+                source={card.background}
+                className="w-full aspect-[4/3] px-5 py-4 justify-start"
+                imageStyle={{ borderRadius: 24 }}
+              >
+                <Text className="text-white font-extrabold mt-2">
+                  <FontAwesome name={card.icon as keyof typeof FontAwesome.glyphMap} size={30} color="#ffffff" />
+                </Text>
+                <Text className="text-white text-lg font-bold mt-4">{card.title}</Text>
+              </ImageBackground>
+            </Pressable>
+          ))}
         </View>
+        </ScrollView>
+        
       </View>
     </SafeAreaView>
   );
