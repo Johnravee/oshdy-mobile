@@ -171,7 +171,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <View className="flex-1 justify-center items-center  rounded-t-2xl bg-white shadow-lg relative overflow-hidden py-5">
         <ScrollView>
-        <View className="w-full flex-row flex-wrap justify-between items-start px-4 gap-y-10">
+        <View className="w-full flex-row flex-wrap justify-between items-start px-4 gap-y-5">
           {cards.map((card) => (
             <Pressable
               key={card.id}

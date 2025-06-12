@@ -20,7 +20,6 @@ export default function AppLayout() {
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#fff',
-          borderRadius: 15,
           height: 60,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
