@@ -102,7 +102,6 @@ export default function Login() {
 
   return (
     <SafeAreaView className="h-screen w-screen">
-      <StatusBar hidden={true} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

@@ -11,7 +11,11 @@ import { FontAwesome } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ReservationPreview from '@/components/reservation-preview';
 import { Link } from 'expo-router';
+import { useInsertReservation, } from '@/hooks/useReservationQuery';
 import Spinner from '@/components/ui/spinner';
+import CustomModal from '@/components/ui/custom-modal';
+import LottieView from 'lottie-react-native';
+
 
 const initialReservationData: ReservationData = {
   personal: {
@@ -53,7 +57,8 @@ export default function Reservation() {
   const [isFilled, setIsFilled] = useState(false)
   const [error, setError] = useState<boolean>(false);
   const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData); 
-
+  const { insertReservation, loading, error: insertError, success } = useInsertReservation();
+  const [modalVisibility, setModalVisibility] = useState(false);
 
 
   useEffect(() => {
@@ -125,6 +130,17 @@ export default function Reservation() {
     setError(false);
     return true;
   };
+
+
+  const handleReservationSubmit = async () => {
+    const result = await insertReservation(reservationData);
+  
+    if (success || result) {
+      setModalVisibility(true);
+    }
+  };
+  
+
   
  
   // if(!profile) return <Spinner />;
@@ -148,6 +164,60 @@ export default function Reservation() {
         />
       )}
 
+
+      {/* submit spinner */}
+      {loading && (
+        <Spinner />
+      )}
+
+      {/* Success submit modal */}
+      {success && (
+        <CustomModal
+        visible={modalVisibility}
+        onClose={() => setModalVisibility(false)}
+      >
+      <View className="flex-1 justify-center items-center bg-black/50">
+              <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
+                {/* Close icon */}
+                <Pressable
+                  onPress={() => setModalVisibility(false)}
+                  className="absolute top-2 right-2 p-2 rounded-full"
+                >
+                  <FontAwesome name="close" size={20} color="#333" />
+                </Pressable>
+      
+                {/* Lottie Animation */}
+                <LottieView
+                  source={require('../../assets/images/lottie/check.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 150, height: 150 }}
+                />
+      
+                {/* Title */}
+                <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
+                🎉 Reservation Submitted! 🎉
+                </Text>
+      
+                {/* Message */}
+                <Text className="text-base text-center text-gray-600 mb-5">
+                  Thank you for booking with OSHDY Catering Services.
+                  We'll review your reservation and contact you shortly with confirmation details.
+                </Text>
+      
+                {/* Divider */}
+                <View className="my-4 border-t border-gray-300 w-full" />
+      
+                {/* Retry Note */}
+                <Text className="text-base text-center text-gray-600">
+                  Need to make changes? Contact our team or wait for the confirmation email.
+                </Text>
+              </View>
+            </View>
+      </CustomModal>
+      )}
+
+      {/* Error alert */}
 
       <View className='flex-1 w-full h-screen justify-center items-center'>
         <View className="absolute top-5 left-5">
@@ -697,6 +767,7 @@ export default function Reservation() {
           buttonFinishText="Submit"
           buttonPreviousText="Back" 
           buttonFinishTextColor='#D4A83F'
+          onSubmit={handleReservationSubmit}
         >
           <View className="h-full w-screen flex justify-evenly gap-5 ">
             <View className='bg-white w-[90%]'>

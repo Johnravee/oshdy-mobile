@@ -17,6 +17,7 @@ type ProfileType = {
   name: string;
   contact_number?: string;
   address?: string;
+  id: number
 };
 
 // Create the context with an initial value of undefined
