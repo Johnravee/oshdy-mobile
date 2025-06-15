@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { ReservationData } from '@/types/reservation';
+import { ReservationData } from '@/types/reservation-types';
 
 export const useInsertReservation = () => {
   const [loading, setLoading] = useState(false);

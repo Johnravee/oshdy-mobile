@@ -1,3 +1,48 @@
+/**
+ * @file login.tsx
+ * @component Login
+ * @description
+ * This screen handles email-based authentication and social sign-in (Google OAuth)
+ * for OSHDY Catering Services. It allows users to request a magic link for secure login,
+ * and displays an animated modal confirmation with cooldown protection against rapid retries.
+ * 
+ * Features:
+ * - Email validation with detailed user feedback
+ * - Magic link authentication via Supabase
+ * - Rate limiting and retry cooldown (with countdown)
+ * - Google OAuth via Supabase
+ * - Responsive UI with branding and accessibility
+ * - Reusable components: Spinner, Modal, Countdown Timer
+ * 
+ * @dependencies
+ * - Supabase for auth
+ * - Lottie for animation
+ * - CountdownTimer (custom)
+ * - CustomModal and Spinner components
+ * - Email validator utility
+ * 
+ * @hooks
+ * - useAuth(): Handles sending magic links and OAuth login
+ * - useState(): Manages form state and feedback
+ * - useRouter(): Navigation after login (future use)
+ * 
+ * @states
+ * - email: string — user input
+ * - errorMessage: { message: string, category: string } — field-level or rate-limit errors
+ * - isCooldown: boolean — disables retrying magic link too soon
+ * - modalVisibility: boolean — controls success message modal
+ * - loading: boolean — controls loading spinner
+ * 
+ * @usage
+ * Used as the initial screen in the authentication flow. Appears when the user selects
+ * "Sign In" from the welcome screen or nav menu.
+ * 
+ * @author John Rave Mimay
+ * @created 2025-06-15
+ */
+
+
+
 import { IMAGES } from '@/constants/Images.js'
 import React, { useState } from 'react';
 import { View, Text, Image, StatusBar, TextInput, KeyboardAvoidingView, Platform, TouchableHighlight, TouchableWithoutFeedback, Pressable } from 'react-native';

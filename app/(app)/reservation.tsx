@@ -1,784 +1,231 @@
+/**
+ * @file reservation.tsx
+ * @component Reservation
+ * @description
+ * Multi-step reservation form using react-native-progress-steps.
+ * Allows users to enter and preview personal, event, guest, and menu details,
+ * and submit a reservation with real-time feedback and success modal.
+ *
+ * @features
+ * - Autofill from user profile
+ * - Validation per step
+ * - Preview final reservation
+ * - Submit with Supabase insert query
+ *
+ * @author John Rave Mimay
+ * @created 2025-06-15
+ */
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Alert } from 'react-native';
-import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
-import CustomAlert from '@/components/ui/alert';
-import { useAuthContext } from '@/context/AuthContext';
-import InputComponent from '@/components/ui/inputText';
-import Dropdown from '@/components/ui/dropdown';
-import { BeefMenu, ChickenMenu, Dessert, Drinks, EventPackages, BaptismalTheme, WedingTheme, DebutTheme, KiddieTheme, CorporateTheme, BirthdayTheme, FishMenu, PastaMenu, PorkMenu, VegetableMenu } from '@/constants/EventData';
-import { EventPackagesType, Menu, ReservationData } from '@/types/reservation';
 import { FontAwesome } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import ReservationPreview from '@/components/reservation-preview';
+import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
 import { Link } from 'expo-router';
-import { useInsertReservation, } from '@/hooks/useReservationQuery';
-import Spinner from '@/components/ui/spinner';
-import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
 
+// Contexts & Hooks
+import { useAuthContext } from '@/context/AuthContext';
+import { useInsertReservation } from '@/hooks/useReservationQuery';
+
+// Components
+import CustomAlert from '@/components/ui/alert';
+import Spinner from '@/components/ui/spinner';
+import CustomModal from '@/components/ui/custom-modal';
+import PersonalInfoForm from '@/components/reservationforms/personal-info';
+import EventDetailsForm from '@/components/reservationforms/event-details';
+import GuestDetailsForm from '@/components/reservationforms/guest-details';
+import MenuDetailsForm from '@/components/reservationforms/menu-details';
+import ReservationPreview from '@/components/reservationforms/reservation-preview';
+
+// Types
+import { ReservationData } from '@/types/reservation-types';
 
 const initialReservationData: ReservationData = {
-  personal: {
-    name: '',
-    email: '',
-    contact: '',
-    address: '',
-  },
-  event: {
-    celebrant: '',
-    pkg: '',
-    theme: '',
-    venue: '',
-    eventDate: '',
-    eventTime: '',
-    location: '',
-  },
-  guests: {
-    pax: '',
-    adults: '',
-    kids: '',
-  },
-  menu: {
-    beef: '',
-    chicken: '',
-    vegetable: '',
-    pork: '',
-    pasta: '',
-    fillet: '',
-    dessert: '',
-    juice: '',
-  },
-
+  personal: { name: '', email: '', contact: '', address: '' },
+  event: { celebrant: '', pkg: '', theme: '', venue: '', eventDate: '', eventTime: '', location: '' },
+  guests: { pax: '', adults: '', kids: '' },
+  menu: { beef: '', chicken: '', vegetable: '', pork: '', pasta: '', fillet: '', dessert: '', juice: '' },
 };
 
 export default function Reservation() {
   const { profile } = useAuthContext();
-  const [alertVisible, setAlertVisible] = useState({firstForm: false, secondForm: false, datepicker: false, timePicker: false});
-  const [isFilled, setIsFilled] = useState(false)
-  const [error, setError] = useState<boolean>(false);
-  const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData); 
+  const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData);
+  const [alertVisible, setAlertVisible] = useState({ firstForm: false, secondForm: false });
+  const [isFilled, setIsFilled] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const { insertReservation, loading, error: insertError, success } = useInsertReservation();
-  const [modalVisibility, setModalVisibility] = useState(false);
 
+  const [stepErrors, setStepErrors] = useState({
+    personal: false,
+    event: false,
+    guests: false,
+  });
 
   useEffect(() => {
     if (profile && !isFilled) {
-      setAlertVisible((prev) => ({
-        ...prev, firstForm: true,
-      }));
+      setAlertVisible(prev => ({ ...prev, firstForm: true }));
     }
-  }, [profile])
+  }, [profile]);
 
   const handleAutofill = () => {
-
-    console.log("this is the profile from reservation", profile);
-    setReservationData((prev) => ({
+    if (!profile) return;
+    setReservationData(prev => ({
       ...prev,
       personal: {
         ...prev.personal,
-        name: profile?.name || '',
-        email: profile?.email || '',
-        contact: profile?.contact_number || '',
-        address: profile?.address || '',
+        name: profile.name || '',
+        email: profile.email || '',
+        contact: profile.contact_number || '',
+        address: profile.address || '',
       },
-      
     }));
-    setIsFilled(true)
-    setAlertVisible((prev) => ({
-      ...prev, firstForm: false,
-    }));
+    setIsFilled(true);
+    setAlertVisible(prev => ({ ...prev, firstForm: false }));
   };
 
-  const next = () => {
+  const validatePersonalInfo = () => {
     const { name, email, contact, address } = reservationData.personal;
-  
-    if (!name || !email || !contact || !address) {
-      setError(true);
-      alert("Please fill in all required fields.");
+    const hasError = !name || !email || !contact || !address;
+    setStepErrors(prev => ({ ...prev, personal: hasError }));
+    if (hasError) {
+      Alert.alert('Missing Info', 'Please complete all personal information fields.');
       return false;
-    } 
+    }
     return true;
   };
 
-  const handleGuestStep = () => {
-    const { pax, adults, kids } = reservationData.guests;
-  
-    if (!pax || !adults || !kids) {
-      alert("Please fill in all guest fields.");
-      return;
-    }
-  
-    const total = parseInt(adults) + parseInt(kids);
-    if (total > parseInt(pax)) {
-      alert("Adults and kids exceed the total number of guests (Pax).");
-      return false;
-    }
-
-    return true;
-  };
-
-
-  const handleEventStep = () => {
+  const validateEventDetails = () => {
     const { venue, pkg, theme, eventDate, eventTime, location } = reservationData.event;
-  
-    if (!venue || !pkg || !theme || !eventDate || !eventTime || !location) {
-      setError(true);
-      alert("Please fill in all event details fields.");
-      return;
+    const hasError = !venue || !pkg || !theme || !eventDate || !eventTime || !location;
+    setStepErrors(prev => ({ ...prev, event: hasError }));
+    if (hasError) {
+      Alert.alert('Missing Info', 'Please complete all event detail fields.');
+      return false;
     }
-  
-    setError(false);
     return true;
   };
 
+  const validateGuestDetails = () => {
+    const { pax, adults, kids } = reservationData.guests;
+    const totalGuests = parseInt(adults || '0') + parseInt(kids || '0');
+    const hasError = !pax || !adults || !kids || totalGuests > parseInt(pax || '0');
+    setStepErrors(prev => ({ ...prev, guests: hasError }));
+
+    if (!pax || !adults || !kids) {
+      Alert.alert('Missing Info', 'Please complete all guest fields.');
+      return false;
+    }
+
+    if (totalGuests > parseInt(pax)) {
+      Alert.alert('Invalid Guest Count', 'Adults and kids exceed the total number of guests (Pax).');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleReservationSubmit = async () => {
     const result = await insertReservation(reservationData);
-  
-    if (success || result) {
-      setModalVisibility(true);
+    if (result || success) {
+      setModalVisible(true);
     }
   };
-  
-
-  
- 
-  // if(!profile) return <Spinner />;
-
-
 
   return (
-    <View className="flex-1 bg-white h-screen w-screen">
+    <View className="flex-1 bg-white">
+      {/* Autofill Alert */}
       {alertVisible.firstForm && (
         <CustomAlert
-          visible={alertVisible.firstForm}
+          visible={true}
           title="Use Existing Profile Data?"
-          message="This will allow you to quickly fill other fields using your existing information"
-          onClose={() => setAlertVisible((prev) => ({
-            ...prev, firstForm: false,
-          }))} 
-          onCancel={() => setAlertVisible((prev) => ({
-            ...prev, firstForm: false,
-          }))}
+          message="Quickly fill fields with your saved information."
           onOk={handleAutofill}
+          onCancel={() => setAlertVisible(prev => ({ ...prev, firstForm: false }))}
+          onClose={() => setAlertVisible(prev => ({ ...prev, firstForm: false }))}
         />
       )}
 
+      {/* Loading Spinner */}
+      {loading && <Spinner />}
 
-      {/* submit spinner */}
-      {loading && (
-        <Spinner />
-      )}
-
-      {/* Success submit modal */}
+      {/* Success Modal */}
       {success && (
-        <CustomModal
-        visible={modalVisibility}
-        onClose={() => setModalVisibility(false)}
-      >
-      <View className="flex-1 justify-center items-center bg-black/50">
-              <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
-                {/* Close icon */}
-                <Pressable
-                  onPress={() => setModalVisibility(false)}
-                  className="absolute top-2 right-2 p-2 rounded-full"
-                >
-                  <FontAwesome name="close" size={20} color="#333" />
-                </Pressable>
-      
-                {/* Lottie Animation */}
-                <LottieView
-                  source={require('../../assets/images/lottie/check.json')}
-                  autoPlay
-                  loop
-                  style={{ width: 150, height: 150 }}
-                />
-      
-                {/* Title */}
-                <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
-                🎉 Reservation Submitted! 🎉
-                </Text>
-      
-                {/* Message */}
-                <Text className="text-base text-center text-gray-600 mb-5">
-                  Thank you for booking with OSHDY Catering Services.
-                  We'll review your reservation and contact you shortly with confirmation details.
-                </Text>
-      
-                {/* Divider */}
-                <View className="my-4 border-t border-gray-300 w-full" />
-      
-                {/* Retry Note */}
-                <Text className="text-base text-center text-gray-600">
-                  Need to make changes? Contact our team or wait for the confirmation email.
-                </Text>
-              </View>
+        <CustomModal visible={modalVisible} onClose={() => setModalVisible(false)}>
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
+              <Pressable onPress={() => setModalVisible(false)} className="absolute top-2 right-2 p-2">
+                <FontAwesome name="close" size={20} color="#333" />
+              </Pressable>
+              <LottieView
+                source={require('../../assets/images/lottie/check.json')}
+                autoPlay
+                loop={false}
+                style={{ width: 150, height: 150 }}
+              />
+              <Text className="text-2xl font-bold mt-2 mb-4 text-dark text-center">🎉 Reservation Submitted!</Text>
+              <Text className="text-base text-gray-600 mb-5 text-center">
+                Thank you for booking with OSHDY Catering Services.
+                We’ll contact you shortly with confirmation.
+              </Text>
+              <View className="my-4 border-t border-gray-300 w-full" />
+              <Text className="text-base text-gray-600 text-center">
+                Need to make changes? Contact our team or wait for the confirmation email.
+              </Text>
             </View>
-      </CustomModal>
+          </View>
+        </CustomModal>
       )}
 
-      {/* Error alert */}
-
-      <View className='flex-1 w-full h-screen justify-center items-center'>
+      {/* Form Navigation */}
+      <View className="flex-1 justify-center items-center">
+        {/* Back to Dashboard */}
         <View className="absolute top-5 left-5">
-            <Link replace href={'/(app)/(tabs)/dashboard'} className="text-3xl font-bold text-center">
-                <FontAwesome name="arrow-left" size={20} color="#333333" />
-            </Link>
+          <Link replace href="/(app)/(tabs)/dashboard">
+            <FontAwesome name="arrow-left" size={20} color="#333" />
+          </Link>
         </View>
-      <ProgressSteps
-        activeStepIconBorderColor="#D4A83F"
-        completedStepIconColor="#2E3A8C"
-        completedProgressBarColor="#2E3A8C"
-        activeLabelColor="#D4A83F"
-      >
 
-        {/* Personal info form */}
-        <ProgressStep
-          label="Personal Info"
-          buttonNextText="Next"
-          buttonPreviousText="Exit" 
-          buttonNextTextColor='#00000'
-          onNext={next}
-          errors={!reservationData.personal.name || !reservationData.personal.email || !reservationData.personal.contact || !reservationData.personal.address}
+        <ProgressSteps
+          activeStepIconBorderColor="#D4A83F"
+          completedStepIconColor="#2E3A8C"
+          completedProgressBarColor="#2E3A8C"
+          activeLabelColor="#D4A83F"
         >
-          <View className="h-full w-screen flex justify-evenly gap-5 ">
-          <Text className="text-dark font-bold text-2xl">Personal Info</Text>
-          <Text className="text-sm text-gray-500 w-[90%] leading-relaxed">
-            If you’ve booked with us before, please review your personal details carefully. Ensure your name, contact number, and address are current — especially if your event will be held at a different location or under a new name. Keeping your information up to date helps us provide a smoother experience.
-          </Text>
+          <ProgressStep
+            label="Personal Info"
+            onNext={validatePersonalInfo}
+            errors={stepErrors.personal}
+          >
+            <PersonalInfoForm data={reservationData.personal} setReservationData={setReservationData} />
+          </ProgressStep>
 
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                label="Name"
-                value={reservationData.personal.name}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    personal: { ...prev.personal, name: text },
-                  }))
-                }
-              />
+          <ProgressStep
+            label="Event Details"
+            onNext={validateEventDetails}
+            errors={stepErrors.event}
+          >
+            <EventDetailsForm data={reservationData.event} setReservationData={setReservationData} />
+          </ProgressStep>
+
+          <ProgressStep
+            label="Guests"
+            onNext={validateGuestDetails}
+            errors={stepErrors.guests}
+          >
+            <GuestDetailsForm data={reservationData.guests} setReservationData={setReservationData} />
+          </ProgressStep>
+
+          <ProgressStep label="Menu">
+            <MenuDetailsForm data={reservationData.menu} setReservationData={setReservationData} />
+          </ProgressStep>
+
+          <ProgressStep label="Review" onSubmit={handleReservationSubmit}>
+            <View className="w-[90%] mx-auto">
+              <ReservationPreview reservationData={reservationData} />
             </View>
-
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                label="Email address"
-                value={reservationData.personal.email}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    personal: { ...prev.personal, email: text },
-                  }))
-                }
-              />
-            </View>
-
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                label="Contact No."
-                value={reservationData.personal.contact}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    personal: { ...prev.personal, contact: text },
-                  }))
-                }
-              />
-            </View>
-
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                  label="Address"
-                  value={reservationData.personal.address}
-                  multiline
-                  numberOfLines={10}
-                  textAlignVertical="top"
-                  placeholderTextColor="#999"
-                  className="h-36"
-                  onChangeText={(text) =>
-                    setReservationData((prev) => ({
-                      ...prev,
-                      personal: { ...prev.personal, address: text },
-                    }))
-                  }
-              />
-            </View>
-          </View>
-        </ProgressStep>
-        
-        {/* Event Details form */}
-        <ProgressStep
-          label="Event Details"
-          buttonNextText="Next"
-          buttonPreviousText="Back"
-          buttonNextTextColor='#00000'
-          onNext={handleEventStep}
-          errors={!reservationData.event.venue || !reservationData.event.eventDate || !reservationData.event.eventTime || !reservationData.event.pkg || !reservationData.event.theme || !reservationData.event.location}
-        >
-          <View className="h-full w-screen flex justify-evenly gap-5 ">
-          <Text className="text-dark font-bold text-2xl">Event Details</Text>
-
-          <Text className="text-sm text-gray-500 w-[90%] ">
-          Welcome back! Please review and update your event details below. Make sure the venue, date, time, and event type reflect your latest plans. If you’re repeating a previous setup, that’s okay — just confirm everything is still accurate to avoid delays in processing your reservation.
-          </Text>
-
-          <View className="relative bg-white w-[90%] mt-4">
-              <Text className="absolute -top-2 left-6 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
-                Event Packages
-              </Text>
-              <Dropdown<EventPackagesType>
-                value={reservationData.event.pkg}
-                items={EventPackages}
-                onSelect={(selected) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: { ...prev.event, pkg: selected.title },
-                  }))
-                }
-                labelExtractor={(item) => item.title}
-              />
-            </View>
-
-            <View className="relative bg-white w-[90%] mt-4">
-  <Text className="absolute -top-2 left-5 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
-    Theme/Motif
-  </Text>
-
-  {reservationData.event.pkg ? (
-    // ✅ Show the dropdown when pkg is selected
-    <Dropdown<EventPackagesType>
-      value={reservationData.event.theme}
-      items={
-        reservationData.event.pkg === 'Wedding'
-          ? WedingTheme
-          : reservationData.event.pkg === 'Baptismal'
-          ? BaptismalTheme
-          : reservationData.event.pkg === 'Debut'
-          ? DebutTheme
-          : reservationData.event.pkg === 'Kiddie Party'
-          ? KiddieTheme
-          : reservationData.event.pkg === 'Birthday'
-          ? BirthdayTheme
-          : reservationData.event.pkg === 'Corporate'
-          ? CorporateTheme
-          : []
-      }
-      onSelect={(selected) =>
-        setReservationData((prev) => ({
-          ...prev,
-          event: { ...prev.event, theme: selected.title },
-        }))
-      }
-      labelExtractor={(item) => item.title}
-    />
-  ) : (
-    // ❌ Show alert trigger if pkg is empty
-    <Pressable
-      onPress={() => {
-        Alert.alert('Missing Theme', 'Please select a theme based on your event package');
-      }}
-    >
-      <View className="border border-zinc-300 rounded-md px-4 py-3">
-        <Text className="text-zinc-400">Select a theme (choose a package first)</Text>
+          </ProgressStep>
+        </ProgressSteps>
       </View>
-    </Pressable>
-  )}
-</View>
-
-        <View className="relative bg-white w-[90%] mt-4">
-          <InputComponent
-                label="Celebrant"
-                value={reservationData.event.celebrant}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: { ...prev.event, celebrant: text },
-                  }))
-                }
-                placeholder="Leave blank if none or not applicable"
-              />
-            </View>
-
-
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                label="Venue"
-                value={reservationData.event.venue}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: { ...prev.event, venue: text },
-                  }))
-                }
-                placeholder='e.g. Coral Vine '
-              /> 
-            </View>
-    
-            <View className='bg-white w-[90%]'>
-            {
-              alertVisible.datepicker && 
-              <DateTimePicker 
-              mode="date" 
-              value={new Date()} 
-              display='calendar' 
-              onChange={(event, selectedDate) => {
-                if (event.type === 'set' && selectedDate) {
-                  // User confirmed the date
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: {
-                      ...prev.event,
-                      eventDate: selectedDate.toLocaleDateString(),
-                    },
-                  }));
-                }
-              
-                // In both cases (set or dismiss), close the date picker
-                setAlertVisible((prev) => ({
-                  ...prev,
-                  datepicker: false,
-                }));
-              }}
-              
-              
-               />
-            }
-
-                <InputComponent
-                label="Date of Function"
-                value={reservationData.event.eventDate}
-                placeholderTextColor="#999"
-                className='w-full'
-                onPress={() => setAlertVisible((prev) => ({
-                  ...prev, datepicker: true,} ))}
-                
-              />
-            </View>
-
-            <View className='bg-white w-[90%]'>
-
-            {
-              alertVisible.timePicker && 
-              <DateTimePicker 
-              mode="time" 
-              value={new Date()} 
-              display='clock' 
-              onChange={(event, selectedTime) => {
-                if (event.type === 'set' && selectedTime) {
-                  // User confirmed the date
-                  setReservationData((prev) => ({
-                    ...prev,
-                    event: {
-                      ...prev.event,
-                      eventTime: selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    },
-                  }));
-                }
-              
-                // In both cases (set or dismiss), close the date picker
-                setAlertVisible((prev) => ({
-                  ...prev,
-                  timePicker: false,
-                }));
-              }}
-              
-              
-               />
-            }
-
-                <InputComponent
-                label="Time"
-                value={reservationData.event.eventTime}
-                placeholderTextColor="#999"
-                className='w-full'
-                onPress={() => setAlertVisible((prev) => ({
-                  ...prev, timePicker: true,} ))}
-              />
-            </View>
-
-            <View className='bg-white w-[90%]'>
-                <InputComponent
-                  label="Location"
-                  value={reservationData.event.location}
-                  multiline
-                  numberOfLines={10}
-                  textAlignVertical="top"
-                  placeholderTextColor="#999"
-                  className="h-36"
-                  onChangeText={(text) =>
-                    setReservationData((prev) => ({
-                      ...prev,
-                      event: { ...prev.event, location: text },
-                    }))
-                  }
-                  placeholder='e.g. 123 Main St, City, Country'
-              />
-            </View>
-
-            <Text className="text-xs text-gray-400 w-[90%] text-center">
-              Note: If you’ve booked with us before, you can keep details similar to your last event, but updating the date and theme is highly recommended.
-            </Text>
-          </View>
-        </ProgressStep>
-
-        {/* Guest Form */}
-        <ProgressStep
-          label="Guests"
-          buttonPreviousText="Back"
-          buttonBorderColor='#000000'
-          buttonNextTextColor='#00000'
-          onNext={handleGuestStep}
-          errors={!reservationData.guests.pax || !reservationData.guests.adults || !reservationData.guests.kids || parseInt(reservationData.guests.adults) + parseInt(reservationData.guests.kids) > parseInt(reservationData.guests.pax) ? true : false}
-
-        >
-          <View className="h-full w-screen flex justify-evenly gap-5 ">
-          <Text className="text-dark font-bold text-2xl">Guest Details</Text>
-              <Text className="text-sm text-gray-500 w-full ">
-                Please enter the number of expected guests. This helps us plan your event more accurately and ensure enough food and seating.
-              </Text>
-            <View className='bg-white w-[90%]'>
-            
-                <InputComponent
-                label="Pax"
-                value={reservationData.guests.pax}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    guests: { ...prev.guests, pax: text },
-                  }))
-                }
-                keyboardType="phone-pad"
-                placeholder='e.g. 100'
-              />
-
-              <InputComponent
-                label="Number of Adults"
-                value={reservationData.guests.adults}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    guests: { ...prev.guests, adults: text },
-                  }))
-                }
-                keyboardType="phone-pad"
-                placeholder='e.g. 50'
-              />
-
-              <InputComponent
-                label="Number of Kids"
-                value={reservationData.guests.kids}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    guests: { ...prev.guests, kids: text },
-                  }))
-                }
-                keyboardType="phone-pad"
-                placeholder='e.g. 50'
-              />
-            
-            <Text className="text-xs text-gray-400 w-full py-5 text-center">
-              Tip: Total Pax should equal the number of Adults + Kids.
-            </Text>
-            </View>
-           </View> 
-        </ProgressStep>
-
-        {/* Menu's form */}
-        <ProgressStep
-          label="Menu's"
-          buttonNextText="Next"
-          buttonPreviousText="Back" 
-          buttonNextTextColor="#00000"
-        >
-  <View className="h-full w-screen flex justify-evenly gap-5">
-    
-    <Text className="text-dark font-bold text-2xl">Menu (Pick One)</Text>
-    <Text className="text-sm text-gray-500 w-[90%]">
-      Welcome back! As a returning guest, feel free to select your preferred dishes—one from each category. If you have favorite items from a previous event, you’re welcome to choose them again or try something new. Make sure your selections match your current event's preferences.
-    </Text>
-
-    {/* 🍗 Main Course */}
-    <Text className="text-lg font-semibold text-gray-700 mt-3">Main Course</Text>
-
-    <View className="relative bg-white w-[90%] mt-4">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Pasta
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.pasta}
-        items={PastaMenu}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, pasta: selected.title },
-          }))
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-
-    <View className="relative bg-white w-[90%] mt-4">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Vegetables
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.vegetable}
-        items={VegetableMenu}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, vegetable: selected.title },
-          }))
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-
-    <View className="relative bg-white w-[90%] mt-4">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Chicken
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.chicken}
-        items={ChickenMenu}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, chicken: selected.title },
-          }))
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-
-    <View className="relative bg-white w-[90%] mt-4">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Pork
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.pork}
-        items={PorkMenu}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, pork: selected.title },
-          }))
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-
-    <View className="relative bg-white w-[90%] mt-4">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Beef
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.beef}
-        items={BeefMenu}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, beef: selected.title },
-          })) 
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-
-    <View className="relative bg-white w-[90%] mt-4">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Fillet
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.fillet}
-        items={FishMenu}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, fillet: selected.title },
-          }))
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-
-    {/* 🍰 Dessert */}
-    <Text className="text-lg font-semibold text-gray-700 px-4 mt-6">Dessert</Text>
-
-    <View className="relative bg-white w-[90%] mt-4">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Dessert
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.dessert}
-        items={Dessert}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, dessert: selected.title },
-          }))
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-
-    {/* 🥤 Drinks */}
-    <Text className="text-lg font-semibold text-gray-700 px-4 mt-6">Drinks</Text>
-
-    <View className="relative bg-white w-[90%] mt-4 mb-8">
-      <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
-        Juice Drinks
-      </Text>
-      <Dropdown<Menu>
-        value={reservationData.menu.juice}
-        items={Drinks}
-        onSelect={(selected) =>
-          setReservationData((prev) => ({
-            ...prev,
-            menu: { ...prev.menu, juice: selected.title },
-          }))
-        }
-        labelExtractor={(item) => item.title}
-      />
-    </View>
-  </View>
-        </ProgressStep>
-
-        {/* Preview form */}
-        <ProgressStep
-          label="Final Review"
-          buttonFinishText="Submit"
-          buttonPreviousText="Back" 
-          buttonFinishTextColor='#D4A83F'
-          onSubmit={handleReservationSubmit}
-        >
-          <View className="h-full w-screen flex justify-evenly gap-5 ">
-            <View className='bg-white w-[90%]'>
-                <ReservationPreview reservationData={reservationData} />
-            </View>
-          </View>
-        </ProgressStep>
-      </ProgressSteps>
-      </View>
-
-      
     </View>
   );
 }

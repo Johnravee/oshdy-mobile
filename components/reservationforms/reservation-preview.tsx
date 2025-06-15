@@ -1,6 +1,31 @@
+/**
+ * @file reservation-preview.tsx
+ * @component ReservationPreview
+ * @description
+ * This component provides a read-only summary view of all reservation data entered by the user.
+ * It presents grouped sections for personal details, event information, guest count, and menu selections.
+ * Each section is labeled with an emoji and styled card layout for clarity and ease of review.
+ *
+ * @props {ReservationData} reservationData - The complete reservation state object to be previewed.
+ *
+ * @usage
+ * Typically used on the final step of the reservation process, allowing users to verify their
+ * inputs before submission. Helps prevent errors by making information visible in a structured way.
+ *
+ * @example
+ * <ReservationPreview reservationData={data} />
+ *
+ * @tip Pair with a "Submit" button below this component to finalize the reservation.
+ * @note Values marked as undefined will be shown as "N/A" for transparency.
+ *
+ * @author John Rave Mimay
+ * @created 2025-06-15
+ */
+
+
 import React from 'react';
 import { ScrollView, View, Text } from 'react-native';
-import { ReservationData } from '../types/reservation';
+import { ReservationData } from '../../types/reservation-types';
 
 export default function ReservationPreview({ reservationData }: { reservationData: ReservationData }) {
     

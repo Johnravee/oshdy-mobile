@@ -1,4 +1,4 @@
-import {EventPackagesType, Menu } from "@/types/reservation";
+import {EventPackagesType, Menu } from "@/types/reservation-types";
 
 
 
