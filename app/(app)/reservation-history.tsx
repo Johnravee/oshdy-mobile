@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function Help() {
+export default function ReservationHistory() {
   return (
     <View>
-      <Text>Help</Text>
+      <Text>ReservationHistory</Text>
     </View>
   )
 }

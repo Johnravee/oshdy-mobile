@@ -1,71 +1,70 @@
-import { supabase } from "@/lib/supabase"; // Make sure this path is correct
+import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-// Define the context type
-type AuthContextType = {
-  session: Session | null;
-  loading: boolean;
-  logout: () => Promise<void>;
-  profile: ProfileType | null;
-  setProfile: React.Dispatch<React.SetStateAction<ProfileType | null>>;
-};
-
-type ProfileType = {
+// Types
+export type ProfileType = {
   auth_id: string;
   email: string;
   name: string;
   contact_number?: string;
   address?: string;
-  id: number
+  id: number;
 };
 
-// Create the context with an initial value of undefined
+export type PGMDataType = {
+  packages: any[];
+  grazing: any[];
+  menu: any[];
+};
+
+interface AuthContextType {
+  session: Session | null;
+  init: boolean;
+  logout: () => Promise<void>;
+  profile: ProfileType | null;
+  setProfile: React.Dispatch<React.SetStateAction<ProfileType | null>>;
+  pgmData: PGMDataType;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider component
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [init, setInit] = useState(true);
   const [profile, setProfile] = useState<ProfileType | null>(null);
+  const [pgmData, setPGMData] = useState<PGMDataType>({ packages: [], grazing: [], menu: [] });
 
   useEffect(() => {
-    const getSessionAndProfile = async () => {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.error("Error fetching session", sessionError);
-        setLoading(false);
+    const initialize = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Session Error:", error.message);
+        setInit(false);
         return;
       }
 
-      setSession(session ?? null);
+      const currentSession = data.session ?? null;
+      setSession(currentSession);
 
-      if (session?.user) {
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("auth_id", session.user.id)
-          .single();
-
-        if (profileError) {
-          console.error("Error fetching profile", profileError.message);
-        } else {
-          console.log( "profile data", profileData);
-          setProfile(profileData);
-        }
+      if (currentSession?.user) {
+        await fetchProfile(currentSession.user.id);
       }
 
-      setLoading(false);
+      await fetchPGMData();
+      setInit(false);
     };
 
-    getSessionAndProfile();
+    initialize();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session ?? null);
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession ?? null);
+
+      if (newSession?.user) {
+        fetchProfile(newSession.user.id);
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => {
@@ -73,26 +72,55 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  const fetchProfile = async (authId: string) => {
+    const { data: profileData, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("auth_id", authId)
+      .single();
 
-  // Logout function
-  const logout = async () => {
-    await supabase.auth.signOut();
-    setSession(null); // Reset session after logout
+    if (error) {
+      console.error("Profile Error:", error.message);
+    } else {
+      setProfile(profileData);
+      console.log("✅ Profile Data Loaded:", profileData);
+    }
   };
 
-  // Return the context provider with session, loading, and logout values
+  const fetchPGMData = async () => {
+    const { data, error } = await supabase.rpc("get_pgm_data");
+    if (error) {
+      console.error("PGM Data Error:", error.message);
+    } else {
+      setPGMData({
+        packages: data?.packages || [],
+        grazing: data?.grazing || [],
+        menu: data?.menu || [],
+      });
+      
+      
+    }
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setProfile(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ session, loading, logout, profile, setProfile }}>
+    <AuthContext.Provider
+      value={{ session, init, logout, profile, setProfile, pgmData }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use the AuthContext
 export const useAuthContext = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuthContext must be used within an AuthProvider");
   }
   return context;
-}; 
+};

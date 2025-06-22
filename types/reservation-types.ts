@@ -36,7 +36,7 @@
  */
 export type EventPackagesType = {
   id: number;
-  title: string;
+  name: string;
 };
 
 /**

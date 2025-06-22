@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ReservationData } from '@/types/reservation-types';
+import { useAuthContext } from '@/context/AuthContext';
 
 export const useInsertReservation = () => {
+  const { profile } = useAuthContext()
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
@@ -33,6 +35,8 @@ export const useInsertReservation = () => {
             adults_quantity: parseInt(guests.adults),
             kids_quantity: parseInt(guests.kids),
             menu: menu ? JSON.stringify(menu) : null,
+            user_id: profile?.id,
+            status: 'Pending'
           },
         ])
        

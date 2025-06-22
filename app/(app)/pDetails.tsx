@@ -1,3 +1,21 @@
+/**
+ * @file ProfileDetails.tsx
+ * @description
+ * A profile editing screen that allows authenticated users to update their personal
+ * information (name, phone, and address) while displaying a read-only email.
+ *
+ * Integrates with Supabase for database updates and uses context to sync state globally.
+ *
+ * @features
+ * - Prefills data from profile context
+ * - Updates profile info in Supabase
+ * - Shows loading spinner on mount
+ * - Displays feedback for update errors
+ *
+ * @author
+ * John Rave Mimay
+ */
+
 import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'expo-router';
@@ -8,10 +26,18 @@ import Spinner from '@/components/ui/spinner';
 import InputComponent from '@/components/ui/inputText';
 import { useAuthContext } from '@/context/AuthContext';
 
+type ProfileForm = {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  uuid: string;
+};
+
 export default function ProfileDetails() {
   const { profile, setProfile } = useAuthContext();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ProfileForm>({
     name: '',
     email: '',
     phone: '',
@@ -21,28 +47,38 @@ export default function ProfileDetails() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
+  // Sync profile data to local form state on mount or profile change
   useEffect(() => {
     if (profile) {
       setForm({
-        name: profile.name || '',
-        email: profile.email || '',
-        phone: profile.contact_number || '',
-        address: profile.address || '',
-        uuid: profile.auth_id || '',
+        name: profile?.name || '',
+        email: profile?.email || '',
+        phone: profile?.contact_number || '',
+        address: profile?.address || '',
+        uuid: profile?.auth_id || '',
       });
     }
     setLoading(false);
   }, [profile]);
 
-  const handleChange = (key: keyof typeof form, value: string) => {
+  /**
+   * Handles updating individual form fields.
+   */
+  const handleChange = (key: keyof ProfileForm, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
+  /**
+   * Submits the updated profile data to Supabase.
+   */
   const handleSave = async () => {
     setError(null);
+    setIsSaving(true);
+
     try {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({
           name: form.name,
@@ -51,10 +87,11 @@ export default function ProfileDetails() {
         })
         .eq('auth_id', form.uuid);
 
-      if (error) {
-        console.error('Error saving profile:', error.message);
+      if (updateError) {
+        console.error('Error saving profile:', updateError.message);
         setError('Failed to update profile. Please try again.');
       } else {
+        // Update context
         setProfile({
           ...profile!,
           name: form.name,
@@ -65,6 +102,8 @@ export default function ProfileDetails() {
     } catch (err) {
       console.error('Unexpected error:', err);
       setError('An unexpected error occurred.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -72,9 +111,11 @@ export default function ProfileDetails() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      <StatusBar barStyle="dark-content" />
+
       {/* Back Button */}
       <View className="absolute top-5 left-5 z-10">
-        <Link replace href="/(app)/profile">
+        <Link replace href="/(app)/(tabs)/profile">
           <FontAwesome name="arrow-left" size={20} color="#333" />
         </Link>
       </View>
@@ -94,10 +135,9 @@ export default function ProfileDetails() {
         <Text className="text-dark font-bold text-2xl">Profile Details</Text>
       </View>
 
-      {/* Form */}
+      {/* Form Container */}
       <View className="flex-1 items-center bg-primary rounded-3xl">
         <View className="bg-white relative top-[-10%] w-[80%] shadow-lg rounded-xl p-5">
-
           <InputComponent
             label="Name"
             value={form.name}
@@ -111,7 +151,7 @@ export default function ProfileDetails() {
             value={form.email}
             editable={false}
             keyboardType="email-address"
-            placeholder="Enter your email"
+            placeholder="Your email address"
             placeholderTextColor="#999"
             className="bg-gray-200"
           />
@@ -144,8 +184,11 @@ export default function ProfileDetails() {
           <TouchableOpacity
             onPress={handleSave}
             className="bg-secondary py-3 rounded-lg items-center mt-4"
+            disabled={isSaving}
           >
-            <Text className="text-white font-bold text-lg">Save</Text>
+            <Text className="text-white font-bold text-lg">
+              {isSaving ? 'Saving...' : 'Save'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

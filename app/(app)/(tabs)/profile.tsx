@@ -31,7 +31,7 @@ export default function Profile() {
          <View className='bg-primary h-1/2 w-screen'>
            <View className="w-full flex flex-row">
                 <View className="absolute top-5 left-5">
-                    <Link replace href={'/(app)/dashboard'} className="text-3xl font-bold text-center">
+                    <Link replace href={'/(app)/(tabs)/dashboard'} className="text-3xl font-bold text-center">
                         <FontAwesome name="arrow-left" size={20} color="#ffffff" />
                     </Link>
                 </View>
@@ -76,7 +76,7 @@ export default function Profile() {
 
         {/* Home */}
         <TouchableOpacity className='w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2'
-        onPress={() => router.push('/(app)/dashboard')}
+        onPress={() => router.push('/(app)/(tabs)/dashboard')}
         >
           <FontAwesome name="home" size={20} color="#000" />
           <Text className='text-dark font-bold'>Home</Text>

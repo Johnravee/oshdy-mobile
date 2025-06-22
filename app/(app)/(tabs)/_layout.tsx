@@ -60,21 +60,21 @@ export default function AppLayout() {
       />
 
       <Tabs.Screen
+        name="notification"
+        options={{
+          title: 'Notifications',
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="bell" size={size} color={color} />
+          ),
+        }}
+      />
+
+  <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="user" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="help"
-        options={{
-          title: 'Help',
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="question-circle" size={size} color={color} />
           ),
         }}
       />

@@ -28,7 +28,7 @@
 
 
 
-import { View, Text } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import React from 'react'
 import {GuestDetails, ReservationData } from '@/types/reservation-types';
 import InputComponent from '../ui/inputText';
@@ -41,13 +41,13 @@ export default function GuestDetailsForm({
   setReservationData: React.Dispatch<React.SetStateAction<ReservationData>>;
 }) {
   return (
-    <>
-        <View className="h-full w-screen flex justify-evenly gap-5 ">
+    <ScrollView>
+        <View className="h-full w-full flex justify-evenly gap-5">
           <Text className="text-dark font-bold text-2xl">Guest Details</Text>
               <Text className="text-sm text-gray-500 w-full ">
                 Please enter the number of expected guests. This helps us plan your event more accurately and ensure enough food and seating.
               </Text>
-            <View className='bg-white w-[90%]'>
+          
             
                 <InputComponent
                 label="Pax"
@@ -98,7 +98,7 @@ export default function GuestDetailsForm({
               Tip: Total Pax should equal the number of Adults + Kids.
             </Text>
             </View>
-           </View> 
-    </>
+
+    </ScrollView>
   )
 }

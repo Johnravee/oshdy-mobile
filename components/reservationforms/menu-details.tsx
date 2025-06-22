@@ -29,7 +29,7 @@
  */
 
 
-import { View, Text } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import React from 'react'
 import { BeefMenu, ChickenMenu, Dessert, Drinks, FishMenu, PastaMenu, PorkMenu, VegetableMenu } from '@/constants/EventData';
 import Dropdown from '../ui/dropdown';
@@ -43,8 +43,8 @@ export default function MenuDetailsForm({
   setReservationData: React.Dispatch<React.SetStateAction<ReservationData>>;
 }) {
   return (
-    <>
-        <View className="h-full w-screen flex justify-evenly gap-5">
+    <ScrollView>
+        <View className="h-full w-full flex justify-evenly gap-5">
     
     <Text className="text-dark font-bold text-2xl">Menu (Pick One)</Text>
     <Text className="text-sm text-gray-500 w-[90%]">
@@ -54,7 +54,7 @@ export default function MenuDetailsForm({
     {/* 🍗 Main Course */}
     <Text className="text-lg font-semibold text-gray-700 mt-3">Main Course</Text>
 
-    <View className="relative bg-white w-[90%] mt-4">
+    <View className="relative bg-white mt-4">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Pasta
       </Text>
@@ -71,7 +71,7 @@ export default function MenuDetailsForm({
       />
     </View>
 
-    <View className="relative bg-white w-[90%] mt-4">
+    <View className="relative bg-white mt-4">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Vegetables
       </Text>
@@ -88,7 +88,7 @@ export default function MenuDetailsForm({
       />
     </View>
 
-    <View className="relative bg-white w-[90%] mt-4">
+    <View className="relative bg-white mt-4">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Chicken
       </Text>
@@ -105,7 +105,7 @@ export default function MenuDetailsForm({
       />
     </View>
 
-    <View className="relative bg-white w-[90%] mt-4">
+    <View className="relative bg-white mt-4">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Pork
       </Text>
@@ -122,7 +122,7 @@ export default function MenuDetailsForm({
       />
     </View>
 
-    <View className="relative bg-white w-[90%] mt-4">
+    <View className="relative bg-white mt-4">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Beef
       </Text>
@@ -139,7 +139,7 @@ export default function MenuDetailsForm({
       />
     </View>
 
-    <View className="relative bg-white w-[90%] mt-4">
+    <View className="relative bg-white mt-4">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Fillet
       </Text>
@@ -159,7 +159,7 @@ export default function MenuDetailsForm({
     {/* 🍰 Dessert */}
     <Text className="text-lg font-semibold text-gray-700 px-4 mt-6">Dessert</Text>
 
-    <View className="relative bg-white w-[90%] mt-4">
+    <View className="relative bg-white mt-4">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Dessert
       </Text>
@@ -179,7 +179,7 @@ export default function MenuDetailsForm({
     {/* 🥤 Drinks */}
     <Text className="text-lg font-semibold text-gray-700 px-4 mt-6">Drinks</Text>
 
-    <View className="relative bg-white w-[90%] mt-4 mb-8">
+    <View className="relative bg-white mt-4 mb-8">
       <Text className="absolute -top-2 left-6 bg-white px-1 text-sm text-zinc-500 z-10">
         Juice Drinks
       </Text>
@@ -196,6 +196,6 @@ export default function MenuDetailsForm({
       />
     </View>
   </View>
-    </>
+    </ScrollView>
   )
 }

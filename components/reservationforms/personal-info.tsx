@@ -18,9 +18,7 @@
  * @created 2025-06-15
  */
 
-
-
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import React from 'react';
 import InputComponent from '../ui/inputText';
 import { PersonalInfo, ReservationData } from '@/types/reservation-types';
@@ -33,18 +31,21 @@ export default function PersonalInfoForm({
   setReservationData: React.Dispatch<React.SetStateAction<ReservationData>>;
 }) {
   return (
-    <View className="h-full w-screen flex justify-evenly gap-5">
-      <Text className="text-dark font-bold text-2xl">Personal Info</Text>
-      <Text className="text-sm text-gray-500 w-[90%] leading-relaxed">
-        If you’ve booked with us before, please review your personal details carefully. Ensure your name, contact number, and address are current — especially if your event will be held at a different location or under a new name. Keeping your information up to date helps us provide a smoother experience.
-      </Text>
+    <ScrollView>
+      <View className="gap-5">
+        <Text className="text-dark font-bold text-2xl">Personal Info</Text>
 
-      <View className="bg-white w-[90%]">
+        <Text className="text-sm text-gray-500 leading-relaxed">
+          If you’ve booked with us before, please review your personal details carefully. Ensure your name,
+          contact number, and address are current — especially if your event will be held at a different
+          location or under a new name. Keeping your information up to date helps us provide a smoother
+          experience.
+        </Text>
+
         <InputComponent
           label="Name"
           value={data.name}
           placeholderTextColor="#999"
-          className="w-full"
           onChangeText={(text) =>
             setReservationData((prev) => ({
               ...prev,
@@ -52,14 +53,11 @@ export default function PersonalInfoForm({
             }))
           }
         />
-      </View>
 
-      <View className="bg-white w-[90%]">
         <InputComponent
           label="Email address"
           value={data.email}
           placeholderTextColor="#999"
-          className="w-full"
           onChangeText={(text) =>
             setReservationData((prev) => ({
               ...prev,
@@ -67,29 +65,25 @@ export default function PersonalInfoForm({
             }))
           }
         />
-      </View>
 
-      <View className="bg-white w-[90%]">
         <InputComponent
           label="Contact No."
           value={data.contact}
           placeholderTextColor="#999"
-          className="w-full"
           onChangeText={(text) =>
-            setReservationData((prev ) => ({
+            setReservationData((prev) => ({
               ...prev,
               personal: { ...prev.personal, contact: text },
             }))
           }
+          keyboardType="phone-pad"
         />
-      </View>
 
-      <View className="bg-white w-[90%]">
         <InputComponent
           label="Address"
           value={data.address}
           multiline
-          numberOfLines={10}
+          numberOfLines={5}
           textAlignVertical="top"
           placeholderTextColor="#999"
           className="h-36"
@@ -101,6 +95,6 @@ export default function PersonalInfoForm({
           }
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }

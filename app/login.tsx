@@ -45,7 +45,7 @@
 
 import { IMAGES } from '@/constants/Images.js'
 import React, { useState } from 'react';
-import { View, Text, Image, StatusBar, TextInput, KeyboardAvoidingView, Platform, TouchableHighlight, TouchableWithoutFeedback, Pressable } from 'react-native';
+import { View, Text, Image, TextInput, KeyboardAvoidingView, Platform, TouchableHighlight, TouchableWithoutFeedback, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/useAuth';

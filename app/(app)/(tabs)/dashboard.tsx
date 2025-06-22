@@ -18,7 +18,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { IMAGES } from '@/constants/Images';
 import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
-import { insertUserToProfiles } from '@/hooks/useInsertProfile';
+
 
 interface Card {
   id: number;
@@ -40,7 +40,6 @@ export default function Dashboard() {
   const [searchResult, setSearchResult] = useState(false);
   const [schedData, setSchedData] = useState(true);
 
-  insertUserToProfiles(); // Move this into useAuth later
 
   useEffect(() => {
     if (modalVisible) {
@@ -55,8 +54,8 @@ export default function Dashboard() {
 
   const cards: Card[] = [
     { id: 1, title: 'Schedule Your Event', icon: 'calendar-plus-o', background: IMAGES.yellowcardbg, path: '/(app)/reservation' },
-    { id: 2, title: 'Check Reservation Status', icon: 'clock-o', background: IMAGES.tealroundedcardbg, path: '' },
-    { id: 3, title: 'Review Past Bookings', icon: 'history', background: IMAGES.orangecardbg, path: '' },
+    { id: 2, title: 'Check Reservation Status', icon: 'clock-o', background: IMAGES.tealroundedcardbg, path: '/(app)/reservation-status' },
+    { id: 3, title: 'Review Past Bookings', icon: 'history', background: IMAGES.orangecardbg, path: '/(app)/reservation-history' },
     { id: 4, title: 'Explore Event Designs', icon: 'magic', background: IMAGES.lighttealboxcardbg, path: '' },
     { id: 5, title: 'Explore Event Packages', icon: 'compass', background: IMAGES.navycardbg, path: '' },
     { id: 6, title: 'View Menu Options', icon: 'delicious', background: IMAGES.yellowredcardbg, path: '' },
