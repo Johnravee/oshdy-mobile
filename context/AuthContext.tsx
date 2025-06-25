@@ -12,10 +12,11 @@ export type ProfileType = {
   id: number;
 };
 
-export type PGMDataType = {
+export type PGMTDataType = {
   packages: any[];
   grazing: any[];
   menu: any[];
+  thememotif: any[];
 };
 
 interface AuthContextType {
@@ -24,7 +25,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   profile: ProfileType | null;
   setProfile: React.Dispatch<React.SetStateAction<ProfileType | null>>;
-  pgmData: PGMDataType;
+  pgmtData: PGMTDataType;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [init, setInit] = useState(true);
   const [profile, setProfile] = useState<ProfileType | null>(null);
-  const [pgmData, setPGMData] = useState<PGMDataType>({ packages: [], grazing: [], menu: [] });
+  const [pgmtData, setPGMTData] = useState<PGMTDataType>({ packages: [], grazing: [], menu: [], thememotif: [] });
 
   useEffect(() => {
     const initialize = async () => {
@@ -51,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await fetchProfile(currentSession.user.id);
       }
 
-      await fetchPGMData();
+      await fetchPGMTData();
       setInit(false);
     };
 
@@ -87,15 +88,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const fetchPGMData = async () => {
+  const fetchPGMTData = async () => {
     const { data, error } = await supabase.rpc("get_pgm_data");
     if (error) {
       console.error("PGM Data Error:", error.message);
     } else {
-      setPGMData({
+      setPGMTData({
         packages: data?.packages || [],
         grazing: data?.grazing || [],
         menu: data?.menu || [],
+        thememotif: data?.thememotif || []
       });
       
       
@@ -110,7 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ session, init, logout, profile, setProfile, pgmData }}
+      value={{ session, init, logout, profile, setProfile, pgmtData }}
     >
       {children}
     </AuthContext.Provider>

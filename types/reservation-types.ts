@@ -37,18 +37,21 @@
 export type EventPackagesType = {
   id: number;
   name: string;
+  package_id?: number; 
 };
 
 /**
  * Event-related details for the reservation form.
  */
 export type EventDetails = {
+  receiptId: string;
   celebrant: string;
-  pkg: string;
-  theme: string;
+  pkg: {id: number, name: string};
+  theme: {id: number, name: string};
   venue: string;
   eventDate: string;
   eventTime: string;
+  grazingTable: {id: number, name: string};
   location: string;
 };
 
@@ -58,16 +61,6 @@ export type EventDetails = {
 export type Menu = {
   id: number;
   title: string;
-};
-
-/**
- * Personal information of the client.
- */
-export type PersonalInfo = {
-  name: string;
-  email: string;
-  contact: string;
-  address: string;
 };
 
 /**
@@ -97,7 +90,6 @@ export type MenuSelection = {
  * Final reservation data model passed between steps and submitted to Supabase.
  */
 export type ReservationData = {
-  personal: PersonalInfo;
   event: EventDetails;
   guests: GuestDetails;
   menu: MenuSelection;

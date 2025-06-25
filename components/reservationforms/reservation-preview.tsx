@@ -26,8 +26,11 @@
 import React from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import { ReservationData } from '../../types/reservation-types';
+import { useAuthContext } from '@/context/AuthContext';
 
 export default function ReservationPreview({ reservationData }: { reservationData: ReservationData }) {
+
+  const { profile } = useAuthContext();
     
   const renderSection = (
     title: string,
@@ -55,19 +58,20 @@ export default function ReservationPreview({ reservationData }: { reservationDat
       <Text className="text-3xl font-extrabold text-center text-gray-700 mb-6">🎉 Reservation Preview</Text>
 
       {renderSection('Personal Information', '👤', [
-        { label: 'Name', value: reservationData.personal.name },
-        { label: 'Email', value: reservationData.personal.email },
-        { label: 'Contact', value: reservationData.personal.contact },
-        { label: 'Address', value: reservationData.personal.address },
+        { label: 'Name', value: profile?.name },
+        { label: 'Email', value: profile?.email },
+        { label: 'Contact', value: profile?.contact_number },
+        { label: 'Address', value: profile?.address },
       ])}
 
       {renderSection('Event Details', '📅', [
         { label: 'Celebrant', value: reservationData.event.celebrant },
-        { label: 'Package', value: reservationData.event.pkg },
-        { label: 'Theme', value: reservationData.event.theme },
+        { label: 'Package', value: reservationData.event.pkg.name },
+        { label: 'Theme', value: reservationData.event.theme.name },
         { label: 'Venue', value: reservationData.event.venue },
         { label: 'Date', value: reservationData.event.eventDate },
         { label: 'Time', value: reservationData.event.eventTime },
+        { label: 'Grazing Table', value: reservationData.event.grazingTable.name},
         { label: 'Location', value: reservationData.event.location },
       ])}
 

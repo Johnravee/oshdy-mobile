@@ -11,16 +11,6 @@ import {
   ReservationData,
 } from '@/types/reservation-types';
 
-import {
-  EventPackages,
-  BaptismalTheme,
-  WedingTheme,
-  DebutTheme,
-  KiddieTheme,
-  CorporateTheme,
-  BirthdayTheme,
-} from '@/constants/EventData';
-
 export default function EventDetailsForm({
   data,
   setReservationData,
@@ -33,19 +23,21 @@ export default function EventDetailsForm({
     timePicker: false,
   });
 
-  const { pgmData, init } = useAuthContext();
+  const { pgmtData, init } = useAuthContext();
 
   const [packages, setPackages] = useState<EventPackagesType[]>([]);
-  const [grazing, setGrazing] = useState<any[]>([]);
-  const [menuOptions, setMenuOptions] = useState<any[]>([]);
+  const [grazing, setGrazing] = useState<EventPackagesType[]>([]);
+  const [menuOptions, setMenuOptions] = useState<EventPackagesType[]>([]);
+  const [thememotif, setThememotif] = useState<EventPackagesType[]>([]);
 
   useEffect(() => {
-    if (!init && pgmData) {
-      setPackages(pgmData.packages);
-      setGrazing(pgmData.grazing);
-      setMenuOptions(pgmData.menu);
+    if (!init && pgmtData) {
+      setPackages(pgmtData.packages);
+      setGrazing(pgmtData.grazing);
+      setMenuOptions(pgmtData.menu);
+      setThememotif(pgmtData.thememotif);
     }
-  }, [init, pgmData]);
+  }, [init, pgmtData]);
 
   return (
     <ScrollView>
@@ -66,12 +58,15 @@ export default function EventDetailsForm({
             Event Packages
           </Text>
           <Dropdown<EventPackagesType>
-            value={data.pkg}
+            value={data.pkg.name}
             items={packages}
             onSelect={(selected) =>
               setReservationData((prev) => ({
                 ...prev,
-                event: { ...prev.event, pkg: selected.name },
+                event: {
+                  ...prev.event,
+                  pkg: { id: selected.id, name: selected.name },
+                },
               }))
             }
             labelExtractor={(item) => item.name}
@@ -83,28 +78,17 @@ export default function EventDetailsForm({
           <Text className="absolute -top-2 left-5 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
             Theme/Motif
           </Text>
-          {data.pkg ? (
+          {data.pkg?.id ? (
             <Dropdown<EventPackagesType>
-              value={data.theme}
-              items={
-                data.pkg === 'Wedding'
-                  ? WedingTheme
-                  : data.pkg === 'Baptismal'
-                  ? BaptismalTheme
-                  : data.pkg === 'Debut'
-                  ? DebutTheme
-                  : data.pkg === 'Kiddie Party'
-                  ? KiddieTheme
-                  : data.pkg === 'Birthday'
-                  ? BirthdayTheme
-                  : data.pkg === 'Corporate'
-                  ? CorporateTheme
-                  : []
-              }
+              value={data.theme.name}
+              items={thememotif.filter((t) => t.package_id === data.pkg.id)}
               onSelect={(selected) =>
                 setReservationData((prev) => ({
                   ...prev,
-                  event: { ...prev.event, theme: selected.name },
+                  event: {
+                    ...prev.event,
+                    theme: { id: selected.id, name: selected.name },
+                  },
                 }))
               }
               labelExtractor={(item) => item.name}
@@ -221,6 +205,27 @@ export default function EventDetailsForm({
             }))
           }
         />
+
+          {/* Grazing table */}
+    <View className="relative bg-white mt-4">
+          <Text className="absolute -top-2 left-6 bg-white px-1 text-sm font-regular text-zinc-500 z-10">
+            Grazing Table
+          </Text>
+          <Dropdown<EventPackagesType>
+            value={data.grazingTable.name}
+            items={grazing}
+            onSelect={(selected) =>
+              setReservationData((prev) => ({
+                ...prev,
+                event: {
+                  ...prev.event,
+                  grazingTable: { id: selected.id, name: selected.name },
+                },
+              }))
+            }
+            labelExtractor={(item) => item.name}
+          />
+        </View>
 
         {/* Location */}
         <InputComponent

@@ -28,10 +28,8 @@ import { useAuthContext } from '@/context/AuthContext';
 import { useInsertReservation } from '@/hooks/useReservationQuery';
 
 // Components
-import CustomAlert from '@/components/ui/alert';
 import Spinner from '@/components/ui/spinner';
 import CustomModal from '@/components/ui/custom-modal';
-import PersonalInfoForm from '@/components/reservationforms/personal-info';
 import EventDetailsForm from '@/components/reservationforms/event-details';
 import GuestDetailsForm from '@/components/reservationforms/guest-details';
 import MenuDetailsForm from '@/components/reservationforms/menu-details';
@@ -43,19 +41,17 @@ import { ReservationData } from '@/types/reservation-types';
 
 
 const initialReservationData: ReservationData = {
-  personal: { name: '', email: '', contact: '', address: '' },
-  event: { celebrant: '', pkg: '', theme: '', venue: '', eventDate: '', eventTime: '', location: '' },
+  event: {receiptId: '', celebrant: '', pkg: {id: 0, name: ''}, theme: {id: 0, name: ''}, venue: '', eventDate: '', eventTime: '', grazingTable: {id: 0, name: ''} , location: '' },
   guests: { pax: '', adults: '', kids: '' },
   menu: { beef: '', chicken: '', vegetable: '', pork: '', pasta: '', fillet: '', dessert: '', juice: '' },
 };
 
 export default function Reservation() {
-  const { profile, init } = useAuthContext();
+  const { init } = useAuthContext();
   const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData);
-  const [alertVisible, setAlertVisible] = useState({ firstForm: false, secondForm: false });
-  const [isFilled, setIsFilled] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [isCooldown, setIsCooldown] = useState(false); // Track cooldown state
+
   const { insertReservation, loading, error: insertError, success } = useInsertReservation();
 
 
@@ -67,26 +63,7 @@ export default function Reservation() {
 
 
  
-
-  useEffect(() => {
-    if (profile && !isFilled) {
-      setAlertVisible(prev => ({ ...prev, firstForm: true }));
-    }
-  }, [profile]);
-
   
-
-  const validatePersonalInfo = () => {
-    const { name, email, contact, address } = reservationData.personal;
-    const hasError = !name || !email || !contact || !address;
-    setStepErrors(prev => ({ ...prev, personal: hasError }));
-    if (hasError) {
-      Alert.alert('Missing Info', 'Please complete all personal information fields.');
-      return false;
-    }
-    return true;
-  };
-
   const validateEventDetails = () => {
     const { venue, pkg, theme, eventDate, eventTime, location } = reservationData.event;
     const hasError = !venue || !pkg || !theme || !eventDate || !eventTime || !location;
@@ -147,7 +124,6 @@ export default function Reservation() {
       {loading && <Spinner />}
 
       {/* Success Modal */}
-      {modalVisible && (
         <CustomModal visible={modalVisible} onClose={() => setModalVisible(false)}>
           <View className="flex-1 justify-center items-center bg-black/50">
             <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
@@ -175,7 +151,11 @@ export default function Reservation() {
             </View>
           </View>
         </CustomModal>
-      )}
+
+
+        
+
+
 
       {/* Form Navigation */}
       <View className="flex-1 justify-center items-center">
@@ -193,10 +173,8 @@ export default function Reservation() {
           completedProgressBarColor="#2E3A8C"
           activeLabelColor="#D4A83F"
         >
-         
-
           <ProgressStep
-            label="Event Details"
+            label="Event Details" 
             onNext={validateEventDetails}
             errors={stepErrors.event || !reservationData.event.pkg || !reservationData.event.celebrant || !reservationData.event.eventDate || !reservationData.event.eventTime || !reservationData.event.location || !reservationData.event.theme || !reservationData.event.venue}
             buttonNextText='Next'
