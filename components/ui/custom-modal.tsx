@@ -15,8 +15,8 @@ export default function CustomModal({ visible, onClose, children }: CustomModalP
     <Modal
       visible={visible}
       animationType="fade"
-      onRequestClose={onClose}
       transparent={true}
+      onRequestClose={onClose}
     >
       {children}
     </Modal>

@@ -1,23 +1,23 @@
 /**
- * @file reservation.tsx
+ * @file Reservation.tsx
  * @component Reservation
  * @description
- * Multi-step reservation form using react-native-progress-steps.
- * Allows users to enter and preview personal, event, guest, and menu details,
- * and submit a reservation with real-time feedback and success modal.
+ * A clean, modular multi-step reservation form using `react-native-progress-steps`. 
+ * Handles event, guest, and menu input, previews the reservation, and submits via Supabase.
  *
  * @features
- * - Autofill from user profile
- * - Validation per step
- * - Preview final reservation
- * - Submit with Supabase insert query
+ * - Per-step validation
+ * - Prevents duplicate pending reservations
+ * - Displays real-time feedback via modals and Lottie animations
+ * - Uses Supabase for data insertion
  *
  * @author John Rave Mimay
  * @created 2025-06-15
  */
 
+
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Alert } from 'react-native';
+import { View, Text, Pressable, Alert, Modal } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
 import { Link, router } from 'expo-router';
@@ -26,6 +26,7 @@ import LottieView from 'lottie-react-native';
 // Contexts & Hooks
 import { useAuthContext } from '@/context/AuthContext';
 import { useInsertReservation } from '@/hooks/useReservationQuery';
+import { usePendingReservation } from '@/hooks/usePendingReservation';  
 
 // Components
 import Spinner from '@/components/ui/spinner';
@@ -34,7 +35,6 @@ import EventDetailsForm from '@/components/reservationforms/event-details';
 import GuestDetailsForm from '@/components/reservationforms/guest-details';
 import MenuDetailsForm from '@/components/reservationforms/menu-details';
 import ReservationPreview from '@/components/reservationforms/reservation-preview';
-import CountdownTimer from '@/components/coundown-timer';
 
 // Types
 import { ReservationData } from '@/types/reservation-types';
@@ -47,13 +47,25 @@ const initialReservationData: ReservationData = {
 };
 
 export default function Reservation() {
-  const { init } = useAuthContext();
+  const { init, profile } = useAuthContext();
   const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData);
   const [modalVisible, setModalVisible] = useState(false);
-  const [isCooldown, setIsCooldown] = useState(false); // Track cooldown state
+  const [showPendingModal, setShowPendingModal] = useState(false);
 
+  
+  
+  if (!profile?.id) {
+    return <Spinner />; 
+  }
+  
+  
   const { insertReservation, loading, error: insertError, success } = useInsertReservation();
+  const { pendingReservation, pendingLoading, error } = usePendingReservation(profile.id);
 
+
+
+
+  
 
   const [stepErrors, setStepErrors] = useState({
     personal: false,
@@ -96,11 +108,18 @@ export default function Reservation() {
 
   const handleReservationSubmit = async () => {
     const result = await insertReservation(reservationData);
-    if (!loading || result || success) {
+    if (result) {
       setModalVisible(true);
-      setIsCooldown(true)
+
     }
   };
+
+useEffect(() => {
+  if (pendingReservation) {
+    setShowPendingModal(true);
+  }
+}, [pendingReservation]);
+
 
   useEffect(() => {
     if (success && modalVisible) {
@@ -111,19 +130,18 @@ export default function Reservation() {
     }
   }, [success, modalVisible]);
 
-  const handleTimeStop = () =>{
-    setIsCooldown(false);
-  }
+ 
 
-  if (init) return <Spinner />;
+
+  if (init || pendingLoading) return <Spinner />;
 
   return (
     <View className="flex-1 bg-white">
    
-      {/* Loading Spinner */}
-      {loading && <Spinner />}
+        {/* Loading Spinner */}
+        {loading && <Spinner />}
 
-      {/* Success Modal */}
+        {/* Success Modal */}
         <CustomModal visible={modalVisible} onClose={() => setModalVisible(false)}>
           <View className="flex-1 justify-center items-center bg-black/50">
             <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
@@ -143,7 +161,7 @@ export default function Reservation() {
               </Text>
               <View className="my-4 border-t border-gray-300 w-full" />
               <Text className="text-base text-gray-600 text-center mb-2">
-               You will be redirected to the event status in <CountdownTimer second={10} handleTimeStop={handleTimeStop} />
+               You will be redirected to the event status soon...
               </Text>
               <Text className="text-base text-gray-600 text-center">
                 Need to make changes? Contact our team or wait for the confirmation email.
@@ -151,9 +169,43 @@ export default function Reservation() {
             </View>
           </View>
         </CustomModal>
-
-
         
+      {/* Reservation Modal */}
+      <Modal visible={showPendingModal} transparent animationType="fade">
+      <View className="flex-1 justify-center items-center bg-black/50">
+        <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
+          <LottieView
+            source={require('../../assets/images/lottie/warning.json')}
+            autoPlay
+            loop={false}
+            style={{ width: 150, height: 150 }}
+          />
+
+          <Text className="text-2xl font-bold mt-4 mb-2 text-center text-yellow-600">
+            Reservation Already in Progress
+          </Text>
+
+          <Text className="text-base text-gray-600 mb-5 text-center">
+            You already have a pending reservation in process.
+            Please wait for confirmation before submitting another.
+          </Text>
+
+          <Pressable
+            onPress={() => {
+              setShowPendingModal(false);
+              router.replace('/(app)/reservation-status');
+            }}
+            className="mt-4 bg-yellow-500 px-5 py-3 rounded-lg"
+          >
+            <Text className="text-white text-base font-semibold">
+              Go to Reservation Status
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+
+
 
 
 
