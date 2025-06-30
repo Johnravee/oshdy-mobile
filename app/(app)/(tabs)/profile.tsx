@@ -31,7 +31,7 @@ export default function Profile() {
          <View className='bg-primary h-1/2 w-screen'>
            <View className="w-full flex flex-row">
                 <View className="absolute top-5 left-5">
-                    <Link replace href={'/(app)/(tabs)/dashboard'} className="text-3xl font-bold text-center">
+                    <Link replace href={'/(app)/(reservations)/reservation-status'} className="text-3xl font-bold text-center">
                         <FontAwesome name="arrow-left" size={20} color="#ffffff" />
                     </Link>
                 </View>

@@ -53,9 +53,9 @@ export default function Dashboard() {
   }, [modalVisible]);
 
   const cards: Card[] = [
-    { id: 1, title: 'Schedule Your Event', icon: 'calendar-plus-o', background: IMAGES.yellowcardbg, path: '/(app)/reservation' },
-    { id: 2, title: 'Check Reservation Status', icon: 'clock-o', background: IMAGES.tealroundedcardbg, path: '/(app)/reservation-status' },
-    { id: 3, title: 'Review Past Bookings', icon: 'history', background: IMAGES.orangecardbg, path: '/(app)/reservation-history' },
+    { id: 1, title: 'Create Reservation', icon: 'calendar-plus-o', background: IMAGES.yellowcardbg, path: '/(app)/(reservations)/reservation' },
+    { id: 2, title: 'Upcoming Event', icon: 'clock-o', background: IMAGES.tealroundedcardbg, path: '/(app)/(reservations)/reservation-status' },
+    { id: 3, title: 'Review Past Bookings', icon: 'history', background: IMAGES.orangecardbg, path: '/(app)/(reservations)/reservation-history' },
     { id: 4, title: 'Explore Event Designs', icon: 'magic', background: IMAGES.lighttealboxcardbg, path: '' },
     { id: 5, title: 'Explore Event Packages', icon: 'compass', background: IMAGES.navycardbg, path: '' },
     { id: 6, title: 'View Menu Options', icon: 'delicious', background: IMAGES.yellowredcardbg, path: '' },

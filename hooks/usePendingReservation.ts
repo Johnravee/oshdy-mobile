@@ -8,18 +8,21 @@ export const usePendingReservation = (profileId: number | null) => {
 
   useEffect(() => {
     if (!profileId) {
-        setPendingLoading(false);
+      setPendingLoading(false);
       return;
     }
 
     const fetchReservation = async () => {
-        setPendingLoading(true);
+      setPendingLoading(true);
+
       const { data, error } = await supabase
         .from('reservations')
         .select('*')
         .eq('profile_id', profileId)
-        .eq('status', 'Pending')
-        .single();
+        .in('status', ['pending', 'confirmed', 'contract_signing', 'ongoing']) 
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single(); // assumes only one matching reservation per profile
 
       if (error && error.code !== 'PGRST116') {
         setError(error);

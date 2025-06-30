@@ -124,7 +124,7 @@ useEffect(() => {
   useEffect(() => {
     if (success && modalVisible) {
       const timer = setTimeout(() => {
-        router.replace('/(app)/reservation-status');
+        router.replace('/(app)/(reservations)/reservation-history');
       }, 10000);
       return () => clearTimeout(timer); 
     }
@@ -149,7 +149,7 @@ useEffect(() => {
                 <FontAwesome name="close" size={20} color="#333" />
               </Pressable>
               <LottieView
-                source={require('../../assets/images/lottie/check.json')}
+                source={require('../../../assets/images/lottie/success.json')}
                 autoPlay
                 loop={false}
                 style={{ width: 150, height: 150 }}
@@ -175,7 +175,7 @@ useEffect(() => {
       <View className="flex-1 justify-center items-center bg-black/50">
         <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
           <LottieView
-            source={require('../../assets/images/lottie/warning.json')}
+            source={require('../../../assets/images/lottie/warning.json')}
             autoPlay
             loop={false}
             style={{ width: 150, height: 150 }}
@@ -193,7 +193,7 @@ useEffect(() => {
           <Pressable
             onPress={() => {
               setShowPendingModal(false);
-              router.replace('/(app)/reservation-status');
+              router.replace('/(app)/(reservations)/reservation-history');
             }}
             className="mt-4 bg-yellow-500 px-5 py-3 rounded-lg"
           >
