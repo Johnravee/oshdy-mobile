@@ -25,7 +25,7 @@ import LottieView from 'lottie-react-native';
 
 // Contexts & Hooks
 import { useAuthContext } from '@/context/AuthContext';
-import { useInsertReservation } from '@/hooks/useReservationQuery';
+import { useInsertReservation } from '@/hooks/useInsertReservation';
 import { usePendingReservation } from '@/hooks/usePendingReservation';  
 
 // Components
