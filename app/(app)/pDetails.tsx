@@ -116,7 +116,7 @@ export default function ProfileDetails() {
 
       {/* Back Button */}
       <View className="absolute top-5 left-5 z-10">
-        <BackButton />
+        <BackButton variant='white' />
       </View>
 
       {/* Background Circles */}

@@ -153,7 +153,7 @@ export default function ReservationStatus() {
     <SafeAreaView className="flex-1 bg-white pt-10 px-4">
       <ScrollView showsVerticalScrollIndicator={false } >
         {/* Back */}
-        <BackButton />
+        <BackButton variant='dark' />
 
         <Text className="text-gray-500 mb-4">
           Here's the current status of your event reservation.

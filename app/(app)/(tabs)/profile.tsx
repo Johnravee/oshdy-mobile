@@ -32,7 +32,7 @@ export default function Profile() {
          <View className='bg-primary h-1/2 w-screen'>
            <View className="w-full flex flex-row">
                 <View className="absolute top-5 left-5">
-                    <BackButton />
+                    <BackButton variant='white' />
                 </View>
             </View>
 
