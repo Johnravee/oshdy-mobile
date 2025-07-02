@@ -1,19 +1,46 @@
+/**
+ * @file useUserFetchReservationWithJoins.ts
+ * @hook useUserFetchReservationWithJoins
+ * @description
+ * Custom React hook to fetch and subscribe to a specific reservation’s details
+ * including full reservation data with joined `packages` and `grazing` table info.
+ *
+ * @features
+ * - Fetches reservation by `id` for authenticated user
+ * - Includes joined fields from `packages` and `grazing` tables
+ * - Subscribes to real-time INSERT, UPDATE, DELETE changes for live updates
+ * - Refetches data on updates to maintain relational joins
+ *
+ * @usage
+ * Call this hook inside a component that needs detailed reservation information.
+ *
+ * @note
+ * Real-time `UPDATE` events trigger a full refetch to preserve joined relational data integrity.
+ * Uses `supabase.channel()` to subscribe only to changes from the current user's profile.
+ *
+ * @author John Rave Mimay
+ * @created 2025-07-02
+ */
+
+
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/context/AuthContext';
 
+// --- Types ---
+export interface Packages {
+  id: number;
+  name: string;
+}
 
-export interface Package {
-    id: number;
-    name: string;
-    ratings: number;
-    created_at: string;
-  }
+export interface Grazing {
+  id: number;
+  name: string;
+}
 
 export interface Reservation {
   id: number;
   receipt_number: string;
-  profile_id: number;
   celebrant: string;
   theme_motif_id: number;
   venue: string;
@@ -21,26 +48,26 @@ export interface Reservation {
   event_time: string;
   location: string;
   adults_qty: number;
+  package: number,
   kids_qty: number;
-  package: number;
-  grazing_id: number;
   status: string;
   created_at: string;
   menu: any;
-  packages?: Package;
+  packages?: Packages;
+  grazing?: Grazing;
 }
 
-export const useFetchUserReservations = () => {
+// --- Hook ---
+export function useUserFetchReservationWithJoins(reservation_id: any) {
   const { profile } = useAuthContext();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReservations = useCallback(async () => {
+  const fetchReservationsWithJoins = useCallback(async () => {
     if (!profile?.id) {
       setReservations([]);
       setError('User profile not found');
-      setIsFetching(false);
       return;
     }
 
@@ -48,17 +75,20 @@ export const useFetchUserReservations = () => {
     setError(null);
 
     try {
-        const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('reservations')
         .select(`
           *,
-          packages(*)
+          packages(id, name),
+          grazing(id, name)
         `)
         .eq('profile_id', profile.id)
+        .eq('id', reservation_id)
         .order('id', { ascending: false });
 
-        
       if (fetchError) throw fetchError;
+
+      console.log('Reservation with joins data:', data);
 
       setReservations(data as Reservation[]);
     } catch (err) {
@@ -67,14 +97,13 @@ export const useFetchUserReservations = () => {
     } finally {
       setIsFetching(false);
     }
-  }, [profile?.id]);
+  }, [profile?.id, reservation_id]);
 
   useEffect(() => {
-    fetchReservations();
+    fetchReservationsWithJoins();
 
     if (!profile?.id) return;
 
-    // Subscribe to realtime changes filtered by profile_id
     const channel = supabase
       .channel('public:reservations')
       .on(
@@ -83,7 +112,7 @@ export const useFetchUserReservations = () => {
           event: '*',
           schema: 'public',
           table: 'reservations',
-          filter: `profile_id=eq.${profile.id}`
+          filter: `profile_id=eq.${profile.id}`,
         },
         (payload) => {
           const newReservation = payload.new as Reservation;
@@ -93,12 +122,8 @@ export const useFetchUserReservations = () => {
             switch (payload.eventType) {
               case 'INSERT':
                 return [...current, newReservation];
-                case 'UPDATE':
-                    return current.map((res) =>
-                      res.id === newReservation.id
-                        ? { ...newReservation, packages: res.packages } 
-                        : res
-                    );
+              case 'UPDATE':
+                fetchReservationsWithJoins()
               case 'DELETE':
                 return current.filter((res) => res.id !== oldReservation.id);
               default:
@@ -109,11 +134,15 @@ export const useFetchUserReservations = () => {
       )
       .subscribe();
 
-    // Cleanup subscription on unmount
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchReservations, profile?.id]);
+  }, [fetchReservationsWithJoins, profile?.id, reservation_id]);
 
-  return { reservations, isFetching, error, refetch: fetchReservations };
-};
+  return {
+    reservations,
+    isFetching,
+    error,
+    refetch: fetchReservationsWithJoins,
+  };
+}

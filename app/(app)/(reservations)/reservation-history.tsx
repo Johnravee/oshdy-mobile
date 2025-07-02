@@ -25,14 +25,15 @@ import {
   ScrollView,
   TextInput,
   FlatList,
-  ActivityIndicator,
   Pressable
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { useFetchUserReservations, Reservation } from '@/hooks/useFetchReservations';
-import { useNavigation } from '@react-navigation/native';
+import { useFetchUserReservations } from '@/hooks/useUserReservationsWithPackage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Spinner from '@/components/ui/spinner';
+import { useRouter } from 'expo-router';
+import BackButton from '@/components/ui/back-button';
+
 
 const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'ongoing', 'completed', 'revoked'];
 const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🔄', '🏁', '❌'];
@@ -40,8 +41,8 @@ const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🔄', '🏁', '❌'];
 
 
 export default function ReservationHistory() {
-  const navigation = useNavigation();
-  const { reservations, isFetching, error, refetch } = useFetchUserReservations();
+  const route = useRouter()
+  const { reservations, isFetching, error } = useFetchUserReservations();
 
   const [selectedStatus, setSelectedStatus] = useState<string>(STATUSES[0]);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -62,15 +63,13 @@ export default function ReservationHistory() {
     const lowerSearch = searchTerm.toLowerCase();
 
     return filteredByStatus.filter((res) => {
-      const packageStr = String(res.packages?.name || '').toLowerCase();
+      const packageStr = String(res.package?.name || '').toLowerCase();
       const celebrantStr = res.celebrant?.toLowerCase() || '';
       return packageStr.includes(lowerSearch) || celebrantStr.includes(lowerSearch);
     });
   }, [filteredByStatus, searchTerm]);
 
-  const onPressReservation = (reservation: Reservation) => {
-    alert(`Go to details for receipt: ${reservation.receipt_number}`);
-  };
+
 
   if (isFetching) {
     return <Spinner />
@@ -89,13 +88,7 @@ export default function ReservationHistory() {
   return (
     <SafeAreaView className="flex-1 bg-white px-4 pt-4">
       {/* Back Button */}
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        className="flex-row items-center mb-4"
-      >
-        <FontAwesome name="arrow-left" size={20} color="#374151" />
-        <Text className="ml-2 text-gray-700 text-base">Back</Text>
-      </TouchableOpacity>
+      <BackButton />
 
       {/* Search Bar */}
       <View className="flex-row items-center border border-gray-300 rounded-lg px-3 py-2 mb-4 bg-gray-50">
@@ -147,12 +140,12 @@ export default function ReservationHistory() {
         }
         renderItem={({ item }) => (
           <TouchableOpacity
+            onPress={() => route.push(`/(app)/(reservations)/${item.id}`)}
             className="flex-row justify-between items-center p-4 bg-gray-50 rounded-lg mb-3 border border-gray-200"
-            onPress={() => onPressReservation(item)}
           >
             <View className="flex-1 pr-2">
               <Text className="text-base font-semibold text-gray-800 mb-1">
-                Package: {item.packages?.name || 'N/A'}
+                Package: {item.package?.name || 'N/A'}
               </Text>
               <Text className="text-sm text-gray-600">
                 Receipt #: {item.receipt_number}
@@ -160,7 +153,7 @@ export default function ReservationHistory() {
               <Text className="text-sm text-gray-700 mt-1">
                 Celebrant: {item.celebrant}
               </Text>
-
+      
               {/* Status Badge */}
               <View
                 className={`mt-2 self-start rounded-full px-3 py-1 shadow-sm

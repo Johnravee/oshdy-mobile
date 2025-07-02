@@ -38,6 +38,7 @@ import ReservationPreview from '@/components/reservationforms/reservation-previe
 
 // Types
 import { ReservationData } from '@/types/reservation-types';
+import BackButton from '@/components/ui/back-button';
 
 
 const initialReservationData: ReservationData = {
@@ -213,9 +214,7 @@ useEffect(() => {
       <View className="flex-1 justify-center items-center">
         {/* Back to Dashboard */}
         <View className="absolute top-5 left-5">
-          <Link replace href="/(app)/(tabs)/dashboard">
-            <FontAwesome name="arrow-left" size={20} color="#333" />
-          </Link>
+          <BackButton />
         </View>
 
         <View className='flex-1 w-screen '>

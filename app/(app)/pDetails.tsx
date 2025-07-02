@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabase';
 import Spinner from '@/components/ui/spinner';
 import InputComponent from '@/components/ui/inputText';
 import { useAuthContext } from '@/context/AuthContext';
+import BackButton from '@/components/ui/back-button';
 
 type ProfileForm = {
   name: string;
@@ -115,9 +116,7 @@ export default function ProfileDetails() {
 
       {/* Back Button */}
       <View className="absolute top-5 left-5 z-10">
-        <Link replace href="/(app)/(tabs)/profile">
-          <FontAwesome name="arrow-left" size={20} color="#333" />
-        </Link>
+        <BackButton />
       </View>
 
       {/* Background Circles */}
