@@ -1,9 +1,14 @@
 import { Redirect, Tabs } from 'expo-router';
 import { useAuthContext } from '@/context/AuthContext';
 import { FontAwesome } from '@expo/vector-icons';
+import { View } from 'react-native';
+import { useChatMessageContext } from '@/context/ChatMessageContext';
+import { useEffect } from 'react';
+
 
 export default function AppLayout() {
   const { session } = useAuthContext();
+  const { hasNewMessage } = useChatMessageContext(); 
 
   if (!session) {
     return <Redirect href="/login" />;
@@ -54,10 +59,19 @@ export default function AppLayout() {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="comments" size={size} color={color} />
+            <View className="relative">
+              <FontAwesome name="comments" size={size} color={color} />
+              {hasNewMessage && (
+                <View
+                  className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full"
+                  style={{ transform: [{ translateX: 6 }, { translateY: 0 }] }}
+                />
+              )}
+            </View>
           ),
         }}
       />
+
 
       <Tabs.Screen
         name="notification"

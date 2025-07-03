@@ -2,7 +2,7 @@ import '../global.css'
 import { Slot } from 'expo-router'
 import { AuthProvider } from '@/context/AuthContext'
 import { useAuth } from '@/hooks/useAuth';
-import { useEffect } from 'react';
+import { ChatMessageProvider } from '@/context/ChatMessageContext';
 
 function DeepLinkBootstrapper() {
   useAuth(); // ✅ this is now safe
@@ -14,8 +14,10 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <DeepLinkBootstrapper />
-      <Slot />
+      <ChatMessageProvider>
+        <DeepLinkBootstrapper />
+        <Slot />
+      </ChatMessageProvider>
     </AuthProvider>
   );
 }

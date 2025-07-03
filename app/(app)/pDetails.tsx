@@ -18,8 +18,6 @@
 
 import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import Spinner from '@/components/ui/spinner';

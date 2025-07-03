@@ -26,36 +26,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/context/AuthContext';
+import { Reservation } from '@/types/reservation-types';
 
-// --- Types ---
-export interface Packages {
-  id: number;
-  name: string;
-}
-
-export interface Grazing {
-  id: number;
-  name: string;
-}
-
-export interface Reservation {
-  id: number;
-  receipt_number: string;
-  celebrant: string;
-  theme_motif_id: number;
-  venue: string;
-  event_date: string;
-  event_time: string;
-  location: string;
-  adults_qty: number;
-  package: number,
-  kids_qty: number;
-  status: string;
-  created_at: string;
-  menu: any;
-  packages?: Packages;
-  grazing?: Grazing;
-}
 
 // --- Hook ---
 export function useUserFetchReservationWithJoins(reservation_id: any) {

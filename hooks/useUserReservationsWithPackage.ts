@@ -18,21 +18,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/context/AuthContext';
+import { Package, ReservationWithPackage } from '@/types/reservation-types';
 
-// Represents a reservation package
-export interface Package {
-  id: number;
-  name: string;
-}
-
-// Represents a user reservation
-export interface ReservationWithPackage {
-  id: number;
-  receipt_number: string;
-  celebrant: string;
-  status: string;
-  package?: Package;
-}
 
 // Hook to fetch and subscribe to user-specific reservations
 export const useFetchUserReservations = () => {

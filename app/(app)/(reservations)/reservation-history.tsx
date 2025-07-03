@@ -34,11 +34,8 @@ import Spinner from '@/components/ui/spinner';
 import { useRouter } from 'expo-router';
 import BackButton from '@/components/ui/back-button';
 
-
 const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'ongoing', 'completed', 'revoked'];
 const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🔄', '🏁', '❌'];
-
-
 
 export default function ReservationHistory() {
   const route = useRouter()
@@ -68,8 +65,6 @@ export default function ReservationHistory() {
       return packageStr.includes(lowerSearch) || celebrantStr.includes(lowerSearch);
     });
   }, [filteredByStatus, searchTerm]);
-
-
 
   if (isFetching) {
     return <Spinner />
@@ -153,7 +148,7 @@ export default function ReservationHistory() {
               <Text className="text-sm text-gray-700 mt-1">
                 Celebrant: {item.celebrant}
               </Text>
-      
+
               {/* Status Badge */}
               <View
                 className={`mt-2 self-start rounded-full px-3 py-1 shadow-sm
@@ -183,7 +178,7 @@ export default function ReservationHistory() {
                 </Text>
               </View>
             </View>
-            <Text className="text-gray-400 text-xl">{'›'}</Text>
+            <FontAwesome name="chevron-right" size={16} color="#6B7280" />
           </TouchableOpacity>
         )}
       />

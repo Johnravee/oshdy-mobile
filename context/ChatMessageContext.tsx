@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/context/AuthContext';
 
@@ -10,10 +10,23 @@ export interface ChatMessage {
   created_at: string;
 }
 
-export const useChatMessages = () => {
-  const { profile } = useAuthContext(); 
-  const adminId = 35; 
+interface ChatMessageContextProps {
+  messages: ChatMessage[];
+  sendMessage: (text: string) => Promise<void>;
+  deleteMessage: (id: number) => Promise<void>;
+  hasNewMessage: boolean;
+  setHasNewMessage: React.Dispatch<React.SetStateAction<boolean>>;
+  loading: boolean;
+  error: string | null;
+}
+
+const ChatMessageContext = createContext<ChatMessageContextProps | undefined>(undefined);
+
+export const ChatMessageProvider = ({ children }: { children: React.ReactNode }) => {
+  const { profile } = useAuthContext();
+  const adminId = 35;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,14 +60,12 @@ export const useChatMessages = () => {
         content: text.trim(),
       },
     ]);
-    
   };
 
   const deleteMessage = async (id: number) => {
     await supabase.from('messages').delete().eq('id', id);
   };
 
-  // Realtime subscription
   useEffect(() => {
     if (!profile?.id) return;
 
@@ -73,16 +84,21 @@ export const useChatMessages = () => {
           if (payload.eventType === 'INSERT') {
             const msg = payload.new as ChatMessage;
 
-            // Only include relevant messages
             if (
-              (msg.sender_id === profile.id && msg.receiver_id === adminId) ||
-              (msg.sender_id === adminId && msg.receiver_id === profile.id)
+              msg.sender_id === adminId &&
+              msg.receiver_id === profile.id
+            ) {
+              setHasNewMessage(true);
+              setMessages((prev) => [...prev, msg]);
+            } else if (
+              msg.sender_id === profile.id &&
+              msg.receiver_id === adminId
             ) {
               setMessages((prev) => [...prev, msg]);
             }
           } else if (payload.eventType === 'DELETE') {
             const deleted = payload.old as ChatMessage;
-            setMessages((prev) => prev.filter((m) => m.id !== deleted.id)); // return lang yung mga previous values, deleted value is not included
+            setMessages((prev) => prev.filter((m) => m.id !== deleted.id));
           }
         }
       )
@@ -91,13 +107,29 @@ export const useChatMessages = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchMessages, profile?.id, messages]);
+  }, [fetchMessages, profile?.id]);
 
-  return {
-    messages,
-    sendMessage,
-    deleteMessage,
-    loading,
-    error,
-  };
+  return (
+    <ChatMessageContext.Provider
+      value={{
+        messages,
+        sendMessage,
+        deleteMessage,
+        hasNewMessage,
+        setHasNewMessage,
+        loading,
+        error,
+      }}
+    >
+      {children}
+    </ChatMessageContext.Provider>
+  );
+};
+
+export const useChatMessageContext = () => {
+  const context = useContext(ChatMessageContext);
+  if (!context) {
+    throw new Error('useChatMessageContext must be used within a ChatMessageProvider');
+  }
+  return context;
 };
