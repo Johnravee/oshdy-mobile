@@ -16,5 +16,5 @@
     "metro.config.js",
     "tailwind.config.js",
     "nativewind-env.d.ts"
-  ]
+, "context/ChatMessageContext"  ]
 }

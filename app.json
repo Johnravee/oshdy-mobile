@@ -12,11 +12,12 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.oshdy.oshdymobile",
+      "googleServicesFile": "./google-services.json", 
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.oshdy.oshdymobile"
+      }
     },
     "web": {
       "bundler": "metro",

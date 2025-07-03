@@ -6,18 +6,16 @@ import { useRouter } from 'expo-router';
 import { setItem } from '@/utils/asyncstorage';
 
 
-export default function OnboardingScreen() {
-const router = useRouter();
+
+export default function OnboardingScreen () {
 
   const handleDone = () => {
-    router.replace('/login'); // Navigate to the login screen
-    setItem('onboarding', 'true'); // Store onboarding completion status
+    setItem('onboarding', 'true'); 
+    
   };
 
-        console.log(process.env.SUPABASEURL)
   return (
     <>
-      <StatusBar hidden={true} />
       <SafeAreaView className='h-full w-full'>
         <Onboarding
           onDone={handleDone}

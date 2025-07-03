@@ -17,6 +17,10 @@ import { FontAwesome } from '@expo/vector-icons';
 import { IMAGES } from '@/constants/Images';
 import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
+import { getItem, setItem } from '@/utils/asyncstorage';
+import OnboardingScreen from '../onboarding';
+import { useAuthContext } from '@/context/AuthContext';
+
 
 
 interface Card {
@@ -29,15 +33,18 @@ interface Card {
 
 export default function Dashboard() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isSmallScreen = width < 400;
-
   const [modalVisible, setModalVisible] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [searchingModal, setSearchingModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [searchResult, setSearchResult] = useState(false);
   const [schedData, setSchedData] = useState(true);
+
+
+
+
+
+
 
 
   useEffect(() => {
@@ -58,6 +65,9 @@ export default function Dashboard() {
     { id: 4, title: 'Explore Event Packages', icon: 'compass', background: IMAGES.navycardbg, path: '' },
     { id: 5, title: 'View Menu Options', icon: 'delicious', background: IMAGES.yellowredcardbg, path: '' },
   ];
+
+
+
 
   return (
     <SafeAreaView className="flex-1 h-full bg-primary relative flex justify-center">

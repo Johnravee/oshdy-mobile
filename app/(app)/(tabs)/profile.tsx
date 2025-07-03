@@ -33,6 +33,7 @@ import Spinner from '@/components/ui/spinner';
 import { useAuthContext } from '@/context/AuthContext';
 import Avatar from '@/components/ui/avatar';
 import BackButton from '@/components/ui/back-button';
+import { supabase } from '@/lib/supabase';
 
 export default function Profile() {
   const router = useRouter();
@@ -41,6 +42,10 @@ export default function Profile() {
 
   if (!session) {
     return <Spinner />;
+  }
+
+  const handleLogout = async () =>{
+    const { error } = await supabase.auth.signOut()
   }
 
   return (
@@ -122,9 +127,11 @@ export default function Profile() {
           </TouchableOpacity>
 
           {/* Delete Account (Placeholder) */}
-          <TouchableOpacity className="w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2">
-            <FontAwesome name="trash" size={20} color="red" />
-            <Text className="text-red-600 font-bold">Delete Account</Text>
+          <TouchableOpacity className="w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2"
+          onPress={handleLogout}
+          >
+            <FontAwesome name="sign-out" size={20} color="red" />
+            <Text className="text-red-600 font-bold">Log out</Text>
           </TouchableOpacity>
         </View>
       </View>

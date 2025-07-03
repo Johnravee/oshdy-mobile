@@ -26,7 +26,7 @@ import LottieView from 'lottie-react-native';
 // Contexts & Hooks
 import { useAuthContext } from '@/context/AuthContext';
 import { useInsertReservation } from '@/hooks/useInsertReservation';
-import { usePendingReservation } from '@/hooks/usePendingReservation';  
+
 
 // Components
 import Spinner from '@/components/ui/spinner';
@@ -52,31 +52,23 @@ export default function Reservation() {
   const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData);
   const [modalVisible, setModalVisible] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
-
-  
-  
-  if (!profile?.id) {
-    return <Spinner />; 
-  }
-  
-  
-  const { insertReservation, loading, error: insertError, success } = useInsertReservation();
-  const { pendingReservation, pendingLoading, error } = usePendingReservation(profile.id);
-
-
-
-
-  
-
+  const [showProfileWarningModal, setProfileWarningModal] = useState(false);
   const [stepErrors, setStepErrors] = useState({
     personal: false,
     event: false,
     guests: false,
   });
-
-
- 
   
+  useEffect(() => {
+    if (!profile) {
+      setProfileWarningModal(true);
+    }
+  }, [profile]);
+  
+  const { insertReservation, loading, error: insertError, success } = useInsertReservation();
+
+
+
   const validateEventDetails = () => {
     const { venue, pkg, theme, eventDate, eventTime, location } = reservationData.event;
     const hasError = !venue || !pkg || !theme || !eventDate || !eventTime || !location;
@@ -115,11 +107,7 @@ export default function Reservation() {
     }
   };
 
-useEffect(() => {
-  if (pendingReservation) {
-    setShowPendingModal(true);
-  }
-}, [pendingReservation]);
+
 
 
   useEffect(() => {
@@ -134,7 +122,7 @@ useEffect(() => {
  
 
 
-  if (init || pendingLoading) return <Spinner />;
+  if (init ) return <Spinner />;
 
   return (
     <View className="flex-1 bg-white">
@@ -207,6 +195,41 @@ useEffect(() => {
     </Modal>
 
 
+   {/* Profile Incomplete Warning Modal */}
+<Modal visible={showProfileWarningModal} transparent animationType="fade">
+  <View className="flex-1 justify-center items-center bg-black/50">
+    <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
+      <LottieView
+        source={require('../../../assets/images/lottie/warning.json')}
+        autoPlay
+        loop={false}
+        style={{ width: 150, height: 150 }}
+      />
+
+      <Text className="text-2xl font-bold mt-4 mb-2 text-center text-red-600">
+        Complete Your Profile First
+      </Text>
+
+      <Text className="text-base text-gray-600 mb-5 text-center">
+        Before making a reservation, please provide your profile information including name, contact number, and address.
+      </Text>
+
+      <Pressable
+        onPress={() => {
+          setProfileWarningModal(false);
+          router.replace('/(app)/pDetails');
+        }}
+        className="mt-4 bg-red-500 px-5 py-3 rounded-lg"
+      >
+        <Text className="text-white text-base font-semibold">
+          Complete Profile
+        </Text>
+      </Pressable>
+    </View>
+  </View>
+</Modal>
+
+
 
 
 
@@ -214,7 +237,7 @@ useEffect(() => {
       <View className="flex-1 justify-center items-center">
         {/* Back to Dashboard */}
         <View className="absolute top-5 left-5">
-          <BackButton />
+          <BackButton variant='dark' />
         </View>
 
         <View className='flex-1 w-screen '>

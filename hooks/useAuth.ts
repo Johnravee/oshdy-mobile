@@ -54,7 +54,7 @@ export const performOAuth = async (provider : 'google') => {
   if (res.type === "success") {
     const { url } = res;
     await createSessionFromUrl(url);
-    router.replace('/(app)/(tabs)/dashboard')
+    router.replace('/(app)/userdetails')
   }
 };
 
@@ -86,7 +86,7 @@ export const useAuth = () => {
       createSessionFromUrl(url)
         .then(() => {
           console.log("Redirecting to dashboard...");
-          router.replace('/(app)/(tabs)/dashboard')
+          router.replace('/(app)/userdetails')
         })
         .catch(err => console.error('Auth error:', err));
     }

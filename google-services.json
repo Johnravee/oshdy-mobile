@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "459480573957",
+    "project_id": "oshdycatering",
+    "storage_bucket": "oshdycatering.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:459480573957:android:8acff889f084fd584dd46c",
+        "android_client_info": {
+          "package_name": "com.oshdy.oshdymobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuYAA6UrrDV54d7z81YKOFvy0-JRZLyyY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -10,6 +10,7 @@ export type ProfileType = {
   contact_number?: string;
   address?: string;
   id: number;
+  expo_push_token: string;
 };
 
 export type PGMTDataType = {

@@ -23,8 +23,8 @@ import { useFocusEffect } from 'expo-router';
 
 export default function Chat() {
   const [message, setMessage] = useState('');
-  const { profile } = useAuthContext();
-  const { hasNewMessage, setHasNewMessage, messages, sendMessage, deleteMessage } = useChatMessageContext();
+  const { profile, session } = useAuthContext();
+  const { setHasNewMessage, messages, sendMessage, deleteMessage } = useChatMessageContext();
 
 
   useFocusEffect(
