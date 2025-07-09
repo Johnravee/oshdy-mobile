@@ -11,6 +11,7 @@ export default function AppLayout() {
   const { hasNewMessage } = useChatMessageContext(); 
 
   if (!session) {
+    console.log("No session found, redirecting to login");
     return <Redirect href="/login" />;
   }
 
@@ -73,22 +74,14 @@ export default function AppLayout() {
       />
 
 
-      <Tabs.Screen
-        name="notification"
-        options={{
-          title: 'Notifications',
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="bell" size={size} color={color} />
-          ),
-        }}
-      />
+     
 
   <Tabs.Screen
-        name="profile"
+        name="more"
         options={{
-          title: 'Profile',
+          title: 'More',
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="user" size={size} color={color} />
+            <FontAwesome name="ellipsis-h" size={size} color={color} />
           ),
         }}
       />

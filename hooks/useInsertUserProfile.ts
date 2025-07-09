@@ -1,20 +1,19 @@
 // lib/insertUserProfile.ts or hooks/insertUserProfile.ts (if you prefer)
 
 import { supabase } from '@/lib/supabase';
-import { registerForPushNotificationsAsync } from '@/lib/notifications';
+import messaging from '@react-native-firebase/messaging';
 
 export const useInsertUserProfile = async (
   name: string,
   address: string,
-  contactNumber: string,
+  contact_number: string,
   session: any,
   setProfile: (profile: any) => void
 ) => {
   const auth_id = session?.user.id;
   const email = session?.user.email;
-  const pushToken = await registerForPushNotificationsAsync();
+  const fcm_token = await messaging().getToken();
 
-  console.log("Push token", pushToken);
   
 
   const { data, error } = await supabase
@@ -25,8 +24,8 @@ export const useInsertUserProfile = async (
         email,
         name,
         address,
-        contact_number: contactNumber,
-        expo_push_token: pushToken,
+        contact_number,
+        fcm_token,
       },
       { onConflict: 'auth_id' }
     )

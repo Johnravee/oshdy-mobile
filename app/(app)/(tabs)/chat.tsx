@@ -21,11 +21,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 
 
+
 export default function Chat() {
   const [message, setMessage] = useState('');
   const { profile, session } = useAuthContext();
   const { setHasNewMessage, messages, sendMessage, deleteMessage } = useChatMessageContext();
-
+  
 
   useFocusEffect(
     useCallback(() => {
@@ -33,6 +34,9 @@ export default function Chat() {
     }, [])
   );
 
+  
+
+  
 
   const handleSend = async () => {
     if (!message.trim() || !profile?.id) return;

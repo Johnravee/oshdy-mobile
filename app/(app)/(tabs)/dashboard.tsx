@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   ImageBackground,
   ScrollView,
-  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,9 +16,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { IMAGES } from '@/constants/Images';
 import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
-import { getItem, setItem } from '@/utils/asyncstorage';
-import OnboardingScreen from '../onboarding';
-import { useAuthContext } from '@/context/AuthContext';
+import { useAvailableSchedules } from '@/hooks/useAvailableSchedules';
+
 
 
 
@@ -37,9 +35,7 @@ export default function Dashboard() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [searchingModal, setSearchingModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
-  const [searchResult, setSearchResult] = useState(false);
-  const [schedData, setSchedData] = useState(true);
-
+  const { isAvailable, checkingAvailability, error, checkDateAvailability } = useAvailableSchedules();
 
 
 
@@ -59,15 +55,42 @@ export default function Dashboard() {
   }, [modalVisible]);
 
   const cards: Card[] = [
-    { id: 1, title: 'Create Event Reservation', icon: 'calendar-plus-o', background: IMAGES.yellowcardbg, path: '/(app)/(reservations)/reservation' },
-    { id: 2, title: 'Review Past Bookings', icon: 'history', background: IMAGES.orangecardbg, path: '/(app)/(reservations)/reservation-history' },
-    { id: 3, title: 'Explore Event Designs', icon: 'magic', background: IMAGES.lighttealboxcardbg, path: '' },
-    { id: 4, title: 'Explore Event Packages', icon: 'compass', background: IMAGES.navycardbg, path: '' },
-    { id: 5, title: 'View Menu Options', icon: 'delicious', background: IMAGES.yellowredcardbg, path: '' },
+    {
+      id: 1,
+      title: 'Create Event Reservation',
+      icon: 'calendar-plus-o',
+      background: IMAGES.yellowcardbg,
+      path: '/(app)/(reservations)/reservation',
+    },
+    {
+      id: 2,
+      title: 'Review Past Bookings',
+      icon: 'history',
+      background: IMAGES.orangecardbg,
+      path: '/(app)/(reservations)/reservation-history',
+    },
+    {
+      id: 3,
+      title: 'Explore Event Designs',
+      icon: 'magic',
+      background: IMAGES.lighttealboxcardbg,
+      path: '',
+    },
+    {
+      id: 4,
+      title: 'Explore Event Packages',
+      icon: 'compass',
+      background: IMAGES.navycardbg,
+      path: '',
+    },
+    {
+      id: 5,
+      title: 'View Menu Options',
+      icon: 'delicious',
+      background: IMAGES.yellowredcardbg,
+      path: '',
+    },
   ];
-
-
-
 
   return (
     <SafeAreaView className="flex-1 h-full bg-primary relative flex justify-center">
@@ -81,13 +104,15 @@ export default function Dashboard() {
           className="rounded-full mt-5"
         >
           <View className="h-16 w-full bg-white rounded-lg flex-row items-center justify-between px-5">
-            <Text className="text-[#33333] text-lg font-semibold">Check Available Schedules</Text>
+            <Text className="text-[#33333] text-lg font-semibold">
+              Check Available Schedules
+            </Text>
             <FontAwesome name="calendar" size={20} color="#33333" />
           </View>
         </TouchableHighlight>
       </View>
 
-      {/* Calendar Modal */}
+      {/* Searching Modal */}
       <Modal animationType="fade" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View className="flex-1 bg-transparent justify-end">
           <Pressable className="flex-1 w-full" onPress={() => setModalVisible(false)} />
@@ -104,11 +129,12 @@ export default function Dashboard() {
             ) : (
               <Calendar
                 singleSelectMode
-                onChange={(date) => {
+                onChange={async (date) => {
                   setSelectedDate(date);
                   setModalVisible(false);
                   setShowCalendar(false);
                   setSearchingModal(true);
+                  await checkDateAvailability(date);
                 }}
                 pastYearRange={0}
                 startDate={new Date().toISOString().split('T')[0]}
@@ -119,87 +145,83 @@ export default function Dashboard() {
         </View>
       </Modal>
 
-      {/* Searching Modal */}
+    {/*Availability of schedule Modal  */}
       <CustomModal visible={searchingModal} onClose={() => true}>
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
             <Pressable onPress={() => setSearchingModal(false)} className="absolute top-2 right-2 p-2 rounded-full">
               <FontAwesome name="close" size={20} color="#333" />
             </Pressable>
-            <LottieView
-              source={require('../../../assets/images/lottie/searching.json')}
-              autoPlay
-              loop
-              style={{ width: 150, height: 150 }}
-            />
-            <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
-              Searching for Available Schedules
-            </Text>
-            <Text className="text-base text-center text-gray-600 mb-5">
-              Please hold while we check our catering calendar for availability on {selectedDate}.
-            </Text>
-            <View className="my-4 border-t border-gray-300 w-full" />
-            <Text className="text-base text-center text-gray-600">
-              You will be notified once results are ready.
-            </Text>
-          </View>
-        </View>
-      </CustomModal>
 
-      {/* Schedule Result Modal */}
-      <CustomModal visible={searchResult} onClose={() => true}>
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white rounded-2xl p-5 w-11/12 h-auto justify-center items-center">
-            <Pressable onPress={() => setSearchingModal(false)} className="absolute top-2 right-2 p-2 rounded-full">
-              <FontAwesome name="close" size={20} color="#333" />
-            </Pressable>
-            <LottieView
-              source={schedData
-                ? require('../../../assets/images/lottie/check.json')
-                : require('../../../assets/images/lottie/notfound.json')}
-              autoPlay
-              loop
-              style={{ width: 150, height: 150 }}
-            />
-            <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
-              {schedData ? 'Confirmed Availability' : 'Not Available'}
-            </Text>
-            <Text className="text-base text-center text-gray-600 mb-5">
-              Your selected date is {selectedDate} {schedData ? 'available' : 'not available'}.
-            </Text>
-            <View className="my-4 border-t border-gray-300 w-full" />
-            <Text className="text-base text-center text-gray-600">
-              Make changes if needed.
-            </Text>
-          </View>
-        </View>
-      </CustomModal>
-
-      {/* Main Content */}
-      <View className="flex-1 justify-center items-center  rounded-t-2xl bg-white shadow-lg relative overflow-hidden py-5">
-        <ScrollView>
-        <View className="w-full flex-row flex-wrap justify-between items-start px-4 gap-y-5">
-          {cards.map((card) => (
-            <Pressable
-              key={card.id}
-              onPress={() => card.path && router.push(card.path as any)}
-              className="w-[48%] rounded-3xl overflow-hidden"
-            >
-              <ImageBackground
-                source={card.background}
-                className="w-full aspect-[4/3] px-5 py-4 justify-start"
-                imageStyle={{ borderRadius: 24 }}
-              >
-                <Text className="text-white font-extrabold mt-2">
-                  <FontAwesome name={card.icon as keyof typeof FontAwesome.glyphMap} size={30} color="#ffffff" />
+            {checkingAvailability ? (
+              <>
+                <LottieView
+                  source={require('../../../assets/images/lottie/searching.json')}
+                  autoPlay
+                  loop
+                  style={{ width: 150, height: 150 }}
+                />
+                <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
+                  Searching for Available Schedules
                 </Text>
-                <Text className="text-white text-lg font-bold mt-4">{card.title}</Text>
-              </ImageBackground>
-            </Pressable>
-          ))}
+                <Text className="text-base text-center text-gray-600 mb-5">
+                  Please hold while we check availability on {selectedDate}.
+                </Text>
+              </>
+            ) : isAvailable !== null ? (
+              <>
+                <FontAwesome
+                  name={isAvailable ? 'check-circle' : 'times-circle'}
+                  size={50}
+                  color={isAvailable ? 'green' : 'red'}
+                />
+                <Text className="text-2xl font-bold text-center mt-2 mb-4 text-dark">
+                  {isAvailable ? 'Date Available!' : 'Date Not Available'}
+                </Text>
+                <Text className="text-base text-center text-gray-600 mb-5">
+                  {isAvailable
+                    ? `Great news! You can reserve for ${selectedDate}.`
+                    : `Sorry, there's already a reservation on ${selectedDate}.`}
+                </Text>
+              </>
+            ) : error ? (
+              <>
+                <FontAwesome name="exclamation-circle" size={50} color="orange" />
+                <Text className="text-xl font-bold mt-3 text-red-600">Error</Text>
+                <Text className="text-base text-center text-gray-600 mb-5">
+                  {error}
+                </Text>
+              </>
+            ) : null}
+          </View>
         </View>
+      </CustomModal>
+
+      
+
+      <View className="flex-1 justify-center items-center rounded-t-2xl bg-white shadow-lg relative overflow-hidden py-5">
+        <ScrollView>
+          <View className="w-full flex-row flex-wrap justify-between items-start px-4 gap-y-5">
+            {cards.map((card) => (
+              <Pressable
+                key={card.id}
+                onPress={() => card.path && router.push(card.path as any)}
+                className="w-[48%] rounded-3xl overflow-hidden"
+              >
+                <ImageBackground
+                  source={card.background}
+                  className="w-full aspect-[4/3] px-5 py-4 justify-start"
+                  imageStyle={{ borderRadius: 24 }}
+                >
+                  <Text className="text-white font-extrabold mt-2">
+                    <FontAwesome name={card.icon as keyof typeof FontAwesome.glyphMap} size={30} color="#ffffff" />
+                  </Text>
+                  <Text className="text-white text-lg font-bold mt-4">{card.title}</Text>
+                </ImageBackground>
+              </Pressable>
+            ))}
+          </View>
         </ScrollView>
-        
       </View>
     </SafeAreaView>
   );

@@ -95,7 +95,7 @@ export type GuestDetails = {
  */
 export type Menu = {
   id: number;
-  title: string;
+  name: string;
 };
 
 /**

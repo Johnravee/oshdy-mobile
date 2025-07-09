@@ -37,7 +37,7 @@ export const useInsertReservation = () => {
         kids_qty: parseInt(guests.kids),
         grazing_id: Number(event.grazingTable.id),
         menu: menu ? JSON.stringify(menu) : null,
-        status: 'Pending',
+        status: 'pending',
       };
 
       console.log('Payload:', payload);

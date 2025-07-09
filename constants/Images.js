@@ -15,5 +15,6 @@ export const IMAGES = {
     orangecardbg,
     navycardbg,
     yellowredcardbg,
-    contract
+    contract,
+
 }

@@ -74,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+
   const fetchProfile = async (authId: string) => {
     const { data: profileData, error } = await supabase
       .from("profiles")
@@ -82,7 +83,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .single();
 
     if (error) {
-      console.error("Profile Error:", error.message);
+      // console.error("Profile Error:", error.message);
+      return;
     } else {
       setProfile(profileData);
       console.log("✅ Profile Data Loaded:", profileData);
@@ -100,8 +102,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         menu: data?.menu || [],
         thememotif: data?.thememotif || []
       });
-      
-      
     }
   };
 

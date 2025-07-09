@@ -18,7 +18,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/context/AuthContext';
-import { Package, ReservationWithPackage } from '@/types/reservation-types';
+import { ReservationWithPackage } from '@/types/reservation-types';
 
 
 // Hook to fetch and subscribe to user-specific reservations

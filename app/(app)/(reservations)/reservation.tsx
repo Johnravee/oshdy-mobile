@@ -26,6 +26,7 @@ import LottieView from 'lottie-react-native';
 // Contexts & Hooks
 import { useAuthContext } from '@/context/AuthContext';
 import { useInsertReservation } from '@/hooks/useInsertReservation';
+import { useHasPendingReservation } from '@/hooks/useHasPendingReservation';
 
 
 // Components
@@ -50,6 +51,7 @@ const initialReservationData: ReservationData = {
 export default function Reservation() {
   const { init, profile } = useAuthContext();
   const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData);
+    const { hasPending, isChecking } = useHasPendingReservation();
   const [modalVisible, setModalVisible] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
   const [showProfileWarningModal, setProfileWarningModal] = useState(false);
@@ -100,18 +102,15 @@ export default function Reservation() {
   };
 
   const handleReservationSubmit = async () => {
-    const result = await insertReservation(reservationData);
-    if (result) {
-      setModalVisible(true);
-
-    }
+     await insertReservation(reservationData);
   };
 
 
 
 
   useEffect(() => {
-    if (success && modalVisible) {
+    if (success) {
+      setModalVisible(true);
       const timer = setTimeout(() => {
         router.replace('/(app)/(reservations)/reservation-history');
       }, 10000);
@@ -122,7 +121,7 @@ export default function Reservation() {
  
 
 
-  if (init ) return <Spinner />;
+  if (init || isChecking ) return <Spinner />;
 
   return (
     <View className="flex-1 bg-white">
@@ -229,6 +228,42 @@ export default function Reservation() {
   </View>
 </Modal>
 
+        {/* Pending Reservation Modal */}
+        {/* This modal is shown when the user tries to submit a reservation while having a pending one */}
+        {/* It will redirect them to the reservation history to check their pending status */}
+        
+<Modal visible={hasPending} transparent animationType="fade">
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
+              <LottieView
+                source={require('../../../assets/images/lottie/warning.json')}
+                autoPlay
+                loop={false}
+                style={{ width: 150, height: 150 }}
+              />
+
+              <Text className="text-2xl font-bold mt-4 mb-2 text-center text-red-600">
+                Pending Reservation Detected
+              </Text>
+
+              <Text className="text-base text-gray-600 mb-5 text-center">
+                You already have a reservation in progress. Please wait for confirmation before submitting another request.
+              </Text>
+
+              <Pressable
+                onPress={() => {
+                  router.replace('/(app)/(reservations)/reservation-history');
+                }}
+                className="mt-4 bg-red-500 px-5 py-3 rounded-lg"
+              >
+                <Text className="text-white text-base font-semibold">
+                View Reservation Status
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+
 
 
 
@@ -279,7 +314,7 @@ export default function Reservation() {
           <ProgressStep 
             label="Review" 
             onSubmit={handleReservationSubmit}
-            buttonFinishText='Submit'
+            buttonFinishText={`${success ? '' : 'Submit'}`}
             buttonFinishTextColor='#D4A83F'
           >
             <View className="w-full mx-auto">

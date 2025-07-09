@@ -70,6 +70,13 @@ export default function ReservationHistory() {
     return <Spinner />
   }
 
+  function formatStatus(status?: string) {
+    if (!status) return 'Unknown';
+    return status
+      .replace(/_/g, ' ') // replace underscores with spaces
+      .replace(/\b\w/g, (char) => char.toUpperCase()); // capitalize each word
+  }
+
   if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-white px-4">
@@ -155,7 +162,7 @@ export default function ReservationHistory() {
                   ${
                     item.status?.toLowerCase() === 'pending' ? 'bg-yellow-200' :
                     item.status?.toLowerCase() === 'confirmed' ? 'bg-blue-200' :
-                    item.status?.toLowerCase() === 'contract signing' ? 'bg-purple-200' :
+                    item.status?.toLowerCase() === 'contract_signing' ? 'bg-purple-200' :
                     item.status?.toLowerCase() === 'ongoing' ? 'bg-orange-200' :
                     item.status?.toLowerCase() === 'completed' ? 'bg-green-200' :
                     item.status?.toLowerCase() === 'revoked' ? 'bg-red-200' :
@@ -167,14 +174,14 @@ export default function ReservationHistory() {
                     ${
                       item.status?.toLowerCase() === 'pending' ? 'text-yellow-900' :
                       item.status?.toLowerCase() === 'confirmed' ? 'text-blue-900' :
-                      item.status?.toLowerCase() === 'contract signing' ? 'text-purple-900' :
+                      item.status?.toLowerCase() === 'contract_signing' ? 'text-purple-900' :
                       item.status?.toLowerCase() === 'ongoing' ? 'text-orange-900' :
                       item.status?.toLowerCase() === 'completed' ? 'text-green-900' :
                       item.status?.toLowerCase() === 'revoked' ? 'text-red-900' :
                       'text-gray-800'
                     }`}
                 >
-                  {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+                  {formatStatus(item.status)}
                 </Text>
               </View>
             </View>

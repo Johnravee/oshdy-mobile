@@ -1,15 +1,26 @@
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useInsertUserProfile } from '@/hooks/useInsertUserProfile';
 import { useAuthContext } from '@/context/AuthContext';
 
 export default function UserDetailsScreen() {
-  const { session, setProfile } = useAuthContext();
+  const { session, setProfile, profile } = useAuthContext();
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    if (profile) {
+      router.replace('/(app)/dashboard');
+    }
+
+    console.log("UserDetailsScreen profile", profile);
+    
+  }, [profile]);
+
+
 
   const handleContinue = async () => {
     if (!name || !contact || !address) {
@@ -25,7 +36,6 @@ export default function UserDetailsScreen() {
       Alert.alert('Error', 'Something went wrong while saving your details.');
     }
   };
-  
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9F9]">

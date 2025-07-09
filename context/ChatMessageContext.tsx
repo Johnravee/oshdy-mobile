@@ -7,7 +7,8 @@ import React, {
   } from 'react';
   import { supabase } from '@/lib/supabase';
   import { useAuthContext } from '@/context/AuthContext';
-  import { sendPushNotification } from '@/utils/sendpushnotification';
+  import notifee, { AndroidImportance } from '@notifee/react-native';
+
   
   export interface ChatMessage {
     id: number;
@@ -33,7 +34,7 @@ import React, {
   
   export const ChatMessageProvider = ({ children }: { children: React.ReactNode }) => {
     const { profile } = useAuthContext();
-    const adminId = 36;
+    const adminId = 43; // Replace with your actual admin ID
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [hasNewMessage, setHasNewMessage] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -104,15 +105,19 @@ import React, {
               console.log('📩 New incoming message:', msg);
               setMessages((prev) => [...prev, msg]);
               setHasNewMessage(true);
-  
-              if (profile.expo_push_token) {
-                console.log('🔔 Sending push to:', profile.expo_push_token);
-                await sendPushNotification(profile.expo_push_token, msg.content);
-              } else {
-                console.warn('⚠️ No expo_push_token found on profile');
-              }
 
-              
+               /*Uncomment the following lines to enable notifications.
+              /* abang lang
+             /*  await notifee.displayNotification({
+                title: '📩 New Message',
+                body:  ' You have a new message from the admin. ',
+                android: {
+                  channelId: 'default',
+                  importance: AndroidImportance.HIGH,
+                  sound: 'default',
+                },
+              }); */
+
             } else if (msg.sender_id === profile.id && msg.receiver_id === adminId) {
               // Add your own message too
               setMessages((prev) => [...prev, msg]);
