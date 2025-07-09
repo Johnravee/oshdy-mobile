@@ -25,13 +25,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuthContext } from '@/context/AuthContext';
 import { Reservation } from '@/types/reservation-types';
+import { useProfileContext } from '@/context/ProfileContext';
 
 
 // --- Hook ---
 export function useUserFetchReservationWithJoins(reservation_id: any) {
-  const { profile } = useAuthContext();
+  const { profile } = useProfileContext();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

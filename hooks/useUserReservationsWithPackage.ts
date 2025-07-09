@@ -17,13 +17,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuthContext } from '@/context/AuthContext';
 import { ReservationWithPackage } from '@/types/reservation-types';
+import { useProfileContext } from '@/context/ProfileContext';
 
 
 // Hook to fetch and subscribe to user-specific reservations
 export const useFetchUserReservations = () => {
-  const { profile } = useAuthContext();
+  const { profile } = useProfileContext();
   const [reservations, setReservations] = useState<ReservationWithPackage[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

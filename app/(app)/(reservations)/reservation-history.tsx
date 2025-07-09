@@ -2,16 +2,12 @@
  * @file reservation-history.tsx
  * @component ReservationHistory
  * @description
- * Displays a searchable and filterable list of user reservations.
- * Users can filter by status tabs, search by package or celebrant,
- * and navigate back to the previous screen.
+ * Searchable and filterable list of user reservations.
  *
  * @features
- * - Fetches reservations using a custom hook
- * - Filter by multiple statuses with emoji indicators
- * - Search functionality for package names and celebrants
- * - Displays loading and error states
- * - Back navigation button included
+ * - Filter by status with emoji tabs
+ * - Search by package or celebrant
+ * - Uses Supabase and custom hooks
  *
  * @author John Rave Mimay
  * @created 2025-07-02

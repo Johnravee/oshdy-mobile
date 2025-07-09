@@ -10,6 +10,7 @@ import {
   EventPackagesType,
   ReservationData,
 } from '@/types/reservation-types';
+import { usePGMTData } from '@/hooks/useFetchPGMT';
 
 export default function EventDetailsForm({
   data,
@@ -23,21 +24,20 @@ export default function EventDetailsForm({
     timePicker: false,
   });
 
-  const { pgmtData, init } = useAuthContext();
+  const { init } = useAuthContext();
+  const { pgmtData, pgmtLoading } = usePGMTData();
 
   const [packages, setPackages] = useState<EventPackagesType[]>([]);
   const [grazing, setGrazing] = useState<EventPackagesType[]>([]);
-  const [menuOptions, setMenuOptions] = useState<EventPackagesType[]>([]);
   const [thememotif, setThememotif] = useState<EventPackagesType[]>([]);
 
   useEffect(() => {
-    if (!init && pgmtData) {
+    if (!init && !pgmtLoading && pgmtData) {
       setPackages(pgmtData.packages);
       setGrazing(pgmtData.grazing);
-      setMenuOptions(pgmtData.menu);
       setThememotif(pgmtData.thememotif);
     }
-  }, [init, pgmtData]);
+  }, [init, pgmtLoading, pgmtData]);
 
   return (
     <ScrollView>

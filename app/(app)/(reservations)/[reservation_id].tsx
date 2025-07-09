@@ -2,14 +2,12 @@
  * @file reservation-status.tsx
  * @route ReservationStatus
  * @description
- * Displays a visual progress tracker and supporting detail modals for a user's active reservation.
- * Handles status updates, contextual info (details, staff, menu), and request limitations based on reservation state.
+ * Visual tracker for a user's active reservation with detail modals.
  *
  * @features
- * - Visual progress stepper for reservation lifecycle
- * - Conditional modal views for event details, staff, menu, and request
- * - Responsive to loading and missing state
- * - Built with hooks for auth and reservation data via Supabase
+ * - Stepper UI for reservation lifecycle
+ * - Modals for event, staff, menu, and requests
+ * - Handles loading, empty, and Supabase-driven states
  *
  * @author John Rave Mimay
  * @created 2025-06-29
@@ -43,7 +41,7 @@ export default function ReservationStatus() {
   // Fetch reservation data using custom hook (pass reservation_id)
   const { reservations, isFetching, error } = useUserFetchReservationWithJoins(reservation_id);
 
-  // Assuming reservations is an array, find the current reservation or fallback
+  // find the current reservation or fallback
   const pendingReservation = reservations && reservations.length > 0 ? reservations[0] : null;
   const pendingLoading = isFetching;
 

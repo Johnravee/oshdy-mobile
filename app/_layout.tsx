@@ -1,28 +1,33 @@
 import '../global.css';
 import { Slot } from 'expo-router';
-import { AuthProvider } from '@/context/AuthContext';
-import { useAuth } from '@/hooks/useAuth';
-import { ChatMessageProvider } from '@/context/ChatMessageContext';
 import { useEffect } from 'react';
-import {getMessaging} from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
+import { getMessaging } from '@react-native-firebase/messaging';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 
+import { AuthProvider } from '@/context/AuthContext';
+import { ProfileProvider } from '@/context/ProfileContext';
+import { ChatMessageProvider } from '@/context/ChatMessageContext';
+import { useAuth } from '@/hooks/useAuth';
 
-
+/**
+ * Initializes the useAuth hook to ensure session is ready
+ * Useful for deep linking or early auth access in layouts.
+ */
 function DeepLinkBootstrapper() {
-  useAuth(); // ✅ safe to use auth context
+  useAuth();
   return null;
 }
 
+/**
+ * Sets up root-level context providers and handles push notifications.
+ */
 export default function RootLayout() {
-
-
   useEffect(() => {
-
+    // Initialize FCM & Notifee notification channel
     createNotificationChannel();
 
-    // Foreground notification handling
-    const unsubscribe = getMessaging().onMessage(async remoteMessage => {
+    // Handle foreground messages
+    const unsubscribe = getMessaging().onMessage(async (remoteMessage) => {
       const { title, body } = remoteMessage.notification || {};
 
       await notifee.displayNotification({
@@ -35,45 +40,46 @@ export default function RootLayout() {
         },
       });
 
-      console.log('Notification received in foreground:', title, body);
+      console.log('🔔 Foreground Notification:', title, body);
     });
 
-    // App opened from background notification
-    getMessaging().onNotificationOpenedApp(remoteMessage => {
-      console.log('Notification opened from background state:', remoteMessage.notification);
+    // Background state notification handler
+    getMessaging().onNotificationOpenedApp((remoteMessage) => {
+      console.log('📲 Opened from background:', remoteMessage.notification);
     });
 
-    // App opened from quit state notification
-    getMessaging().getInitialNotification().then(remoteMessage => {
+    // Quit state notification handler
+    getMessaging().getInitialNotification().then((remoteMessage) => {
       if (remoteMessage) {
-        console.log('Notification caused app to open from quit state:', remoteMessage.notification);
+        console.log('🚀 Opened from quit state:', remoteMessage.notification);
       }
     });
 
     return unsubscribe;
   }, []);
 
-
-
-  // Create Android notification channel (called once)
+  /**
+   * Creates a default notification channel for Android.
+   * Required for showing notifications with sound.
+   */
   const createNotificationChannel = async () => {
     await notifee.createChannel({
       id: 'default',
       name: 'Default Channel',
       importance: AndroidImportance.HIGH,
-      sound: 'default', // Uses system default sound
+      sound: 'default',
     });
-    console.log('Notification channel created');
+    console.log('✅ Notification channel created');
   };
-
-
 
   return (
     <AuthProvider>
-      <ChatMessageProvider>
-        <DeepLinkBootstrapper />
-        <Slot />
-      </ChatMessageProvider>
+      <ProfileProvider>
+        <ChatMessageProvider>
+          <DeepLinkBootstrapper />
+          <Slot />
+        </ChatMessageProvider>
+      </ProfileProvider>
     </AuthProvider>
   );
 }

@@ -1,11 +1,28 @@
+/**
+ * @file UserDetailsScreen.tsx
+ * @component UserDetailsScreen
+ * @description
+ * Initial profile setup screen for new users after registration.
+ * Collects name, contact number, and address, and inserts profile into Supabase.
+ *
+ * @features
+ * - Redirects to dashboard if profile already exists
+ * - Validates all fields before submission
+ * - Uses custom context and hook to save profile data
+ * - Shows alert on missing input or error
+ *
+ * @author John Rave Mimay
+ */
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useInsertUserProfile } from '@/hooks/useInsertUserProfile';
 import { useAuthContext } from '@/context/AuthContext';
+import { useProfileContext } from '@/context/ProfileContext';
 
 export default function UserDetailsScreen() {
-  const { session, setProfile, profile } = useAuthContext();
+  const { session } = useAuthContext();
+  const { profile, setProfile } = useProfileContext();
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
@@ -15,9 +32,6 @@ export default function UserDetailsScreen() {
     if (profile) {
       router.replace('/(app)/dashboard');
     }
-
-    console.log("UserDetailsScreen profile", profile);
-    
   }, [profile]);
 
 

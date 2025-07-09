@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ReservationData } from '@/types/reservation-types';
-import { useAuthContext } from '@/context/AuthContext';
 import generateUniqueReceiptId from '@/utils/receipt-generator';
 import convertDateTime from '@/utils/convertDateTime';
+import { useProfileContext } from '@/context/ProfileContext';
 
 export const useInsertReservation = () => {
-  const { profile } = useAuthContext();
+  const { profile } = useProfileContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);

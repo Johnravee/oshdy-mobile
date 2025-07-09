@@ -2,10 +2,10 @@
 import { useEffect, useState } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import { supabase } from '@/lib/supabase';
-import { useAuthContext } from '@/context/AuthContext';
+import { useProfileContext } from '@/context/ProfileContext';
 
 export function useFcmToken() {
-  const { profile } = useAuthContext();
+  const { profile } = useProfileContext();
   const [hasSavedToken, setHasSavedToken] = useState(false);
 
   useEffect(() => {

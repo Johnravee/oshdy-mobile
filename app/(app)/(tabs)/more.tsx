@@ -1,3 +1,20 @@
+/**
+ * @file Profile.tsx
+ * @component Profile
+ * @description
+ * User profile screen displaying avatar, booking stats, navigation options, and logout functionality.
+ *
+ * @features
+ * - Shows total and completed bookings using custom hooks
+ * - Displays user avatar and name
+ * - Provides navigation to dashboard and profile details
+ * - Includes error modal for failed fetches and logout handling
+ *
+ * @author John Rave Mimay
+ * @created 2025-07-09
+ */
+
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -17,10 +34,13 @@ import BackButton from '@/components/ui/back-button';
 import { supabase } from '@/lib/supabase';
 import { useUserBookingCountByUser } from '@/hooks/useBookingCountByUser';
 import { useCompletedBookByUser } from '@/hooks/useCompletedBookByUser';
+import { useProfileContext } from '@/context/ProfileContext';
 
 export default function Profile() {
   const router = useRouter();
-  const { session, profile } = useAuthContext();
+  const { session } = useAuthContext();
+  const { profile } = useProfileContext();
+  
 
   const [errorModalVisible, setErrorModalVisible] = useState(false);
 

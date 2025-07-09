@@ -1,20 +1,18 @@
 /**
  * @file ProfileDetails.tsx
+ * @component ProfileDetails
  * @description
- * A profile editing screen that allows authenticated users to update their personal
- * information (name, phone, and address) while displaying a read-only email.
- *
- * Integrates with Supabase for database updates and uses context to sync state globally.
+ * Editable user profile screen for updating name, phone, and address. Email is read-only.
  *
  * @features
- * - Prefills data from profile context
- * - Updates profile info in Supabase
- * - Shows loading spinner on mount
- * - Displays feedback for update errors
+ * - Loads and pre-fills profile data from context
+ * - Updates user profile in Supabase
+ * - Shows loading spinner during fetch
+ * - Displays error feedback on failure
  *
- * @author
- * John Rave Mimay
+ * @author John Rave Mimay
  */
+
 
 import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import React, { useState, useEffect } from 'react';
@@ -22,8 +20,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import Spinner from '@/components/ui/spinner';
 import InputComponent from '@/components/ui/inputText';
-import { useAuthContext } from '@/context/AuthContext';
+
 import BackButton from '@/components/ui/back-button';
+import { useProfileContext } from '@/context/ProfileContext';
 
 type ProfileForm = {
   name: string;
@@ -34,7 +33,7 @@ type ProfileForm = {
 };
 
 export default function ProfileDetails() {
-  const { profile, setProfile } = useAuthContext();
+  const { profile, setProfile } = useProfileContext();
 
   const [form, setForm] = useState<ProfileForm>({
     name: '',

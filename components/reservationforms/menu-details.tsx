@@ -1,9 +1,10 @@
 import { View, Text, ScrollView } from 'react-native'
 import React, { useEffect, useMemo } from 'react'
-
+import Spinner from '../ui/spinner';
 import Dropdown from '../ui/dropdown';
 import { MenuSelection, ReservationData, Menu } from '@/types/reservation-types';
-import { useAuthContext } from '@/context/AuthContext';
+import { usePGMTData } from '@/hooks/useFetchPGMT';
+
 
 export default function MenuDetailsForm({
   data,
@@ -12,7 +13,9 @@ export default function MenuDetailsForm({
   data: MenuSelection;
   setReservationData: React.Dispatch<React.SetStateAction<ReservationData>>;
 }) {
-  const { pgmtData } = useAuthContext();
+ const { pgmtData, pgmtLoading } = usePGMTData();
+
+
 
   // 🔍 Filter menu by category
   const filterByCategory = (category: string) => {
@@ -28,6 +31,8 @@ export default function MenuDetailsForm({
   const FishMenu = useMemo(() => filterByCategory('fish'), [pgmtData.menu]);
   const Dessert = useMemo(() => filterByCategory('dessert'), [pgmtData.menu]);
   const Drinks = useMemo(() => filterByCategory('drinks'), [pgmtData.menu]);
+
+  if(pgmtLoading || !pgmtData) return <Spinner />;
 
   return (
     <ScrollView>

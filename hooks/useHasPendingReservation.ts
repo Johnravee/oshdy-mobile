@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useAuthContext } from '@/context/AuthContext';
+
+import { useProfileContext } from '@/context/ProfileContext';
 
 /**
  * Custom hook to check if the current user has a pending reservation.
  * @returns { hasPending: boolean, loading: boolean, error: string | null }
  */
 export function useHasPendingReservation() {
-  const { profile } = useAuthContext();
+  const { profile } = useProfileContext();
   const [hasPending, setHasPending] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);

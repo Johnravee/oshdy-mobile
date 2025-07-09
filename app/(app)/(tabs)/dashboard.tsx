@@ -1,3 +1,19 @@
+/**
+ * @file Dashboard.tsx
+ * @component Dashboard
+ * @description
+ * Main landing screen of the app providing quick access to reservation actions and calendar availability.
+ *
+ * @features
+ * - Displays actionable cards for reservations, history, designs, and menu
+ * - Check schedule availability via calendar modal
+ * - Lottie animations and dynamic feedback for date checking
+ *
+ * @author John Rave Mimay
+ * @created 2025-07-09
+ */
+
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

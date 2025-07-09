@@ -2,18 +2,17 @@
  * @file Reservation.tsx
  * @component Reservation
  * @description
- * A clean, modular multi-step reservation form using `react-native-progress-steps`. 
- * Handles event, guest, and menu input, previews the reservation, and submits via Supabase.
+ * Multi-step reservation form with validation and Supabase integration.
  *
  * @features
- * - Per-step validation
- * - Prevents duplicate pending reservations
- * - Displays real-time feedback via modals and Lottie animations
- * - Uses Supabase for data insertion
+ * - Step-by-step input for event, guests, and menu
+ * - Prevents duplicate pending submissions
+ * - Uses modals, Lottie animations, and Supabase
  *
  * @author John Rave Mimay
  * @created 2025-06-15
  */
+
 
 
 import React, { useState, useEffect } from 'react';
@@ -40,6 +39,9 @@ import ReservationPreview from '@/components/reservationforms/reservation-previe
 // Types
 import { ReservationData } from '@/types/reservation-types';
 import BackButton from '@/components/ui/back-button';
+import { useProfileContext } from '@/context/ProfileContext';
+import AnimatedModal from '@/components/ui/animatedModal';
+import { ProfileType } from '@/types/profile-types';
 
 
 const initialReservationData: ReservationData = {
@@ -49,24 +51,16 @@ const initialReservationData: ReservationData = {
 };
 
 export default function Reservation() {
-  const { init, profile } = useAuthContext();
+  const { init } = useAuthContext();
+  const { profile } = useProfileContext();
+  const { hasPending, isChecking } = useHasPendingReservation();
   const [reservationData, setReservationData] = useState<ReservationData>(initialReservationData);
-    const { hasPending, isChecking } = useHasPendingReservation();
   const [modalVisible, setModalVisible] = useState(false);
-  const [showPendingModal, setShowPendingModal] = useState(false);
-  const [showProfileWarningModal, setProfileWarningModal] = useState(false);
   const [stepErrors, setStepErrors] = useState({
     personal: false,
     event: false,
     guests: false,
   });
-  
-  useEffect(() => {
-    if (!profile) {
-      setProfileWarningModal(true);
-    }
-  }, [profile]);
-  
   const { insertReservation, loading, error: insertError, success } = useInsertReservation();
 
 
@@ -105,6 +99,7 @@ export default function Reservation() {
      await insertReservation(reservationData);
   };
 
+  const validateMenu = () => Object.values(reservationData.menu).every(item => item);
 
 
 
@@ -113,7 +108,7 @@ export default function Reservation() {
       setModalVisible(true);
       const timer = setTimeout(() => {
         router.replace('/(app)/(reservations)/reservation-history');
-      }, 10000);
+      }, 3000); // Redirect after 3 seconds
       return () => clearTimeout(timer); 
     }
   }, [success, modalVisible]);
@@ -129,7 +124,7 @@ export default function Reservation() {
         {/* Loading Spinner */}
         {loading && <Spinner />}
 
-        {/* Success Modal */}
+        {/* Succesful reservation submition notice modal */}
         <CustomModal visible={modalVisible} onClose={() => setModalVisible(false)}>
           <View className="flex-1 justify-center items-center bg-black/50">
             <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
@@ -157,112 +152,31 @@ export default function Reservation() {
             </View>
           </View>
         </CustomModal>
-        
-      {/* Reservation Modal */}
-      <Modal visible={showPendingModal} transparent animationType="fade">
-      <View className="flex-1 justify-center items-center bg-black/50">
-        <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
-          <LottieView
-            source={require('../../../assets/images/lottie/warning.json')}
-            autoPlay
-            loop={false}
-            style={{ width: 150, height: 150 }}
-          />
-
-          <Text className="text-2xl font-bold mt-4 mb-2 text-center text-yellow-600">
-            Reservation Already in Progress
-          </Text>
-
-          <Text className="text-base text-gray-600 mb-5 text-center">
-            You already have a pending reservation in process.
-            Please wait for confirmation before submitting another.
-          </Text>
-
-          <Pressable
-            onPress={() => {
-              setShowPendingModal(false);
-              router.replace('/(app)/(reservations)/reservation-history');
-            }}
-            className="mt-4 bg-yellow-500 px-5 py-3 rounded-lg"
-          >
-            <Text className="text-white text-base font-semibold">
-              Go to Reservation Status
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-    </Modal>
-
-
-   {/* Profile Incomplete Warning Modal */}
-<Modal visible={showProfileWarningModal} transparent animationType="fade">
-  <View className="flex-1 justify-center items-center bg-black/50">
-    <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
-      <LottieView
-        source={require('../../../assets/images/lottie/warning.json')}
-        autoPlay
-        loop={false}
-        style={{ width: 150, height: 150 }}
-      />
-
-      <Text className="text-2xl font-bold mt-4 mb-2 text-center text-red-600">
-        Complete Your Profile First
-      </Text>
-
-      <Text className="text-base text-gray-600 mb-5 text-center">
-        Before making a reservation, please provide your profile information including name, contact number, and address.
-      </Text>
-
-      <Pressable
-        onPress={() => {
-          setProfileWarningModal(false);
-          router.replace('/(app)/pDetails');
-        }}
-        className="mt-4 bg-red-500 px-5 py-3 rounded-lg"
-      >
-        <Text className="text-white text-base font-semibold">
-          Complete Profile
-        </Text>
-      </Pressable>
-    </View>
-  </View>
-</Modal>
+      
+      {/* Profile Incomplete Warning Modal */}
+      
+        <AnimatedModal
+           visible={!profile}
+           title="Complete Your Profile First"
+           description="Before making a reservation, please provide your profile information including name, contact number, and address."
+           animation={require('../../../assets/images/lottie/warning.json')}
+           buttonText="View Reservation Status"
+           onButtonPress={() => router.replace('/(app)/pDetails')}
+           dismissable={false}
+        />
 
         {/* Pending Reservation Modal */}
         {/* This modal is shown when the user tries to submit a reservation while having a pending one */}
         {/* It will redirect them to the reservation history to check their pending status */}
-        
-<Modal visible={hasPending} transparent animationType="fade">
-          <View className="flex-1 justify-center items-center bg-black/50">
-            <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
-              <LottieView
-                source={require('../../../assets/images/lottie/warning.json')}
-                autoPlay
-                loop={false}
-                style={{ width: 150, height: 150 }}
-              />
-
-              <Text className="text-2xl font-bold mt-4 mb-2 text-center text-red-600">
-                Pending Reservation Detected
-              </Text>
-
-              <Text className="text-base text-gray-600 mb-5 text-center">
-                You already have a reservation in progress. Please wait for confirmation before submitting another request.
-              </Text>
-
-              <Pressable
-                onPress={() => {
-                  router.replace('/(app)/(reservations)/reservation-history');
-                }}
-                className="mt-4 bg-red-500 px-5 py-3 rounded-lg"
-              >
-                <Text className="text-white text-base font-semibold">
-                View Reservation Status
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </Modal>
+        <AnimatedModal
+           visible={hasPending}
+           title="Pending Reservation Detected"
+           description="You already have a reservation in progress. Please wait for confirmation before submitting another request."
+           animation={require('../../../assets/images/lottie/warning.json')}
+           buttonText="View Reservation Status"
+           onButtonPress={() => router.replace('/(app)/(reservations)/reservation-history')}
+           dismissable={false}
+        />
 
 
 
@@ -306,12 +220,12 @@ export default function Reservation() {
             label="Menu"
             buttonNextText='Next'
             buttonNextTextColor='#333333'
-            errors={!reservationData.menu.beef || !reservationData.menu.chicken || !reservationData.menu.dessert || !reservationData.menu.fillet || !reservationData.menu.juice || !reservationData.menu.pasta || !reservationData.menu.pork || !reservationData.menu.vegetable}
+            errors={!validateMenu()}
           >
             <MenuDetailsForm data={reservationData.menu} setReservationData={setReservationData} />
           </ProgressStep>
 
-          <ProgressStep 
+          <ProgressStep   
             label="Review" 
             onSubmit={handleReservationSubmit}
             buttonFinishText={`${success ? '' : 'Submit'}`}

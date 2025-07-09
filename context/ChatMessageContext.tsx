@@ -1,3 +1,10 @@
+/**
+ * @file ChatMessageContext.tsx
+ * @description
+ * Provides chat message state management for one-on-one messaging between a user and the admin.
+ * This context handles fetching, sending, deleting, and listening for real-time message updates.
+ */
+
 import React, {
     createContext,
     useContext,
@@ -6,34 +13,17 @@ import React, {
     useCallback,
   } from 'react';
   import { supabase } from '@/lib/supabase';
-  import { useAuthContext } from '@/context/AuthContext';
-  import notifee, { AndroidImportance } from '@notifee/react-native';
+import { useProfileContext } from './ProfileContext';
+import { ChatMessage, ChatMessageContextProps } from '@/types/chat-types';
+  
 
-  
-  export interface ChatMessage {
-    id: number;
-    sender_id: number;
-    receiver_id: number;
-    content: string;
-    created_at: string;
-  }
-  
-  interface ChatMessageContextProps {
-    messages: ChatMessage[];
-    sendMessage: (text: string) => Promise<void>;
-    deleteMessage: (id: number) => Promise<void>;
-    hasNewMessage: boolean;
-    setHasNewMessage: React.Dispatch<React.SetStateAction<boolean>>;
-    loading: boolean;
-    error: string | null;
-  }
   
   const ChatMessageContext = createContext<ChatMessageContextProps | undefined>(
     undefined
   );
   
   export const ChatMessageProvider = ({ children }: { children: React.ReactNode }) => {
-    const { profile } = useAuthContext();
+    const { profile } = useProfileContext();
     const adminId = 43; // Replace with your actual admin ID
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [hasNewMessage, setHasNewMessage] = useState(false);
@@ -129,7 +119,7 @@ import React, {
       return () => {
         supabase.removeChannel(channel);
       };
-    }, [fetchMessages, profile?.id, profile?.expo_push_token]);
+    }, [fetchMessages, profile?.id]);
   
     return (
       <ChatMessageContext.Provider

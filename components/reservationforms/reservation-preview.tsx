@@ -26,11 +26,11 @@
 import React from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import { ReservationData } from '../../types/reservation-types';
-import { useAuthContext } from '@/context/AuthContext';
+import { useProfileContext } from '@/context/ProfileContext';
 
 export default function ReservationPreview({ reservationData }: { reservationData: ReservationData }) {
 
-  const { profile } = useAuthContext();
+  const { profile } = useProfileContext();
     
   const renderSection = (
     title: string,

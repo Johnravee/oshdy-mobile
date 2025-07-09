@@ -1,3 +1,20 @@
+/**
+ * @file Chat.tsx
+ * @component Chat
+ * @description
+ * One-on-one chat screen between user and admin with message send, delete, and edit support.
+ *
+ * @features
+ * - Real-time message list using context
+ * - Send, delete, and inline edit (via retype) for user's own messages
+ * - Admin info and status in header
+ * - Keyboard-aware and mobile-friendly layout
+ *
+ * @author John Rave Mimay
+ * @created 2025-07-09
+ */
+
+
 import React, { useState, useCallback, useEffect} from 'react';
 import {
   View,
@@ -14,17 +31,17 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useChatMessageContext } from '@/context/ChatMessageContext';
-import { useAuthContext } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import BackButton from '@/components/ui/back-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
+import { useProfileContext } from '@/context/ProfileContext';
 
 
 
 export default function Chat() {
   const [message, setMessage] = useState('');
-  const { profile, session } = useAuthContext();
+  const { profile } = useProfileContext();
   const { setHasNewMessage, messages, sendMessage, deleteMessage } = useChatMessageContext();
   
 
