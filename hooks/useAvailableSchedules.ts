@@ -1,5 +1,16 @@
+/**
+ * @file useAvailableSchedules.ts
+ * Custom React hook to check if a reservation date is available in Supabase.
+ *
+ * @returns isAvailable - Whether the date is free (true), taken (false), or unknown (null).
+ * @returns checkingAvailability - Loading state.
+ * @returns error - Error message if fetch fails.
+ * @returns checkDateAvailability - Function to trigger the availability check.
+ */
+
+
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase'; // or your API client
+import { supabase } from '@/lib/supabase';
 
 export function useAvailableSchedules() {
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);

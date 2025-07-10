@@ -1,3 +1,13 @@
+/**
+ * @file useCompletedBookByUser.ts
+ * Custom hook to fetch the total number of completed reservations for a given user.
+ *
+ * @param profile_id - The user's profile ID.
+ * @returns completedCount - Number of completed reservations.
+ * @returns loadingCompleted - Loading state.
+ * @returns errorCompleted - Error message if fetching fails.
+ */
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 

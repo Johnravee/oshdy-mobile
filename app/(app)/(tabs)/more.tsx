@@ -38,7 +38,7 @@ import { useProfileContext } from '@/context/ProfileContext';
 
 export default function Profile() {
   const router = useRouter();
-  const { session } = useAuthContext();
+  const { session, logout } = useAuthContext();
   const { profile } = useProfileContext();
   
 
@@ -64,9 +64,7 @@ export default function Profile() {
     }
   }, [errorTotal, errorCompleted]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
+
 
   if (!profile || !session || loadingTotal || loadingCompleted) {
     return <Spinner />;
@@ -172,7 +170,7 @@ export default function Profile() {
           {/* Logout */}
           <TouchableOpacity
             className="w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2"
-            onPress={handleLogout}
+            onPress={logout}
           >
             <FontAwesome name="sign-out" size={20} color="red" />
             <Text className="text-red-600 font-bold">Log out</Text>

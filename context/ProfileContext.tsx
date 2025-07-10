@@ -10,7 +10,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ProfileType, ProfileContextType } from "@/types/profile-types";
 import { useAuthContext } from "./AuthContext";
-import Spinner from "@/components/ui/spinner";
+
 
 // Create context
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);

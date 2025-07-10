@@ -1,10 +1,21 @@
-// useInsertReservation.ts
+/**
+ * @file useInsertReservation.ts
+ * Custom hook to insert a new reservation into Supabase.
+ *
+ * @returns insertReservation - Function to save reservation data.
+ * @returns loading - Indicates if insertion is in progress.
+ * @returns error - Error message on failure.
+ * @returns success - Boolean flag for successful insert.
+ */
+
+
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ReservationData } from '@/types/reservation-types';
 import generateUniqueReceiptId from '@/utils/receipt-generator';
 import convertDateTime from '@/utils/convertDateTime';
 import { useProfileContext } from '@/context/ProfileContext';
+
 
 export const useInsertReservation = () => {
   const { profile } = useProfileContext();

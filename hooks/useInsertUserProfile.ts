@@ -1,4 +1,16 @@
-// lib/insertUserProfile.ts or hooks/insertUserProfile.ts (if you prefer)
+/**
+ * @file useInsertUserProfile.ts
+ * Inserts or updates a user profile in Supabase using the authenticated session.
+ *
+ * @param name - User's full name
+ * @param address - User's address
+ * @param contact_number - User's phone number
+ * @param session - Supabase auth session
+ * @param setProfile - Callback to update profile state
+ *
+ * @returns Inserted or updated profile data
+ * @throws Supabase error if insertion fails
+ */
 
 import { supabase } from '@/lib/supabase';
 import messaging from '@react-native-firebase/messaging';

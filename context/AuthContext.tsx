@@ -1,3 +1,17 @@
+/**
+ * @file AuthContext.tsx
+ * @description Provides global authentication context using Supabase.
+ * Manages session state and exposes `logout`, `session`, and `init` values.
+ *
+ * @context AuthContext - Holds auth state and methods for use across the app.
+ * @provider AuthProvider - Wraps app components to supply auth context.
+ * @hook useAuthContext - Custom hook to access authentication context.
+ *
+ * @note Automatically listens to auth state changes (login/logout).
+ * @author John Rave Mimay
+ * @created 2025-06-15
+ */
+
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";

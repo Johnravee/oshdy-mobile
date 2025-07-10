@@ -1,3 +1,14 @@
+/**
+ * @file useUserBookingCountByUser.ts
+ * Custom hook to fetch the total number of reservations for a given user from Supabase.
+ *
+ * @param profile_id - The user's profile ID.
+ * @returns totalCount - Number of reservations.
+ * @returns loadingTotal - Loading state.
+ * @returns errorTotal - Error message if fetch fails.
+ */
+
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 

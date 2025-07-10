@@ -1,3 +1,18 @@
+/**
+ * @component MenuDetailsForm
+ * @description Allows users to select one menu item from each category (e.g., pasta, pork, dessert).
+ * Dynamically loads menu items from Supabase via `usePGMTData`.
+ *
+ * @props {MenuSelection} data - Current menu selection state.
+ * @props {React.Dispatch<React.SetStateAction<ReservationData>>} setReservationData - Setter for reservation state.
+ *
+ * @usage Appears as part of a multi-step reservation form.
+ * @note Filters categories dynamically and updates menu choices in state.
+ *
+ * @author John Rave Mimay
+ * @created 2025-06-15
+ */
+
 import { View, Text, ScrollView } from 'react-native'
 import React, { useEffect, useMemo } from 'react'
 import Spinner from '../ui/spinner';

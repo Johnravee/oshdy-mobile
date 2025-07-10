@@ -1,3 +1,14 @@
+/**
+ * @file auth.ts
+ * Handles Supabase auth in Expo: Google OAuth, magic link login, and session from deep link.
+ *
+ * @exports performOAuth - Start Google login.
+ * @exports sendMagicLink - Send login email.
+ * @exports useAuth - Hook to handle redirect and set session.
+ *
+ * @created 2025-06-15
+ */
+
 import { makeRedirectUri } from "expo-auth-session";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import * as WebBrowser from "expo-web-browser";

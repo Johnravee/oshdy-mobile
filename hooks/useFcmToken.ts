@@ -1,4 +1,10 @@
-// hooks/useFcmToken.ts
+/**
+ * @file useFcmToken.ts
+ * Saves the Firebase Cloud Messaging (FCM) token to Supabase for the logged-in user.
+ *
+ * @returns hasSavedToken - Whether the token was successfully saved.
+ */
+
 import { useEffect, useState } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import { supabase } from '@/lib/supabase';

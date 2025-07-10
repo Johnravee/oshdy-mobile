@@ -1,3 +1,34 @@
+/**
+ * @file event-details.tsx
+ * @component EventDetailsForm
+ * @description
+ * A dynamic form component for capturing event-related details as part of the reservation process.
+ * Includes dropdowns for selecting package, theme/motif, and grazing table, and inputs for celebrant name,
+ * venue, date, time, and event location.
+ *
+ * Integrates with `@react-native-community/datetimepicker` for date and time selection.
+ * Filters available theme options based on the selected event package.
+ *
+ * @props {EventDetails} data - Current event data from the reservation state.
+ * @props {React.Dispatch<React.SetStateAction<ReservationData>>} setReservationData - Function to update reservation state.
+ *
+ * @usage
+ * Typically used in the first step of a multi-step reservation form.
+ *
+ * @dependencies
+ * - `Dropdown`: Custom dropdown component for selection fields
+ * - `InputComponent`: Custom text input component
+ * - `usePGMTData`: Custom hook to fetch package, grazing, and theme data
+ * - `useAuthContext`: Used to determine auth loading state
+ *
+ * @note
+ * Ensures theme selection is dependent on chosen package. Prevents selection errors with helpful UI alerts.
+ *
+ * @author John Rave Mimay
+ * @created 2025-06-15
+ */
+
+
 import { View, Text, Pressable, Alert, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Dropdown from '../ui/dropdown';
