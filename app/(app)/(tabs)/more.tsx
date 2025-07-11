@@ -38,17 +38,28 @@ import { useProfileContext } from '@/context/ProfileContext';
 export default function Profile() {
   const router = useRouter();
   const { session, logout } = useAuthContext();
-  const { profile } = useProfileContext();
+  const { profile, setProfile } = useProfileContext();
   
 
   const [errorModalVisible, setErrorModalVisible] = useState(false);
 
-  if(!profile?.id || !session) return <Spinner />;
+  // if(!profile?.id || !session) return <Spinner />;
 
 
-  if (!profile || !session ) {
-    return <Spinner />;
-  }
+  // if (!profile || !session ) {
+  //   return <Spinner />;
+  // }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/login');
+      setProfile(null); // Clear profile context on logout
+    } catch (error) {
+      console.error("Logout error:", error);
+      setErrorModalVisible(true);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 h-screen w-screen">
@@ -118,7 +129,7 @@ export default function Profile() {
           {/* Logout */}
           <TouchableOpacity
             className="w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2"
-            onPress={logout}
+            onPress={handleLogout}
           >
             <FontAwesome name="sign-out" size={20} color="red" />
             <Text className="text-red-600 font-bold">Log out</Text>

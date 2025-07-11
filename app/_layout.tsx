@@ -74,7 +74,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ProfileProvider>
+    <ProfileProvider>
         <ChatMessageProvider>
           <DeepLinkBootstrapper />
           <Slot />

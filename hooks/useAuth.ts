@@ -4,7 +4,7 @@
  *
  * @exports performOAuth - Start Google login.
  * @exports sendMagicLink - Send login email.
- * @exports useAuth - Hook to handle redirect and set session.
+ * @exports useAuth - Hook to handle redirect and set session, then check if profile exists.
  *
  * @created 2025-06-15
  */
@@ -14,14 +14,13 @@ import * as QueryParams from "expo-auth-session/build/QueryParams";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { supabase } from "@/lib/supabase";
-import { router, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect } from "react";
 
 WebBrowser.maybeCompleteAuthSession();
 
 const redirectTo = makeRedirectUri({
   scheme: "myapp",
-  path: "dashboard"
 });
 
 const createSessionFromUrl = async (url: string) => {
@@ -30,7 +29,7 @@ const createSessionFromUrl = async (url: string) => {
   if (errorCode) throw new Error(errorCode);
   const { access_token, refresh_token } = params;
 
-  if (!access_token) return;
+  if (!access_token || !refresh_token) return null;
 
   const { data, error } = await supabase.auth.setSession({
     access_token,
@@ -61,6 +60,7 @@ export const performOAuth = async (provider: 'google') => {
   if (res.type === "success") {
     const { url } = res;
     const session = await createSessionFromUrl(url);
+    // Optional: you can navigate here too, but we handle it in useAuth
   }
 };
 
@@ -73,8 +73,8 @@ export const sendMagicLink = async (email: string) => {
       },
     });
 
+    if (error) throw error;
     console.log("Magic link sent!");
-    console.log("Redirected to:", redirectTo);
   } catch (error) {
     console.error("Error sending magic link:", error);
     throw error;
@@ -89,14 +89,30 @@ export const useAuth = () => {
     if (url?.includes("access_token")) {
       createSessionFromUrl(url)
         .then(async (session) => {
-          if (session) {
-            console.log("Session created:", session);
-            router.replace("/(app)/dashboard");
-          } else {
+          if (!session) {
             console.error("No session created from URL");
+            return;
+          }
+
+          const auth_id = session.user.id;
+
+          // ✅ Check if user profile exists
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("auth_id", auth_id)
+            .single();
+
+          if (error || !profile) {
+            console.warn("Profile not found. Redirecting to profile setup...");
+            router.replace("/(app)/onboarding");
+          } else {
+            router.replace("/(app)/dashboard");
           }
         })
-        .catch((err) => console.error("Auth error:", err));
+        .catch((err) => {
+          console.error("Auth error:", err);
+        });
     }
   }, [url]);
 

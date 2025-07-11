@@ -1,5 +1,5 @@
 import { View, ScrollView, Text } from 'react-native'
-import React from 'react'
+import React, {useEffect} from 'react'
 import StatusSummary from '@/components/ui/statusSummary'
 import { IMAGES } from '@/constants/Images'
 import UserEventShortcuts from '@/components/ui/UserEventShortcuts'
@@ -10,11 +10,23 @@ import { useTotalBookCountByUser } from '@/hooks/useTotalBookCountByUser'
 import { usePendingReservationCount } from '@/hooks/usePendingReservationCount'
 import { useCanceledReservationCount } from '@/hooks/useCanceledReservationCount'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useProfileContext } from '@/context/ProfileContext'
+import { useRouter } from 'expo-router'
 
 export default function Dashboard() {
+  const router = useRouter();
+  const { profile } = useProfileContext();
   const { totalCount } = useTotalBookCountByUser();
   const { pendingCount } = usePendingReservationCount();
   const { canceledCount } = useCanceledReservationCount();
+
+  useEffect(() => {
+  if (!profile) {
+    router.replace("/(app)/onboarding");
+  }
+}, [profile]);
+
+
   const menu = [
       {
         id: 1,
