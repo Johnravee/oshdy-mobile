@@ -34,7 +34,7 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
           .eq("auth_id", session.user.id)
           .single();
 
-        if (error) throw error;
+        if (error) return;
 
         setProfile(data as ProfileType);
       } catch (err) {

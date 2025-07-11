@@ -61,20 +61,6 @@ export const performOAuth = async (provider: 'google') => {
   if (res.type === "success") {
     const { url } = res;
     const session = await createSessionFromUrl(url);
-
-    if (session?.user?.id) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("auth_id", session.user.id)
-        .maybeSingle();
-
-      if (profile) {
-        router.replace("/(app)/dashboard");
-      } else {
-        router.replace("/(app)/userdetails");
-      }
-    }
   }
 };
 
@@ -103,18 +89,11 @@ export const useAuth = () => {
     if (url?.includes("access_token")) {
       createSessionFromUrl(url)
         .then(async (session) => {
-          if (session?.user?.id) {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("*")
-              .eq("auth_id", session.user.id)
-              .maybeSingle();
-
-            if (profile) {
-              router.replace("/(app)/dashboard");
-            } else {
-              router.replace("/(app)/userdetails");
-            }
+          if (session) {
+            console.log("Session created:", session);
+            router.replace("/(app)/dashboard");
+          } else {
+            console.error("No session created from URL");
           }
         })
         .catch((err) => console.error("Auth error:", err));

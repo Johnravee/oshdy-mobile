@@ -1,18 +1,8 @@
 /**
  * @file Dashboard.tsx
- * @component Dashboard
  * @description
- * Main landing screen of the app providing quick access to reservation actions and calendar availability.
- *
- * @features
- * - Displays actionable cards for reservations, history, designs, and menu
- * - Check schedule availability via calendar modal
- * - Lottie animations and dynamic feedback for date checking
- *
- * @author John Rave Mimay
- * @created 2025-07-09
+ * Dashboard screen with embedded User Profile Modal if no profile exists.
  */
-
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -21,9 +11,14 @@ import {
   TouchableHighlight,
   Modal,
   Pressable,
-  ActivityIndicator,
   ImageBackground,
   ScrollView,
+  TextInput,
+  KeyboardAvoidingView,
+  ActivityIndicator,
+  Platform,
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,8 +28,12 @@ import { IMAGES } from '@/constants/Images';
 import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
 import { useAvailableSchedules } from '@/hooks/useAvailableSchedules';
-
-
+import { useHasProfile } from '@/hooks/useHasProfile';
+import Spinner from '@/components/ui/spinner';
+import { useInsertUserProfile } from '@/hooks/useInsertUserProfile';
+import { useAuthContext } from '@/context/AuthContext';
+import { useProfileContext } from '@/context/ProfileContext';
+import HorizontalCarousel from '@/components/ui/HorizontalCarousel';
 
 
 interface Card {
@@ -45,19 +44,70 @@ interface Card {
   path: string;
 }
 
+const sampleMenus = [
+  {
+    id: 1,
+    title: 'Beef Mushroom Stroganoff ',
+    background: IMAGES.beefMushroom,
+    path: '',
+  },
+  {
+    id: 2,
+    title: 'Pork Caldereta',
+    background: IMAGES.porkCaldereta,
+    path: '',
+  },
+  {
+    id: 3,
+    title: 'Chicken Cordon Bleu',
+    background: IMAGES.cordon,
+    path: '',
+  },
+  {
+    id: 4,
+    title: 'Fish Fillet in Sweet & Sour Sauce',
+    background: IMAGES.fishFillet,
+    path: '',
+  },
+  {
+    id: 5,
+    title: 'Buttered Mixed Vegies',
+    background: IMAGES.misvegie,
+    path: '',
+  },
+  {
+    id: 6,
+    title: 'Creamy Carbonara',
+    background: IMAGES.carbonara,
+    path: '',
+  },
+];
+
 export default function Dashboard() {
   const router = useRouter();
+  const { session } = useAuthContext();
+  const { setProfile } = useProfileContext();
+  const { isAvailable, checkingAvailability, error, checkDateAvailability } = useAvailableSchedules();
+  const { hasProfile, hasProfileLoading } = useHasProfile();
+
+  // Profile Modal
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
+  const [address, setAddress] = useState('');
+
   const [modalVisible, setModalVisible] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [searchingModal, setSearchingModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
-  const { isAvailable, checkingAvailability, error, checkDateAvailability } = useAvailableSchedules();
 
-
-
-
-
-
+  useEffect(() => {
+    if (!hasProfile && !hasProfileLoading) {
+      setShowProfileModal(true);
+    }else{
+      setShowProfileModal(false);
+    }
+  }, [hasProfile, hasProfileLoading]);
 
   useEffect(() => {
     if (modalVisible) {
@@ -69,6 +119,22 @@ export default function Dashboard() {
       setShowCalendar(false);
     }
   }, [modalVisible]);
+
+  const handleSaveProfile = async () => {
+    if (!name || !contact || !address) {
+      Alert.alert('Missing Information', 'Please fill in all fields');
+      return;
+    }
+    try {
+      await useInsertUserProfile(name, address, contact, session, setProfile);
+      setShowProfileModal(false);
+    } catch (err) {
+      console.log('Profile insert error', err);
+      Alert.alert('Error', 'Failed to save profile');
+    }
+  };
+
+  if (hasProfileLoading) return <Spinner />;
 
   const cards: Card[] = [
     {
@@ -109,24 +175,8 @@ export default function Dashboard() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 h-full bg-primary relative flex justify-center">
-      <View className="flex justify-between items-start mt-5 mb-5  px-5 bg-primary p-5">
-        <Text className="text-white text-4xl font-bold">
-          Welcome back! Let’s Plan Your Event.
-        </Text>
-        <TouchableHighlight
-          onPress={() => setModalVisible(true)}
-          underlayColor="#ddd"
-          className="rounded-full mt-5"
-        >
-          <View className="h-16 w-full bg-white rounded-lg flex-row items-center justify-between px-5">
-            <Text className="text-[#33333] text-lg font-semibold">
-              Check Available Schedules
-            </Text>
-            <FontAwesome name="calendar" size={20} color="#33333" />
-          </View>
-        </TouchableHighlight>
-      </View>
+    <SafeAreaView className="flex-1 h-full relative flex justify-center">
+
 
       {/* Searching Modal */}
       <Modal animationType="fade" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
@@ -213,9 +263,28 @@ export default function Dashboard() {
         </View>
       </CustomModal>
 
-      
 
-      <View className="flex-1 justify-center items-center rounded-t-2xl bg-white shadow-lg relative overflow-hidden py-5">
+
+        <View className="flex justify-between items-start  
+          px-5 bg-primary p-5">
+          <Text className="text-white text-4xl font-bold">
+            Welcome back! Let’s Plan Your Event.
+          </Text>
+          <TouchableHighlight
+            onPress={() => setModalVisible(true)}
+            underlayColor="#ddd"
+            className="rounded-full mt-5"
+          >
+            <View className="h-16 w-full bg-white rounded-lg flex-row items-center justify-between px-5">
+              <Text className="text-[#33333] text-lg font-semibold">
+                Check Available Schedules
+              </Text>
+              <FontAwesome name="calendar" size={20} color="#33333" />
+            </View>
+          </TouchableHighlight>
+        </View>
+
+        <View className="flex-1 justify-center items-center rounded-t-2xl bg-white shadow-lg relative overflow-hidden py-5">
         <ScrollView>
           <View className="w-full flex-row flex-wrap justify-between items-start px-4 gap-y-5">
             {cards.map((card) => (
@@ -237,8 +306,65 @@ export default function Dashboard() {
               </Pressable>
             ))}
           </View>
+          <HorizontalCarousel
+            title="Gourmet Selections"
+            items={sampleMenus}
+            imageKey="background"  
+            titleKey="title"
+            seeAllRoute="/(app)/menus"
+          />
         </ScrollView>
+
       </View>
+
+      {/* Profile Modal */}
+      <Modal visible={showProfileModal} transparent animationType="slide">
+        <View className="flex-1 bg-black/60 justify-center items-center px-5">
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            className="w-full"
+          >
+            <View className="bg-white rounded-2xl p-6 w-full shadow-lg">
+              <Text className="text-2xl font-bold text-center mb-4">Set Up Your Profile</Text>
+              <Text className="text-center text-gray-600 text-base mb-6">
+                Kindly provide a few details so we can better assist you.
+             </Text>
+
+              <Text className="mb-1">Full Name</Text>
+              <TextInput
+                className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+                placeholder="e.g., Juan Dela Cruz"
+                value={name}
+                onChangeText={setName}
+              />
+
+              <Text className="mb-1">Contact Number</Text>
+              <TextInput
+                className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+                placeholder="e.g., 09XXXXXXXXX"
+                keyboardType="phone-pad"
+                value={contact}
+                onChangeText={setContact}
+              />
+
+              <Text className="mb-1">Address</Text>
+              <TextInput
+                className="border border-gray-300 rounded-lg px-4 py-3 mb-6"
+                placeholder="e.g., 123 Street Name, City"
+                value={address}
+                onChangeText={setAddress}
+              />
+
+              <TouchableOpacity
+                className="bg-[#D4A83F] py-4 rounded-lg mb-2"
+                onPress={handleSaveProfile}
+              >
+                <Text className="text-white text-center font-bold text-lg">Save</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
