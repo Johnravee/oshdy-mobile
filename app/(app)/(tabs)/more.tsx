@@ -31,9 +31,8 @@ import Spinner from '@/components/ui/spinner';
 import { useAuthContext } from '@/context/AuthContext';
 import Avatar from '@/components/ui/avatar';
 import BackButton from '@/components/ui/back-button';
-import { supabase } from '@/lib/supabase';
-import { useUserBookingCountByUser } from '@/hooks/useBookingCountByUser';
-import { useCompletedBookByUser } from '@/hooks/useCompletedBookByUser';
+
+
 import { useProfileContext } from '@/context/ProfileContext';
 
 export default function Profile() {
@@ -46,27 +45,8 @@ export default function Profile() {
 
   if(!profile?.id || !session) return <Spinner />;
 
-  const {
-    totalCount,
-    loadingTotal,
-    errorTotal,
-  } = useUserBookingCountByUser(profile?.id);
 
-  const {
-    completedCount,
-    loadingCompleted,
-    errorCompleted,
-  } = useCompletedBookByUser(profile?.id);
-
-  useEffect(() => {
-    if (errorTotal || errorCompleted) {
-      setErrorModalVisible(true);
-    }
-  }, [errorTotal, errorCompleted]);
-
-
-
-  if (!profile || !session || loadingTotal || loadingCompleted) {
+  if (!profile || !session ) {
     return <Spinner />;
   }
 
@@ -93,9 +73,7 @@ export default function Profile() {
             <Text className="text-lg font-bold mb-4 text-center text-red-600">
               Something went wrong
             </Text>
-            <Text className="text-base text-gray-700 text-center">
-              {errorTotal || errorCompleted}
-            </Text>
+           
           </View>
         </View>
       </Modal>
@@ -114,37 +92,7 @@ export default function Profile() {
           />
         </View>
 
-        {/* Stats */}
-        <View className="relative top-[-15%] w-screen h-1/3 flex justify-center items-center z-50">
-          <View className="bg-white shadow-lg w-[90%] h-full rounded-lg flex justify-evenly items-center flex-row">
-            {/* Total Bookings */}
-            <View className="flex-row gap-3">
-              <View className="flex justify-center items-center">
-                <FontAwesome name="book" size={40} color="#2E3A8C" />
-              </View>
-              <View className="flex justify-center items-start">
-                <Text className="text-2xl text-dark font-bold">
-                  {totalCount >= 10 || totalCount === 0 ? totalCount : `0${totalCount}`}
-                </Text>
-                <Text className="text-base text-gray-400">Total Bookings</Text>
-              </View>
-            </View>
-
-            {/* Completed Bookings */}
-            <View className="flex-row gap-3">
-              <View className="flex justify-center items-center">
-                <FontAwesome name="check-circle" size={40} color="#4CAF50" />
-              </View>
-              <View className="flex justify-center items-start">
-                <Text className="text-2xl text-dark font-bold">
-                  {completedCount >= 10 || completedCount === 0 ? completedCount : `0${completedCount}`}
-                </Text>
-                <Text className="text-base text-gray-400">Completed</Text>
-              </View>
-            </View>
-          </View>
         </View>
-      </View>
 
       {/* Navigation Section */}
       <View className="h-1/2 w-screen bg-white justify-center items-center flex-col">

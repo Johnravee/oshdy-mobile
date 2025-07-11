@@ -55,6 +55,9 @@ export default function AppLayout() {
           ),
         }}
       />
+
+
+      
       <Tabs.Screen
         name="chat"
         options={{

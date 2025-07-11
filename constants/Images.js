@@ -12,6 +12,10 @@ import cordon from '../assets/images/cordon.jpg'
 import fishFillet from '../assets/images/fishfillet.jpg'
 import misvegie from '../assets/images/mixvegie.jpg'
 import carbonara from '../assets/images/carbonara.jpg'
+import lightblue from '../assets/images/lightblue.jpg'
+import wedding from '../assets/images/wedding.png'
+import kidsparty from '../assets/images/kidsparty.png'
+import debut from '../assets/images/debut.png'
 
 export const IMAGES = {
     oshdyLogo, 
@@ -21,11 +25,15 @@ export const IMAGES = {
     orangecardbg,
     navycardbg,
     yellowredcardbg,
+    lightblue,
     contract,
     beefMushroom,
     porkCaldereta,
     cordon,
     fishFillet,
     misvegie,
-    carbonara
+    carbonara,
+    wedding,
+    kidsparty,
+    debut
 }
