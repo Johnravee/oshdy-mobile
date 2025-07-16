@@ -18,7 +18,7 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 // Provider component
 export const ProfileProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<ProfileType | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { session } = useAuthContext();
 
@@ -26,7 +26,7 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
     const fetchProfile = async () => {
       if (!session?.user.id) return;
 
-      setLoading(true);
+      setProfileLoading(true);
       try {
         const { data, error } = await supabase
           .from("profiles")
@@ -41,7 +41,7 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
         console.error("Error fetching profile:", err);
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
-        setLoading(false);
+        setProfileLoading(false);
       }
     };
 
@@ -49,7 +49,7 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
   }, [session?.user.id]);
 
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, loading, error }}>
+    <ProfileContext.Provider value={{ profile, setProfile, profileLoading, error }}>
       {children}
     </ProfileContext.Provider>
   );

@@ -30,7 +30,7 @@ const actions = [
     icon: 'search',
     backgroundColor: '#EAF6FB',
     iconColor: '#73C8EE',
-    path: '/(app)/request-form',
+    path: '/(app)/calendar',
   },
 ];
 

@@ -41,12 +41,12 @@ const createSessionFromUrl = async (url: string) => {
   return data.session;
 };
 
-export const performOAuth = async (provider: 'google') => {
+export const performOAuth = async (provider: 'google' | 'twitter' | 'notion') => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo,
-      skipBrowserRedirect: true,
+      skipBrowserRedirect: false,
     },
   });
 

@@ -31,7 +31,6 @@ import CustomModal from '@/components/ui/custom-modal';
 import LottieView from 'lottie-react-native';
 import isValidEmail from '@/utils/email-checker';
 import Spinner from '@/components/ui/spinner';
-
 SplashScreen.setOptions({
   duration: 1000,
   fade: true,
@@ -113,11 +112,6 @@ export default function Login() {
     setIsCooldown(false);
   }
 
-
-
-  const handleGoogleSignIn = async () => {
-  performOAuth('google')
-};
 
 
   return (
@@ -245,21 +239,40 @@ export default function Login() {
                 </View>
               </View>
 
-              {/* Social login */}
-              <View className="flex flex-row justify-center gap-10 w-full max-w-md mt-10">
-                  <View className="w-2/3">
-                    <TouchableHighlight
-                      onPress={handleGoogleSignIn}
-                      underlayColor="#e0e0e0"
-                      className="w-auto bg-white shadow-md py-3 px-7 rounded-md flex-row items-center justify-center"
-                    >
-                      <View className="flex-row items-center gap-3">
-                        <FontAwesome name="google" size={24} color="#FF0000" />
-                        <Text className="text-base text-[#333] font-semibold">Sign In with Google</Text>
-                      </View>
-                    </TouchableHighlight>
-                  </View>
-                </View>
+              
+        <View className="w-full max-w-md mt-10 items-center">
+          <View className="flex-row justify-center gap-6">
+            {/* Google */}
+            <TouchableHighlight
+              onPress={() => performOAuth('google')}
+              underlayColor="#e0e0e0"
+              className="w-20 h-20 bg-white rounded-xl items-center justify-center shadow-md aspect-square"
+            >
+              <FontAwesome name="google" size={30} color="#FF0000" />
+            </TouchableHighlight>
+
+            {/* Twitter/X */}
+            <TouchableHighlight
+              onPress={() => performOAuth('twitter')}
+              underlayColor="#e0e0e0"
+              className="w-20 h-20 bg-white rounded-xl items-center justify-center shadow-md aspect-square"
+            >
+              <FontAwesome name="twitter" size={30} color="#1DA1F2" />
+            </TouchableHighlight>
+
+            {/* Notion */}
+            <TouchableHighlight
+              onPress={() => performOAuth('notion')}
+              underlayColor="#e0e0e0"
+              className="w-20 h-20 bg-white rounded-xl items-center justify-center shadow-md aspect-square"
+            >
+              <Image
+                source={IMAGES.notion}
+                style={{ width: 30, height: 30, resizeMode: 'contain' }}
+              />
+            </TouchableHighlight>
+          </View>
+        </View>
 
 
               {/* Consent */}

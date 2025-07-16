@@ -27,7 +27,7 @@ export default function HorizontalCarousel({
   const router = useRouter();
   
   return (
-    <SafeAreaView className="flex-1 px-4 py-6 bg-white">
+    <SafeAreaView className="flex-1 px-4 py-6 bg-background">
       {/* Header */}
       <View className="flex-row justify-between items-center px-3 mb-4">
         <Text className="text-xl font-bold text-gray-800">{title}</Text>

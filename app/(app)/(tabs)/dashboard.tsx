@@ -78,7 +78,7 @@ export default function Dashboard() {
       },
     ];
   return (
-    <SafeAreaView className="bg-white">
+    <SafeAreaView className="bg-background">
       <ScrollView>
         
         <View className='mb-3'>

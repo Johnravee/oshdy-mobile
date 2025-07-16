@@ -15,7 +15,7 @@ import { useAuthContext } from '@/context/AuthContext';
 import { useInsertUserProfile } from '@/hooks/useInsertUserProfile';
 
 export default function ProfileForm() {
-  const { profile, setProfile } = useProfileContext();
+  const { profile, setProfile, profileLoading } = useProfileContext();
   const { session } = useAuthContext();
   const router = useRouter();
 
@@ -26,10 +26,19 @@ export default function ProfileForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (profile) {
+    if (!profileLoading && profile) {
       router.replace('/(app)/(tabs)/dashboard');
     }
-  }, [profile]);
+  }, [profile, profileLoading]);
+
+ 
+  if (profileLoading || profile) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#F3C663" />
+      </View>
+    );
+  }
 
   const validateFields = () => {
     const newErrors: typeof errors = { name: '', contact: '', address: '' };

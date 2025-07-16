@@ -16,6 +16,7 @@ import lightblue from '../assets/images/lightblue.jpg'
 import wedding from '../assets/images/wedding.png'
 import kidsparty from '../assets/images/kidsparty.png'
 import debut from '../assets/images/debut.png'
+import notion from '../assets/images/notion.png'
 
 export const IMAGES = {
     oshdyLogo, 
@@ -35,5 +36,6 @@ export const IMAGES = {
     carbonara,
     wedding,
     kidsparty,
-    debut
+    debut,
+    notion
 }

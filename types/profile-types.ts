@@ -12,6 +12,6 @@ export type ProfileType = {
  export interface ProfileContextType {
     profile: ProfileType | null;
     setProfile: React.Dispatch<React.SetStateAction<ProfileType | null>>;
-    loading: boolean;
+    profileLoading: boolean;
     error: string | null;
   }; 
