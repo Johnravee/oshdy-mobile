@@ -38,6 +38,7 @@ export const useInsertUserProfile = async (
         address,
         contact_number,
         fcm_token,
+        is_admin: false,
       },
       { onConflict: 'auth_id' }
     )

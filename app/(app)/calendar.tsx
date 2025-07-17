@@ -5,6 +5,7 @@ import {
   ScrollView,
   ActivityIndicator,
   TextInput,
+  Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -12,8 +13,10 @@ import dayjs from 'dayjs';
 
 import BackButton from '@/components/ui/back-button';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'expo-router';
 
 export default function Calendar() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [dates, setDates] = useState<
     { date: string; status: 'available' | 'unavailable' }[]
@@ -85,7 +88,9 @@ export default function Calendar() {
 
   return (
     <SafeAreaView className="flex-1 bg-background px-5 pt-6">
-      <BackButton variant="dark" />
+      <View className='z-50'>
+        <BackButton variant="dark" />
+      </View>
 
       <View className="mb-4">
         <Text className="text-2xl font-extrabold text-center text-[#4b3f2f]">
@@ -115,8 +120,9 @@ export default function Calendar() {
           {filteredDates.map(({ date, status }, index) => {
             const isToday = dayjs(date).isSame(dayjs(), 'day');
             return (
-              <View
+              <Pressable
                 key={index}
+                onPress={() => router.push({ pathname: '/reservation', params: { date } })}
                 className={`p-4 rounded-xl shadow-sm border mt-2 ${
                   status === 'unavailable'
                     ? 'bg-red-50 border-red-300'
@@ -151,7 +157,7 @@ export default function Calendar() {
                     color={status === 'unavailable' ? '#DC2626' : '#16A34A'}
                   />
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </ScrollView>
