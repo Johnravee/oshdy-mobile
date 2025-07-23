@@ -29,6 +29,7 @@ import { useLocalSearchParams } from 'expo-router';
 import Spinner from '@/components/ui/spinner';
 import { useUserFetchReservationWithJoins } from '@/hooks/useUserFetchResevationWithJoins';
 import BackButton from '@/components/ui/back-button';
+import { updateReservationStatusById } from '@/lib/api/updateReservationStatusById';
 
 export default function ReservationStatus() {
   // Extract reservation_id param from URL
@@ -52,6 +53,8 @@ export default function ReservationStatus() {
     { label: 'Contract Signing', icon: 'pencil-square-o', description: 'Sign the contract' },
     { label: 'Ongoing', icon: 'play-circle', description: 'Reservation in progress' },
     { label: 'Completed', icon: 'check', description: 'Reservation completed' },
+    { label: 'Canceled', icon: 'times-circle', description: 'Reservation canceled' },
+
   ];
 
   const stepMap: Record<string, number> = {
@@ -60,6 +63,7 @@ export default function ReservationStatus() {
     contract_signing: 2,
     ongoing: 3,
     completed: 4,
+    canceled: 5
   };
 
   // Determine current step based on reservation status or default to pending
@@ -205,30 +209,59 @@ export default function ReservationStatus() {
                 <Text className="text-secondary font-semibold text-lg">Event Menu</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
+             <TouchableOpacity
                 onPress={() => {
-                  if (pendingReservation.status !== 'pending') {
+                  if (pendingReservation.status !== 'pending' && pendingReservation.status !== 'canceled') {
                     setModalVisible('request');
                   }
                 }}
                 className={`w-full border rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow ${
-                  pendingReservation.status === 'pending'
+                  pendingReservation.status === 'pending' || pendingReservation.status === 'cancelled'
                     ? 'bg-gray-100 border-gray-300'
                     : 'bg-white border-gray-300'
                 }`}
-                disabled={pendingReservation.status === 'pending'}
+                disabled={pendingReservation.status === 'pending' || pendingReservation.status === 'canceled'}
               >
                 <FontAwesome
                   name="envelope"
                   size={24}
-                  color={pendingReservation.status === 'pending' ? '#A0AEC0' : '#2563EB'}
+                  color={
+                    pendingReservation.status === 'pending' || pendingReservation.status === 'canceled'
+                      ? '#A0AEC0'
+                      : '#2563EB'
+                  }
                 />
                 <Text
                   className={`font-semibold text-lg ${
-                    pendingReservation.status === 'pending' ? 'text-gray-400' : 'text-secondary'
+                    pendingReservation.status === 'pending' || pendingReservation.status === 'canceled'
+                      ? 'text-gray-400'
+                      : 'text-secondary'
                   }`}
                 >
                   Request
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => updateReservationStatusById(reservation_id, 'canceled')}
+                className={`w-full border rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow ${
+                  pendingReservation.status === 'pending'
+                    ? 'bg-white border-red-300'
+                    : 'bg-gray-100 border-gray-300'
+                }`}
+                disabled={pendingReservation.status !== 'pending'}
+              >
+                <FontAwesome
+                  name="times-circle"
+                  size={24}
+                  color={pendingReservation.status === 'pending' ? '#DC2626' : '#A0AEC0'}
+                />
+                <Text
+                  className={`font-semibold text-lg ${
+                    pendingReservation.status === 'pending' ? 'text-red-600' : 'text-gray-400'
+                  }`}
+                >
+                  Cancel
                 </Text>
               </TouchableOpacity>
             </View>

@@ -1,11 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { logError } from "./logger";
 
 export const setItem = async (key: string, value: string) => {
 
     try {
         await AsyncStorage.setItem(key, value);
     } catch (error) {
-        console.log("Error saving data on Async Storage", error);
+        logError("Error saving data on Async Storage", error);
     }
 };
 
@@ -16,6 +17,6 @@ export const getItem = async (key: string) => {
             return value;
         }
     } catch (error) {
-        console.log("Error retrieving data from Async Storage", error);
+        logError("Error retrieving data from Async Storage", error);
     }
 }

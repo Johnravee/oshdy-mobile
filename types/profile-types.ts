@@ -13,5 +13,4 @@ export type ProfileType = {
     profile: ProfileType | null;
     setProfile: React.Dispatch<React.SetStateAction<ProfileType | null>>;
     profileLoading: boolean;
-    error: string | null;
   }; 

@@ -61,7 +61,7 @@ export default function Reservation() {
     event: false,
     guests: false,
   });
-  const { insertReservation, loading, error: insertError, success } = useInsertReservation();
+  const { insertReservation, loading, success } = useInsertReservation();
 
 
 

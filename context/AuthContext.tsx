@@ -16,9 +16,7 @@ import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { AuthContextType } from "@/types/auth-types";
-
-
-
+import { logError, logInfo, logSuccess } from "@/utils/logger";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -28,9 +26,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const initialize = async () => {
+      logInfo("🔑 AuthProvider → Initializing auth session...");
+
       const { data, error } = await supabase.auth.getSession();
       if (error) {
-        console.error("Session Error:", error.message);
+        logError("🔑 AuthProvider → Failed to get session", error.message);
         setInit(false);
         return;
       }
@@ -38,33 +38,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const currentSession = data.session ?? null;
       setSession(currentSession);
 
+      if (currentSession) {
+        logSuccess("🔑 AuthProvider → Session restored", currentSession.user);
+      } else {
+        logInfo("🔑 AuthProvider → No existing session");
+      }
+
       setInit(false);
     };
 
     initialize();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession ?? null);
+      logInfo(`🔁 AuthProvider → Auth state changed: ${event}`);
 
-    
+      if (newSession) {
+        logSuccess("✅ New session established", newSession.user);
+      } else {
+        logInfo("🚪 Session ended or signed out");
+      }
     });
 
     return () => {
       listener?.subscription.unsubscribe();
+      logInfo("🧹 AuthProvider → Auth listener unsubscribed");
     };
   }, []);
 
-
-
   const logout = async () => {
+    logInfo("🚪 Logging out...");
     await supabase.auth.signOut();
     setSession(null);
+    logSuccess("✅ Logged out successfully");
   };
 
   return (
-    <AuthContext.Provider
-      value={{ session, init, logout }}
-    >
+    <AuthContext.Provider value={{ session, init, logout }}>
       {children}
     </AuthContext.Provider>
   );

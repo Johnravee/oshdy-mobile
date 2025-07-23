@@ -121,7 +121,7 @@ export default function Dashboard() {
             items={design}
             imageKey="background"
             titleKey="title"
-            seeAllRoute="/(app)/menus"
+            seeAllRoute="/(app)/designs"
             />
         </View>
 

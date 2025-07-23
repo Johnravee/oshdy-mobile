@@ -16,56 +16,72 @@ import * as Linking from "expo-linking";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
+import { logError, logInfo, logSuccess } from "@/utils/logger";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const redirectTo = makeRedirectUri({
-  scheme: "myapp",
-});
+const redirectTo = makeRedirectUri({ scheme: "myapp" });
 
 const createSessionFromUrl = async (url: string) => {
+  logInfo("🔁 Parsing redirect URL to extract tokens...");
+
   const { params, errorCode } = QueryParams.getQueryParams(url);
-
   if (errorCode) throw new Error(errorCode);
-  const { access_token, refresh_token } = params;
 
-  if (!access_token || !refresh_token) return null;
+  const { access_token, refresh_token } = params;
+  if (!access_token || !refresh_token) {
+    logError("❌ Missing tokens from redirect URL", null);
+    return null;
+  }
 
   const { data, error } = await supabase.auth.setSession({
     access_token,
     refresh_token,
   });
 
-  if (error) throw error;
+  if (error) {
+    logError("❌ Failed to set session from tokens", error.message);
+    throw error;
+  }
 
+  logSuccess("✅ Session successfully created from redirect URL");
   return data.session;
 };
 
 export const performOAuth = async (provider: 'google' | 'twitter' | 'notion') => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      redirectTo,
-      skipBrowserRedirect: false,
-    },
-  });
+  try {
+    logInfo(`🌐 Starting OAuth flow with provider: ${provider}`);
 
-  if (error) throw error;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo,
+        skipBrowserRedirect: false,
+      },
+    });
 
-  const res = await WebBrowser.openAuthSessionAsync(
-    data?.url ?? "",
-    redirectTo
-  );
+    if (error) throw error;
 
-  if (res.type === "success") {
-    const { url } = res;
-    const session = await createSessionFromUrl(url);
-    // Optional: you can navigate here too, but we handle it in useAuth
+    const res = await WebBrowser.openAuthSessionAsync(
+      data?.url ?? "",
+      redirectTo
+    );
+
+    if (res.type === "success") {
+      logSuccess("🔁 OAuth session completed, processing callback URL");
+      await createSessionFromUrl(res.url);
+    } else {
+      logInfo("⚠️ OAuth session cancelled or dismissed");
+    }
+  } catch (error) {
+    logError("❌ OAuth flow failed", error);
+    throw error;
   }
 };
 
 export const sendMagicLink = async (email: string) => {
   try {
+    logInfo(`📧 Sending magic link to: ${email}`);
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -74,9 +90,10 @@ export const sendMagicLink = async (email: string) => {
     });
 
     if (error) throw error;
-    console.log("Magic link sent!");
+
+    logSuccess("✅ Magic link sent successfully");
   } catch (error) {
-    console.error("Error sending magic link:", error);
+    logError("❌ Error sending magic link", error);
     throw error;
   }
 };
@@ -87,16 +104,18 @@ export const useAuth = () => {
 
   useEffect(() => {
     if (url?.includes("access_token")) {
+      logInfo("🔁 Detected deep link with auth tokens. Creating session...");
+
       createSessionFromUrl(url)
         .then(async (session) => {
           if (!session) {
-            console.error("No session created from URL");
+            logError("❌ No session could be created from URL", null);
             return;
           }
 
           const auth_id = session.user.id;
+          logInfo(`👤 Checking profile for auth_id: ${auth_id}`);
 
-          // ✅ Check if user profile exists
           const { data: profile, error } = await supabase
             .from("profiles")
             .select("*")
@@ -104,14 +123,15 @@ export const useAuth = () => {
             .single();
 
           if (error || !profile) {
-            console.warn("Profile not found. Redirecting to profile setup...");
+            logInfo("👤 Profile not found → Redirecting to onboarding");
             router.replace("/(app)/onboarding");
           } else {
+            logSuccess("👤 Profile found → Redirecting to dashboard");
             router.replace("/(app)/dashboard");
           }
         })
         .catch((err) => {
-          console.error("Auth error:", err);
+          logError("❌ Error during deep link session creation", err.message);
         });
     }
   }, [url]);

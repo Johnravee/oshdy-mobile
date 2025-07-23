@@ -1,21 +1,4 @@
-/**
- * @file Profile.tsx
- * @component Profile
- * @description
- * User profile screen displaying avatar, booking stats, navigation options, and logout functionality.
- *
- * @features
- * - Shows total and completed bookings using custom hooks
- * - Displays user avatar and name
- * - Provides navigation to dashboard and profile details
- * - Includes error modal for failed fetches and logout handling
- *
- * @author John Rave Mimay
- * @created 2025-07-09
- */
-
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -27,34 +10,21 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Spinner from '@/components/ui/spinner';
 import { useAuthContext } from '@/context/AuthContext';
-import Avatar from '@/components/ui/avatar';
-import BackButton from '@/components/ui/back-button';
-
-
 import { useProfileContext } from '@/context/ProfileContext';
+import Avatar from '@/components/ui/avatar';
 
 export default function Profile() {
   const router = useRouter();
   const { session, logout } = useAuthContext();
   const { profile, setProfile } = useProfileContext();
-  
-
   const [errorModalVisible, setErrorModalVisible] = useState(false);
-
-  // if(!profile?.id || !session) return <Spinner />;
-
-
-  // if (!profile || !session ) {
-  //   return <Spinner />;
-  // }
 
   const handleLogout = async () => {
     try {
       await logout();
       router.replace('/login');
-      setProfile(null); // Clear profile context on logout
+      setProfile(null);
     } catch (error) {
       console.error("Logout error:", error);
       setErrorModalVisible(true);
@@ -62,9 +32,7 @@ export default function Profile() {
   };
 
   return (
-    <SafeAreaView className="flex-1 h-screen w-screen">
-      <StatusBar hidden={true} />
-
+    <SafeAreaView className="flex-1 bg-white">
       {/* Error Modal */}
       <Modal
         animationType="fade"
@@ -72,70 +40,102 @@ export default function Profile() {
         visible={errorModalVisible}
         onRequestClose={() => setErrorModalVisible(false)}
       >
-        <View className="flex-1 bg-transparent justify-end">
-          <Pressable className="flex-1 w-full" onPress={() => setErrorModalVisible(false)} />
-          <View className="w-full h-1/3 bg-white rounded-t-3xl p-5 relative shadow-lg">
+        <View className="flex-1 justify-end bg-black/30">
+          <Pressable className="flex-1" onPress={() => setErrorModalVisible(false)} />
+          <View className="w-full h-1/3 bg-white rounded-t-3xl p-6 shadow-lg">
             <Pressable
               onPress={() => setErrorModalVisible(false)}
-              className="absolute top-4 right-4 z-10"
+              className="absolute top-4 right-4"
             >
-              <FontAwesome name="close" size={24} color="#333" />
+              <FontAwesome name="close" size={22} color="#333" />
             </Pressable>
-            <Text className="text-lg font-bold mb-4 text-center text-red-600">
-              Something went wrong
+            <Text className="text-center text-lg font-bold text-red-600 mt-6">
+              Something went wrong. Please try again.
             </Text>
-           
           </View>
         </View>
       </Modal>
 
-      {/* Top Section */}
-      <View className="bg-primary h-1/2 w-screen">
-        <View className="absolute top-5 left-5">
-          <BackButton variant="white" />
-        </View>
+      {/* Header with avatar and info */}
+      <View className="bg-secondary px-5 pt-6 pb-4 rounded-b-3xl">
+        <View className="flex-row items-center gap-3">
+          {/* Avatar */}
+          <View className="justify-center items-center">
+            <Avatar
+              avatarUrl={session?.user?.user_metadata?.avatar_url}
+            />
+          </View>
 
-        {/* Avatar */}
-        <View className="w-screen h-full items-center justify-center flex-col gap-10">
-          <Avatar
-            avatarUrl={session?.user?.user_metadata?.avatar_url}
-            name={profile?.name || session?.user?.user_metadata?.full_name}
-          />
-        </View>
-
-        </View>
-
-      {/* Navigation Section */}
-      <View className="h-1/2 w-screen bg-white justify-center items-center flex-col">
-        <View className="flex-col justify-center items-center space-y-4 w-2/3 gap-5">
-          {/* Home */}
-          <TouchableOpacity
-            className="w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2"
-            onPress={() => router.push('/(app)/(tabs)/dashboard')}
-          >
-            <FontAwesome name="home" size={20} color="#000" />
-            <Text className="text-dark font-bold">Home</Text>
-          </TouchableOpacity>
-
-          {/* Profile Details */}
-          <TouchableOpacity
-            className="w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2"
-            onPress={() => router.push('/(app)/pDetails')}
-          >
-            <FontAwesome name="user" size={20} color="#000" />
-            <Text className="text-dark font-bold">Profile Details</Text>
-          </TouchableOpacity>
-
-          {/* Logout */}
-          <TouchableOpacity
-            className="w-full bg-white px-4 py-4 rounded-lg items-center border shadow-md flex-row space-x-3 gap-2"
-            onPress={handleLogout}
-          >
-            <FontAwesome name="sign-out" size={20} color="red" />
-            <Text className="text-red-600 font-bold">Log out</Text>
-          </TouchableOpacity>
+          {/* Name & Email */}
+          <View className="flex-1 justify-center">
+            <Text className="text-lg font-bold text-white leading-tight">
+              {profile?.name || 'Guest'}
+            </Text>
+            <Text className="text-sm text-gray-200">
+              {session?.user?.email}
+            </Text>
+          </View>
         </View>
       </View>
+
+      <View className="h-px bg-gray-200 mx-5 mb-4" />
+
+      {/* Options */}
+      <View className="flex-1 px-5 space-y-10">
+
+        {/* Account Section */}
+        <View className="space-y-4 mt-3">
+          <Text className="text-sm font-bold text-gray-500 uppercase">Account</Text>
+          <OptionItem icon="user" text="Edit Profile" onPress={() => router.push('/(app)/pDetails')} />
+        </View>
+
+        {/* My Events Section */}
+        <View className="space-y-4 mt-3">
+          <Text className="text-sm font-bold text-gray-500 uppercase">My Events</Text>
+          <OptionItem icon="history" text="My Reservations" onPress={() => router.push('/(app)/(reservations)/reservation-history')} />
+          <OptionItem icon="calendar" text="Event Calendar" onPress={() => router.push('/(app)/calendar')} />
+        </View>
+
+        {/* App Section */}
+        <View className="space-y-4 mt-3">
+          <Text className="text-sm font-bold text-gray-500 uppercase">App</Text>
+          <OptionItem icon="bell" text="Notification Settings" onPress={() => {}} />
+          <OptionItem icon="question-circle" text="Support / Help" onPress={() => {}} />
+          <OptionItem icon="info-circle" text="About App" onPress={() => {}} />
+        </View>
+
+        {/* Logout Section */}
+        <View className="space-y-4 pt-4">
+          <OptionItem icon="sign-out" text="Log Out" onPress={handleLogout} color="red" />
+        </View>
+
+      </View>
     </SafeAreaView>
+  );
+}
+
+// Reusable option component
+function OptionItem({
+  icon,
+  text,
+  onPress,
+  color = "#1F2937"
+}: {
+  icon: any;
+  text: string;
+  onPress: () => void;
+  color?: string;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      className="w-full flex-row items-center justify-between bg-gray-100 rounded-2xl px-4 py-4 mt-2 shadow-sm"
+    >
+      <View className="flex-row items-center gap-3">
+        <FontAwesome name={icon} size={20} color={color} />
+        <Text className="text-base font-medium" style={{ color }}>{text}</Text>
+      </View>
+      <FontAwesome name="angle-right" size={20} color={color} />
+    </TouchableOpacity>
   );
 }

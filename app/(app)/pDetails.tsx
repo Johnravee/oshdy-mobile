@@ -13,16 +13,15 @@
  * @author John Rave Mimay
  */
 
-
 import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import Spinner from '@/components/ui/spinner';
 import InputComponent from '@/components/ui/inputText';
-
 import BackButton from '@/components/ui/back-button';
 import { useProfileContext } from '@/context/ProfileContext';
+import { logError, logInfo, logSuccess } from '@/utils/logger';
 
 type ProfileForm = {
   name: string;
@@ -47,33 +46,33 @@ export default function ProfileDetails() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sync profile data to local form state on mount or profile change
   useEffect(() => {
     if (profile) {
-      setForm({
-        name: profile?.name || '',
-        email: profile?.email || '',
-        phone: profile?.contact_number || '',
-        address: profile?.address || '',
-        uuid: profile?.auth_id || '',
-      });
+      const updatedForm = {
+        name: profile.name || '',
+        email: profile.email || '',
+        phone: profile.contact_number || '',
+        address: profile.address || '',
+        uuid: profile.auth_id || '',
+      };
+      setForm(updatedForm);
+      logInfo('Profile synced from context', updatedForm);
     }
     setLoading(false);
   }, [profile]);
 
-  /**
-   * Handles updating individual form fields.
-   */
   const handleChange = (key: keyof ProfileForm, value: string) => {
-    setForm(prev => ({ ...prev, [key]: value }));
+    setForm(prev => {
+      const updated = { ...prev, [key]: value };
+      logInfo(`Field changed: ${key}`, { old: prev[key], new: value });
+      return updated;
+    });
   };
 
-  /**
-   * Submits the updated profile data to Supabase.
-   */
   const handleSave = async () => {
     setError(null);
     setIsSaving(true);
+    logInfo('Attempting to save profile...', form);
 
     try {
       const { error: updateError } = await supabase
@@ -86,19 +85,20 @@ export default function ProfileDetails() {
         .eq('auth_id', form.uuid);
 
       if (updateError) {
-        console.error('Error saving profile:', updateError.message);
+        logError('Supabase update error', updateError);
         setError('Failed to update profile. Please try again.');
       } else {
-        // Update context
-        setProfile({
+        const updated = {
           ...profile!,
           name: form.name,
           contact_number: form.phone,
           address: form.address,
-        });
+        };
+        setProfile(updated);
+        logSuccess('Profile updated successfully', updated);
       }
-    } catch (err) {
-      console.error('Unexpected error:', err);
+    } catch (err: any) {
+      logError('Unexpected error while saving profile', err);
       setError('An unexpected error occurred.');
     } finally {
       setIsSaving(false);
@@ -111,12 +111,10 @@ export default function ProfileDetails() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
 
-      {/* Back Button */}
       <View className="absolute top-5 left-5 z-10">
-        <BackButton variant='white' />
+        <BackButton variant="white" />
       </View>
 
-      {/* Background Circles */}
       <View className="absolute left-[-5%]">
         <View className="h-48 w-48 bg-primary rounded-full opacity-55 top-[-30%] left-[-15%]" />
         <View className="h-40 w-40 bg-primary rounded-full opacity-50 top-[-50%] left-[-30%]" />
@@ -126,12 +124,10 @@ export default function ProfileDetails() {
         <View className="h-20 w-20 bg-primary rounded-full opacity-50 top-[-45%] right-[-50%]" />
       </View>
 
-      {/* Title */}
       <View className="h-1/3 justify-center items-center">
         <Text className="text-dark font-bold text-2xl">Profile Details</Text>
       </View>
 
-      {/* Form Container */}
       <View className="flex-1 items-center bg-primary rounded-3xl">
         <View className="bg-white relative top-[-10%] w-[80%] shadow-lg rounded-xl p-5">
           <InputComponent

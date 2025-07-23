@@ -22,14 +22,12 @@
  * @created 2025-07-02
  */
 
-
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Reservation } from '@/types/reservation-types';
 import { useProfileContext } from '@/context/ProfileContext';
+import { logInfo, logSuccess, logError } from '@/utils/logger';
 
-
-// --- Hook ---
 export function useUserFetchReservationWithJoins(reservation_id: any) {
   const { profile } = useProfileContext();
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -40,11 +38,13 @@ export function useUserFetchReservationWithJoins(reservation_id: any) {
     if (!profile?.id) {
       setReservations([]);
       setError('User profile not found');
+      logError('🚫 Profile ID missing during fetch', null);
       return;
     }
 
     setIsFetching(true);
     setError(null);
+    logInfo(`📡 Fetching reservation [ID: ${reservation_id}] with joins...`);
 
     try {
       const { data, error: fetchError } = await supabase
@@ -60,11 +60,12 @@ export function useUserFetchReservationWithJoins(reservation_id: any) {
 
       if (fetchError) throw fetchError;
 
-      console.log('Reservation with joins data:', data);
-
+      logSuccess(`✅ Reservation fetch success [${data?.length || 0} result(s)]`);
       setReservations(data as Reservation[]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      const errorMsg = err instanceof Error ? err.message : 'An unknown error occurred';
+      logError('❌ Failed to fetch reservations with joins:', errorMsg);
+      setError(errorMsg);
       setReservations([]);
     } finally {
       setIsFetching(false);
@@ -90,13 +91,18 @@ export function useUserFetchReservationWithJoins(reservation_id: any) {
           const newReservation = payload.new as Reservation;
           const oldReservation = payload.old as Reservation;
 
+
           setReservations((current) => {
             switch (payload.eventType) {
               case 'INSERT':
+                logSuccess('🆕 New reservation inserted');
                 return [...current, newReservation];
               case 'UPDATE':
-                fetchReservationsWithJoins()
+                logInfo('🔁 Reservation updated - refetching...');
+                fetchReservationsWithJoins();
+                return current;
               case 'DELETE':
+                logInfo('🗑️ Reservation deleted');
                 return current.filter((res) => res.id !== oldReservation.id);
               default:
                 return current;
@@ -108,6 +114,7 @@ export function useUserFetchReservationWithJoins(reservation_id: any) {
 
     return () => {
       supabase.removeChannel(channel);
+      logInfo('📴 Supabase reservation channel unsubscribed');
     };
   }, [fetchReservationsWithJoins, profile?.id, reservation_id]);
 

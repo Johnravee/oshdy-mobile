@@ -8,19 +8,18 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { PGMTDataType } from '@/types/pgmt-types';
+import { logInfo, logSuccess, logError } from '@/utils/logger';
 
 /**
  * Hook to fetch PGMT data via Supabase RPC.
  * @returns {{
  *   pgmtData: PGMTDataType,
  *   pgmtLoading: boolean,
- *   pgmtError: string | null
  * }}
  */
 export function usePGMTData(): {
   pgmtData: PGMTDataType;
   pgmtLoading: boolean;
-  pgmtError: string | null;
 } {
   const [pgmtData, setPGMTData] = useState<PGMTDataType>({
     packages: [],
@@ -30,15 +29,15 @@ export function usePGMTData(): {
   });
 
   const [pgmtLoading, setPgmtLoading] = useState(true);
-  const [pgmtError, setPgmtError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPGMTData = async () => {
+      logInfo('📦 Fetching PGMT data...');
+
       const { data, error } = await supabase.rpc('get_pgm_data');
 
       if (error) {
-        console.error('PGMT Data Error:', error.message);
-        setPgmtError(error.message);
+        logError('❌ Failed to fetch PGMT data:', error.message);
       } else {
         setPGMTData({
           packages: data?.packages || [],
@@ -46,8 +45,8 @@ export function usePGMTData(): {
           menu: data?.menu || [],
           thememotif: data?.thememotif || [],
         });
+        logSuccess('✅ PGMT data fetched successfully');
       }
-
 
       setPgmtLoading(false);
     };
@@ -55,5 +54,5 @@ export function usePGMTData(): {
     fetchPGMTData();
   }, []);
 
-  return { pgmtData, pgmtLoading, pgmtError };
+  return { pgmtData, pgmtLoading };
 }

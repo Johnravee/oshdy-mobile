@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useAuthContext } from '@/context/AuthContext';
-import { useInsertUserProfile } from '@/hooks/useInsertUserProfile';
+import { InserUserProfile } from '@/lib/api/insertUserProfile';
 
 export default function ProfileForm() {
   const { profile, setProfile, profileLoading } = useProfileContext();
@@ -71,7 +71,7 @@ export default function ProfileForm() {
 
     try {
       setLoading(true);
-      const data = await useInsertUserProfile(
+      const data = await InserUserProfile(
         name,
         address,
         contact,

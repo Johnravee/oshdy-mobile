@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import BackButton from '@/components/ui/back-button';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
+import { logInfo, logSuccess, logError } from '@/utils/logger';
 
 export default function Calendar() {
   const router = useRouter();
@@ -23,7 +24,6 @@ export default function Calendar() {
   >([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Generate all days in current year (future only)
   const generateAllDatesInYear = (): string[] => {
     const year = dayjs().year();
     const today = dayjs();
@@ -47,6 +47,8 @@ export default function Calendar() {
       const start = dayjs().startOf('year').format('YYYY-MM-DD');
       const end = dayjs().endOf('year').format('YYYY-MM-DD');
 
+      logInfo(`📅 Fetching reservations from ${start} to ${end}`);
+
       const { data, error } = await supabase
         .from('reservations')
         .select('event_date')
@@ -54,10 +56,12 @@ export default function Calendar() {
         .lte('event_date', end);
 
       if (error) {
-        console.error('Error:', error.message);
+        logError('❌ Failed to fetch reservations', error.message);
         setLoading(false);
         return;
       }
+
+      logSuccess(`✅ Fetched ${data?.length ?? 0} reservations`);
 
       const dateCounts: Record<string, number> = {};
       data?.forEach(({ event_date }) => {
@@ -66,10 +70,17 @@ export default function Calendar() {
       });
 
       const allDates = generateAllDatesInYear();
-      const results = allDates.map((date) => ({
-        date,
-        status: (dateCounts[date] || 0) >= 2 ? 'unavailable' : 'available',
-      }));
+      logInfo(`📆 Generated ${allDates.length} future dates in current year`);
+
+      const results = allDates.map((date) => {
+        const status = (dateCounts[date] || 0) >= 2 ? 'unavailable' : 'available';
+        return { date, status };
+      });
+
+      const unavailableCount = results.filter(r => r.status === 'unavailable').length;
+      const availableCount = results.length - unavailableCount;
+
+      logSuccess(`✅ Calendar initialized: ${availableCount} available, ${unavailableCount} unavailable`);
 
       setDates(results as { date: string; status: 'available' | 'unavailable' }[]);
       setLoading(false);
@@ -78,7 +89,6 @@ export default function Calendar() {
     fetchData();
   }, []);
 
-  // Filtered based on search query
   const filteredDates = dates.filter(({ date }) =>
     dayjs(date)
       .format('MMMM D, YYYY')

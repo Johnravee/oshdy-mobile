@@ -13,5 +13,4 @@
     hasNewMessage: boolean;
     setHasNewMessage: React.Dispatch<React.SetStateAction<boolean>>;
     loading: boolean;
-    error: string | null;
   }

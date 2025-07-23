@@ -1,8 +1,8 @@
 /**
  * @file ChatMessageContext.tsx
  * @description
- * Provides chat message state management for one-on-one messaging between a user and the admin.
- * This context handles fetching, sending, deleting, and listening for real-time message updates.
+ * Provides chat message state management for one-on-one messaging between a user and the first available admin.
+ * Handles real-time updates, sending, deletion, and fetching of messages.
  */
 
 import React, {
@@ -15,18 +15,24 @@ import React, {
 import { supabase } from '@/lib/supabase';
 import { useProfileContext } from './ProfileContext';
 import { ChatMessage, ChatMessageContextProps } from '@/types/chat-types';
+import { logError, logInfo, logSuccess } from '@/utils/logger';
 
+// Create context
 const ChatMessageContext = createContext<ChatMessageContextProps | undefined>(undefined);
 
+// Provider component
 export const ChatMessageProvider = ({ children }: { children: React.ReactNode }) => {
   const { profile } = useProfileContext();
+
   const [adminId, setAdminId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
-  // Fetch admin ID (first user with is_admin = true)
+  /**
+   * Fetch first available admin (is_admin = true)
+   */
   useEffect(() => {
     const fetchAdminId = async () => {
       const { data, error } = await supabase
@@ -34,20 +40,29 @@ export const ChatMessageProvider = ({ children }: { children: React.ReactNode })
         .select('id')
         .eq('is_admin', true)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        console.error('❌ Failed to fetch admin ID:', error.message);
+        logError('👤 fetchAdminId', error);
       } else if (data) {
         setAdminId(data.id);
+        logSuccess('👤 fetchAdminId → Admin ID fetched', data);
+      } else {
+        logInfo('👤 fetchAdminId → No admin found');
       }
     };
 
     fetchAdminId();
   }, []);
 
+  /**
+   * Fetch message history between user and current admin
+   */
   const fetchMessages = useCallback(async () => {
-    if (!profile?.id || !adminId) return;
+    if (!profile?.id || !adminId) {
+      logInfo('📜 fetchMessages → Skipped due to missing profile/admin ID');
+      return;
+    }
 
     const { data, error } = await supabase
       .from('messages')
@@ -58,19 +73,27 @@ export const ChatMessageProvider = ({ children }: { children: React.ReactNode })
       .order('created_at', { ascending: true });
 
     if (error) {
-      setError(error.message);
-      console.error('❌ Fetch error:', error.message);
+      logError('📜 fetchMessages → Error fetching chat history', error);
     } else {
       setMessages(data as ChatMessage[]);
+      logSuccess('📜 fetchMessages → Loaded chat history', data);
     }
 
     setLoading(false);
   }, [profile?.id, adminId]);
 
+  /**
+   * Send a message from user to admin
+   */
   const sendMessage = async (text: string) => {
-    if (!profile?.id || !text.trim() || !adminId) return;
+    if (!profile?.id || !text.trim() || !adminId) {
+      logInfo('📨 sendMessage → Skipped due to missing profile/admin/text');
+      return;
+    }
 
-    const { error } = await supabase.from('messages').insert([
+    setSending(true);
+
+    const { data, error } = await supabase.from('messages').insert([
       {
         sender_id: profile.id,
         receiver_id: adminId,
@@ -78,20 +101,36 @@ export const ChatMessageProvider = ({ children }: { children: React.ReactNode })
       },
     ]);
 
+    setSending(false);
+
     if (error) {
-      console.error('❌ Failed to send message:', error.message);
+      logError('📨 sendMessage → Failed to send message', error);
     } else {
-      console.log('✅ Message sent');
+      logSuccess('📨 sendMessage → Message sent', data);
     }
   };
 
+  /**
+   * Delete a message by ID
+   */
   const deleteMessage = async (id: number) => {
     const { error } = await supabase.from('messages').delete().eq('id', id);
-    if (error) console.error('❌ Delete failed:', error.message);
+
+    if (error) {
+      logError(`🗑 deleteMessage → Failed to delete message ID: ${id}`, error);
+    } else {
+      logSuccess(`🗑 deleteMessage → Deleted message ID ${id}`);
+    }
   };
 
+  /**
+   * Real-time listener for incoming/outgoing messages
+   */
   useEffect(() => {
-    if (!profile?.id || !adminId) return;
+    if (!profile?.id || !adminId) {
+      logInfo('📡 Listener → Skipped subscription due to missing profile/admin ID');
+      return;
+    }
 
     fetchMessages();
 
@@ -104,34 +143,31 @@ export const ChatMessageProvider = ({ children }: { children: React.ReactNode })
           schema: 'public',
           table: 'messages',
         },
-        async (payload) => {
+        (payload) => {
           const msg = payload.new as ChatMessage;
 
-          if (msg.receiver_id === profile.id && msg.sender_id === adminId) {
-            console.log('📩 New incoming message:', msg);
-            setMessages((prev) => [...prev, msg]);
-            setHasNewMessage(true);
+          const isToUser = msg.receiver_id === profile.id && msg.sender_id === adminId;
+          const isFromUser = msg.sender_id === profile.id && msg.receiver_id === adminId;
 
-            /* Uncomment to enable push notifications
-            await notifee.displayNotification({
-              title: '📩 New Message',
-              body: 'You have a new message from the admin.',
-              android: {
-                channelId: 'default',
-                importance: AndroidImportance.HIGH,
-                sound: 'default',
-              },
-            });
-            */
-          } else if (msg.sender_id === profile.id && msg.receiver_id === adminId) {
-            setMessages((prev) => [...prev, msg]);
+          if (!isToUser && !isFromUser) return;
+
+          setMessages((prev = []) => [...prev, msg]);
+
+          if (isToUser) {
+            setHasNewMessage(true);
+            logInfo('📡 Listener → New message received', msg);
+          } else {
+            logInfo('📡 Listener → New message sent', msg);
           }
         }
       )
       .subscribe();
 
+    logInfo('📡 Listener → Subscribed to message_notifications');
+
     return () => {
       supabase.removeChannel(channel);
+      logInfo('📴 Listener → Unsubscribed from message_notifications');
     };
   }, [fetchMessages, profile?.id, adminId]);
 
@@ -144,7 +180,6 @@ export const ChatMessageProvider = ({ children }: { children: React.ReactNode })
         hasNewMessage,
         setHasNewMessage,
         loading,
-        error,
       }}
     >
       {children}
@@ -152,6 +187,7 @@ export const ChatMessageProvider = ({ children }: { children: React.ReactNode })
   );
 };
 
+// Hook to use chat message context
 export const useChatMessageContext = () => {
   const context = useContext(ChatMessageContext);
   if (!context) {

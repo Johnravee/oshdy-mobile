@@ -1,13 +1,7 @@
 /**
  * @file useInsertReservation.ts
  * Custom hook to insert a new reservation into Supabase.
- *
- * @returns insertReservation - Function to save reservation data.
- * @returns loading - Indicates if insertion is in progress.
- * @returns error - Error message on failure.
- * @returns success - Boolean flag for successful insert.
  */
-
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -15,24 +9,21 @@ import { ReservationData } from '@/types/reservation-types';
 import generateUniqueReceiptId from '@/utils/receipt-generator';
 import convertDateTime from '@/utils/convertDateTime';
 import { useProfileContext } from '@/context/ProfileContext';
-
+import { logInfo, logSuccess, logError } from '@/utils/logger';
 
 export const useInsertReservation = () => {
   const { profile } = useProfileContext();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
-  const  receiptId  = generateUniqueReceiptId();
-  
+  const [success, setSuccess] = useState(false);
+  const receiptId = generateUniqueReceiptId();
+
   const insertReservation = async (reservationData: ReservationData) => {
     setLoading(true);
-    setError(null);
     setSuccess(false);
-    
+
     try {
       const { event, guests, menu } = reservationData;
       const { event_date, event_time } = convertDateTime(event.eventDate, event.eventTime);
-
 
       const payload = {
         receipt_number: receiptId,
@@ -41,8 +32,8 @@ export const useInsertReservation = () => {
         package: Number(event.pkg.id),
         theme_motif_id: Number(event.theme.id),
         venue: event.venue,
-        event_date: event_date,
-        event_time: event_time,
+        event_date,
+        event_time,
         location: event.location,
         adults_qty: parseInt(guests.adults),
         kids_qty: parseInt(guests.kids),
@@ -51,33 +42,28 @@ export const useInsertReservation = () => {
         status: 'pending',
       };
 
-      console.log('Payload:', payload);
+      logInfo('📝 Inserting new reservation with payload:', payload);
 
       const { data, error: insertError } = await supabase
         .from('reservations')
         .insert([payload]);
 
       if (insertError) {
-        console.error('Supabase Insert Error:', insertError);
-        throw insertError;
+        logError('❌ Supabase insert failed:', insertError.message);
+        return null;
       }
 
+      logSuccess(`✅ Reservation inserted successfully with receipt ID: ${receiptId}`);
       setSuccess(true);
       return data;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'An unexpected error occurred';
-      console.error('Error inserting reservation:', message);
-      setError(message);
+      const message = err instanceof Error ? err.message : 'Unexpected error occurred';
+      logError('❌ Error inserting reservation:', message);
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  return { insertReservation, loading, error, success };
+  return { insertReservation, loading, success };
 };
-
-
-
-

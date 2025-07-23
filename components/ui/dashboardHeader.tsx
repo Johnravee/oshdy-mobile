@@ -3,6 +3,8 @@ import { View, Text, Image } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { FontAwesome } from '@expo/vector-icons';
 import { useAuthContext } from '@/context/AuthContext';
+import { IMAGES } from '@/constants/Images';
+
 
 export default function DashboardHeader() {
   const { session } = useAuthContext();
@@ -12,9 +14,17 @@ export default function DashboardHeader() {
 
   return (
     <View className="w-full rounded-b-3xl overflow-hidden">
-      {/* Header Top: Label and Avatar */}
-      <View className="px-4 pt-10 pb-4 flex-row justify-between items-center z-10 bg-primary">
-        <Text className="text-white text-2xl font-bold">Dashboard</Text>
+      {/* Header Top: Logo, Title, Avatar */}
+      <View className="px-4 pt-10 pb-4 flex-row justify-between items-center z-10 bg-secondary">
+        <View className="flex-row items-center gap-2">
+          <Image
+            source={IMAGES.oshdyLogo}
+            className="w-12 h-12 rounded-full"
+            resizeMode="contain"
+          />
+          <Text className="text-white text-2xl font-bold">Dashboard</Text>
+        </View>
+
         <View className="flex-row items-center gap-3">
           {isValidAvatar ? (
             <Image
@@ -30,7 +40,7 @@ export default function DashboardHeader() {
         </View>
       </View>
 
-      {/* Wave at the Bottom */}
+      {/* Wave SVG at Bottom */}
       <Svg
         width="100%"
         height="80"
@@ -38,7 +48,7 @@ export default function DashboardHeader() {
         preserveAspectRatio="none"
       >
         <Path
-          fill="#F3C663"
+          fill="#2E3A8C"
           d="M0,96L21.8,117.3C43.6,139,87,181,131,202.7C174.5,224,218,224,262,192C305.5,160,349,96,393,96C436.4,96,480,160,524,165.3C567.3,171,611,117,655,96C698.2,75,742,85,785,106.7C829.1,128,873,160,916,192C960,224,1004,256,1047,250.7C1090.9,245,1135,203,1178,165.3C1221.8,128,1265,96,1309,85.3C1352.7,75,1396,85,1418,90.7L1440,96L1440,0L0,0Z"
         />
       </Svg>

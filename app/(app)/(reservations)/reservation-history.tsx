@@ -30,7 +30,7 @@ import Spinner from '@/components/ui/spinner';
 import { useRouter } from 'expo-router';
 import BackButton from '@/components/ui/back-button';
 
-const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'ongoing', 'completed', 'revoked'];
+const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'ongoing', 'completed', 'canceled'];
 const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🔄', '🏁', '❌'];
 
 export default function ReservationHistory() {

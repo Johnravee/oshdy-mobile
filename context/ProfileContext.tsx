@@ -10,7 +10,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { ProfileType, ProfileContextType } from "@/types/profile-types";
 import { useAuthContext } from "./AuthContext";
-
+import { logError, logInfo, logSuccess } from "@/utils/logger";
 
 // Create context
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -19,27 +19,37 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 export const ProfileProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<ProfileType | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
   const { session } = useAuthContext();
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!session?.user.id) return;
+      if (!session?.user.id) {
+        setProfile(null);
+        setProfileLoading(false);
+        logInfo("👤 fetchProfile → No session found");
+        return;
+      }
 
       setProfileLoading(true);
+      logInfo("👤 fetchProfile → Fetching profile for auth_id:", session.user.id);
+
       try {
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("auth_id", session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (error) return;
-
-        setProfile(data as ProfileType);
+        if (error) {
+            setProfile(null);
+            logInfo("👤 fetchProfile → No profile found for auth_id:", session.user.id);
+        } else {
+          setProfile(data as ProfileType);
+          logSuccess("👤 fetchProfile → Profile fetched", data);
+        }
       } catch (err) {
-        console.error("Error fetching profile:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
+        logError("👤 fetchProfile → Unexpected error", err);
       } finally {
         setProfileLoading(false);
       }
@@ -49,7 +59,7 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
   }, [session?.user.id]);
 
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, profileLoading, error }}>
+    <ProfileContext.Provider value={{ profile, setProfile, profileLoading }}>
       {children}
     </ProfileContext.Provider>
   );

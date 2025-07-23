@@ -4,10 +4,10 @@ import { FontAwesome } from '@expo/vector-icons';
 
 interface AvatarProps {
   avatarUrl?: string;
-  name: string;
+
 }
 
-export default function Avatar({ avatarUrl, name }: AvatarProps) {
+export default function Avatar({ avatarUrl }: AvatarProps) {
   const isValidUrl = avatarUrl && avatarUrl.startsWith('http');
 
   return (
@@ -23,9 +23,6 @@ export default function Avatar({ avatarUrl, name }: AvatarProps) {
           <FontAwesome name="user" size={64} color="white" />
         </View>
       )}
-
-      <Text className="font-bold text-white text-xl">{name}</Text>
-      <Text className="font-normal text-base text-white text-center">Guest</Text>
     </View>
   );
 }
