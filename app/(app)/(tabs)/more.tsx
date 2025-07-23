@@ -86,7 +86,7 @@ export default function Profile() {
         {/* Account Section */}
         <View className="space-y-4 mt-3">
           <Text className="text-sm font-bold text-gray-500 uppercase">Account</Text>
-          <OptionItem icon="user" text="Edit Profile" onPress={() => router.push('/(app)/pDetails')} />
+          <OptionItem icon="user" text="Edit Profile" onPress={() => router.push('/(app)/profile')} />
         </View>
 
         {/* My Events Section */}
@@ -99,9 +99,9 @@ export default function Profile() {
         {/* App Section */}
         <View className="space-y-4 mt-3">
           <Text className="text-sm font-bold text-gray-500 uppercase">App</Text>
-          <OptionItem icon="bell" text="Notification Settings" onPress={() => {}} />
-          <OptionItem icon="question-circle" text="Support / Help" onPress={() => {}} />
-          <OptionItem icon="info-circle" text="About App" onPress={() => {}} />
+          <OptionItem icon="bell" text="Notification Settings" onPress={() => router.push('/(app)/notification')} />
+          <OptionItem icon="comment" text="Feedback" onPress={() => router.push('/(app)/feedback')} />
+          <OptionItem icon="info-circle" text="About App" onPress={() => router.push('/(app)/about')} />
         </View>
 
         {/* Logout Section */}

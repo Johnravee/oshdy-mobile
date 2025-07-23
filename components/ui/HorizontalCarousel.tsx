@@ -14,7 +14,7 @@ interface CarouselProps {
   items: any[];
   imageKey: string;
   titleKey: string;
-  seeAllRoute?: any;
+  seeAllRoute: any;
 }
 
 export default function HorizontalCarousel({
