@@ -8,6 +8,9 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ProfileProvider } from '@/context/ProfileContext';
 import { ChatMessageProvider } from '@/context/ChatMessageContext';
 import { useAuth } from '@/hooks/useAuth';
+import { requestFCMPermission } from '@/lib/requestFCMPermission';
+import { logError, logInfo, logSuccess } from '@/utils/logger';
+
 
 /**
  * Initializes the useAuth hook to ensure session is ready
@@ -22,9 +25,14 @@ function DeepLinkBootstrapper() {
  * Sets up root-level context providers and handles push notifications.
  */
 export default function RootLayout() {
+
+
+
   useEffect(() => {
     // Initialize FCM & Notifee notification channel
     createNotificationChannel();
+    requestFCMPermission();
+
 
     // Handle foreground messages
     const unsubscribe = getMessaging().onMessage(async (remoteMessage) => {
@@ -40,18 +48,18 @@ export default function RootLayout() {
         },
       });
 
-      console.log('🔔 Foreground Notification:', title, body);
+        logInfo('🔔 Foreground Notification');
     });
 
     // Background state notification handler
     getMessaging().onNotificationOpenedApp((remoteMessage) => {
-      console.log('📲 Opened from background:', remoteMessage.notification);
+      logInfo('📲 Opened from background:', remoteMessage.notification);
     });
 
     // Quit state notification handler
     getMessaging().getInitialNotification().then((remoteMessage) => {
       if (remoteMessage) {
-        console.log('🚀 Opened from quit state:', remoteMessage.notification);
+        logInfo('🚀 Opened from quit state:', remoteMessage.notification);
       }
     });
 
@@ -69,7 +77,7 @@ export default function RootLayout() {
       importance: AndroidImportance.HIGH,
       sound: 'default',
     });
-    console.log('✅ Notification channel created');
+    logSuccess(' Notification channel created');
   };
 
   return (

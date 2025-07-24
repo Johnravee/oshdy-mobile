@@ -1,20 +1,39 @@
 import messaging from '@react-native-firebase/messaging';
-import { Alert } from 'react-native';
-import { useFcmToken } from '@/hooks/useFcmToken';
+import { PermissionsAndroid, Platform } from 'react-native';
+import { logError, logInfo } from '@/utils/logger';
 
 export async function requestFCMPermission() {
-  const authStatus = await messaging().requestPermission();
-    const enabled = 
+  try {
+    // Android 13+ requires runtime permission
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        {
+          title: 'Notification Permission',
+          message: 'We need permission to send you push notifications.',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Deny',
+        }
+      );
+
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        logError('Push Notification permission denied by system', null);
+        return;
+      }
+    }
+
+    // iOS permission prompt
+    const authStatus = await messaging().requestPermission();
+    const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (enabled) {
-      useFcmToken()
-      console.log('Notification permission status:', authStatus);
-      
+      logInfo('✅ Notification permission granted:', authStatus);
     } else {
-      Alert.alert('Push Notification permission denied'); 
+      logError('❌ iOS Push Notification permission denied', null);
     }
-  };
-
-
+  } catch (error) {
+    logError('Error requesting notification permission', error);
+  }
+}
