@@ -3,19 +3,36 @@ import { supabase } from '@/lib/supabase';
 import { ReservationWithPackage } from '@/types/reservation-types';
 import { useProfileContext } from '@/context/ProfileContext';
 import { logInfo, logSuccess, logError } from '@/utils/logger';
+import { getReservationPackages } from '@/lib/api/getReservationJoinPackage';
 
-// Hook to fetch and subscribe to user-specific reservations
-export const useFetchUserReservations = () => {
+/**
+ * Custom hook to fetch and subscribe to reservation data for the current user.
+ * Used in reservation-history.tsx
+ *
+ * @returns {{
+ *   reservations: ReservationWithPackage[],
+ *   isFetching: boolean
+ * }}
+ *
+ * - Fetches reservations joined with package info from Supabase.
+ * - Subscribes to real-time changes (INSERT, UPDATE, DELETE) on the reservations table.
+ * - Returns the current reservation list and loading state.
+ */
+
+
+export const useFetchUserReservations = (): {
+  reservations: ReservationWithPackage[];
+  isFetching: boolean;
+} => {
   const { profile } = useProfileContext();
   const [reservations, setReservations] = useState<ReservationWithPackage[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+
 
   // Fetch reservations from Supabase for the current user
   const fetchReservationsWithPackage = useCallback(async () => {
     if (!profile?.id) {
       setReservations([]);
-      setError('User profile not found');
       setIsFetching(false);
       logError('Profile not found when fetching reservations', null);
       return;
@@ -23,37 +40,27 @@ export const useFetchUserReservations = () => {
 
     logInfo('Fetching reservations with package for user', profile.id);
     setIsFetching(true);
-    setError(null);
+
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('reservations')
-        .select(`
-          id,
-          receipt_number,
-          celebrant,
-          status,
-          package (
-            id,
-            name
-          )
-        `)
-        .eq('profile_id', profile.id)
-        .order('id', { ascending: false });
-
-      if (fetchError) throw fetchError;
-
+     
+      const data = await getReservationPackages(profile.id);
       logSuccess('Successfully fetched reservations', data);
       setReservations(data as any);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-      setError(errorMessage);
       setReservations([]);
-      logError('Failed to fetch reservations', err);
+      logError('fetchReservationsWithPackage -> Failed to fetch reservations', err);
     } finally {
       setIsFetching(false);
     }
   }, [profile?.id]);
+
+
+  /**
+   * Initializes reservation fetching and sets up a real-time Supabase subscription
+   * that listens for changes to the current user's reservations.
+   */
 
   useEffect(() => {
     fetchReservationsWithPackage();
@@ -104,5 +111,5 @@ export const useFetchUserReservations = () => {
     };
   }, [fetchReservationsWithPackage, profile?.id]);
 
-  return { reservations, isFetching, error };
+  return { reservations, isFetching };
 };

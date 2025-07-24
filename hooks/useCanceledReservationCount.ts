@@ -2,47 +2,43 @@
  * @file useCanceledReservationCount.ts
  * Custom hook to fetch the number of canceled reservations for a given user.
  *
- * @param profile_id - The user's profile ID.
  * @returns canceledCount - Number of canceled reservations.
  * @returns loadingCanceled - Loading state.
- * @returns errorCanceled - Error message if fetching fails.
  */
-
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useProfileContext } from '@/context/ProfileContext';
+import { getCanceledReservation } from '@/lib/api/getCanceledReservationCount';
+import { logSuccess, logError } from '@/utils/logger';
 
-export const useCanceledReservationCount = () => {
+export const useCanceledReservationCount = (): {
+  canceledCount: number
+  loadingCanceled: boolean
+} => {
   const { profile } = useProfileContext();
-  const [canceledCount, setCanceledCount] = useState(0);
+  const [canceledCount, setCanceledCount] = useState<number>(0);
   const [loadingCanceled, setLoadingCanceled] = useState(false);
-  const [errorCanceled, setErrorCanceled] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile?.id) return;
 
     const fetchCanceledCount = async () => {
       setLoadingCanceled(true);
-      setErrorCanceled(null);
 
-      const { count, error } = await supabase
-        .from('reservations')
-        .select('*', { count: 'exact', head: true })
-        .eq('profile_id', profile.id)
-        .eq('status', 'canceled');
-
-      if (error) {
-        setErrorCanceled(error.message);
-        setCanceledCount(0);
-      } else {
-        setCanceledCount(count || 0);
+      try {
+        const count = await getCanceledReservation(profile.id);
+        if (typeof count === 'number') {
+          logSuccess(`✅ Canceled reservation count: ${count}`);
+          setCanceledCount(count); 
+        }
+      } catch (error) {
+        logError('❌ Failed to fetch canceled count:', error);
+      } finally {
+        setLoadingCanceled(false);
       }
-
-      setLoadingCanceled(false);
     };
 
     fetchCanceledCount();
   }, [profile?.id]);
 
-  return { canceledCount, loadingCanceled, errorCanceled };
+  return { canceledCount, loadingCanceled };
 };

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StatusBar,
   TouchableOpacity,
   Modal,
   Pressable,
+  Platform,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
@@ -13,6 +14,8 @@ import { useRouter } from 'expo-router';
 import { useAuthContext } from '@/context/AuthContext';
 import { useProfileContext } from '@/context/ProfileContext';
 import Avatar from '@/components/ui/avatar';
+import { Linking } from 'react-native';
+
 
 export default function Profile() {
   const router = useRouter();
@@ -30,6 +33,17 @@ export default function Profile() {
       setErrorModalVisible(true);
     }
   };
+
+  const handleRateApp = () => {
+  const url =
+    Platform.OS === 'ios'
+      ? 'itms-apps://itunes.apple.com/app/idYOUR_APP_ID'
+      : 'market://details?id=YOUR_PACKAGE_NAME';
+  Linking.openURL(url).catch(() => {
+    Alert.alert('Unable to open the store.');
+  });
+};
+
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -99,9 +113,9 @@ export default function Profile() {
         {/* App Section */}
         <View className="space-y-4 mt-3">
           <Text className="text-sm font-bold text-gray-500 uppercase">App</Text>
-          <OptionItem icon="bell" text="Notification Settings" onPress={() => router.push('/(app)/notification')} />
           <OptionItem icon="comment" text="Feedback" onPress={() => router.push('/(app)/feedback')} />
           <OptionItem icon="info-circle" text="About App" onPress={() => router.push('/(app)/about')} />
+          <OptionItem icon="star" text="Rate This App"  onPress={handleRateApp} />
         </View>
 
         {/* Logout Section */}
@@ -132,7 +146,7 @@ function OptionItem({
       className="w-full flex-row items-center justify-between bg-gray-100 rounded-2xl px-4 py-4 mt-2 shadow-sm"
     >
       <View className="flex-row items-center gap-3">
-        <FontAwesome name={icon} size={20} color={color} />
+        <FontAwesome name={icon} size={20} color={icon === 'star' ? '#FFD700' : color} />
         <Text className="text-base font-medium" style={{ color }}>{text}</Text>
       </View>
       <FontAwesome name="angle-right" size={20} color={color} />

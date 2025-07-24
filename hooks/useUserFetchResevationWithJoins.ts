@@ -1,71 +1,51 @@
-/**
- * @file useUserFetchReservationWithJoins.ts
- * @hook useUserFetchReservationWithJoins
- * @description
- * Custom React hook to fetch and subscribe to a specific reservation’s details
- * including full reservation data with joined `packages` and `grazing` table info.
- *
- * @features
- * - Fetches reservation by `id` for authenticated user
- * - Includes joined fields from `packages` and `grazing` tables
- * - Subscribes to real-time INSERT, UPDATE, DELETE changes for live updates
- * - Refetches data on updates to maintain relational joins
- *
- * @usage
- * Call this hook inside a component that needs detailed reservation information.
- *
- * @note
- * Real-time `UPDATE` events trigger a full refetch to preserve joined relational data integrity.
- * Uses `supabase.channel()` to subscribe only to changes from the current user's profile.
- *
- * @author John Rave Mimay
- * @created 2025-07-02
- */
+
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Reservation } from '@/types/reservation-types';
 import { useProfileContext } from '@/context/ProfileContext';
 import { logInfo, logSuccess, logError } from '@/utils/logger';
+import { getReservationFullJoinInformation } from '@/lib/api/getReservationFullJoin';
 
-export function useUserFetchReservationWithJoins(reservation_id: any) {
+/**
+ * Custom hook to fetch and subscribe to a reservation with joined `packages` and `grazing` info.
+ *
+ * @param {number} reservation_id - ID of the reservation to fetch.
+ * @returns {{
+ *   reservations: Reservation[],
+ *   isFetching: boolean,
+ *   refetch: () => Promise<void>
+ * }} Hook result including data, loading state, and manual refetch.
+ */
+
+export function useUserFetchReservationWithJoins(reservation_id: number): {
+  reservations: Reservation[];
+  isFetching: boolean;
+  refetch: () => Promise<void>;
+} {
   const { profile } = useProfileContext();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isFetching, setIsFetching] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+
 
   const fetchReservationsWithJoins = useCallback(async () => {
     if (!profile?.id) {
       setReservations([]);
-      setError('User profile not found');
       logError('🚫 Profile ID missing during fetch', null);
       return;
     }
 
     setIsFetching(true);
-    setError(null);
     logInfo(`📡 Fetching reservation [ID: ${reservation_id}] with joins...`);
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('reservations')
-        .select(`
-          *,
-          packages(id, name),
-          grazing(id, name)
-        `)
-        .eq('profile_id', profile.id)
-        .eq('id', reservation_id)
-        .order('id', { ascending: false });
-
-      if (fetchError) throw fetchError;
+      const data = await getReservationFullJoinInformation(reservation_id)
 
       logSuccess(`✅ Reservation fetch success [${data?.length || 0} result(s)]`);
       setReservations(data as Reservation[]);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An unknown error occurred';
       logError('❌ Failed to fetch reservations with joins:', errorMsg);
-      setError(errorMsg);
       setReservations([]);
     } finally {
       setIsFetching(false);
@@ -121,7 +101,6 @@ export function useUserFetchReservationWithJoins(reservation_id: any) {
   return {
     reservations,
     isFetching,
-    error,
     refetch: fetchReservationsWithJoins,
   };
 }

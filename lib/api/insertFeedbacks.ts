@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { logError, logSuccess } from '@/utils/logger';
+import { logError, logInfo, logSuccess } from '@/utils/logger';
 
 /**
  * Submit user feedback to the 'feedbacks' table.
@@ -10,7 +10,10 @@ import { logError, logSuccess } from '@/utils/logger';
  */
 export async function insertFeedback(profile_id: number, name: string, email: string, feedback: string, category: string) {
   try {
-    const { data, error } = await supabase.from('feedbacks').insert([{ profile_id, name, email, feedback, category }]);
+
+    if(!profile_id || !name || !email || !feedback || !category) return logError('insentFeedback -> Incomplete Field', null);
+
+    const { error } = await supabase.from('feedbacks').insert([{ profile_id, name, email, feedback, category }]);
     if (error) return logError('Feedback insert failed:', error);
     logSuccess('Feedback submitted.');
   } catch (err: any) {

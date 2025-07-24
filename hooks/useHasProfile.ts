@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useAuthContext } from '@/context/AuthContext';
-import { logInfo, logSuccess, logError } from '@/utils/logger';
-
 /**
- * Hook to check if the current authenticated user has a profile.
- * 
- * @returns hasProfile - boolean indicating if profile exists
- * @returns hasProfileLoading - loading state
+ * @file useHasProfile.ts
+ * @description
+ * Custom hook to determine if the current authenticated user has an existing profile.
+ *
+ * @returns {{
+ *   hasProfile: boolean | null,
+ *   hasProfileLoading: boolean
+ * }}
  */
+
+import { useEffect, useState } from 'react';
+import { useAuthContext } from '@/context/AuthContext';
+import { checkHasProfile } from '@/lib/api/checkHasProfile';
+import { logInfo, logSuccess } from '@/utils/logger';
 
 export const useHasProfile = () => {
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
@@ -16,33 +20,25 @@ export const useHasProfile = () => {
   const { session } = useAuthContext();
 
   useEffect(() => {
-    const checkProfile = async () => {
-      if (!session?.user?.id) {
+    const check = async () => {
+      const userId = session?.user?.id;
+
+      if (!userId) {
         logInfo('👤 No session user ID. Skipping profile check.');
         return;
       }
 
       setHasProfileLoading(true);
-      logInfo(`🔎 Checking if profile exists for user: ${session.user.id}`);
+      logInfo(`🔎 Checking if profile exists for user: ${userId}`);
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('auth_id')
-        .eq('auth_id', session.user.id)
-        .maybeSingle();
+      const exists = await checkHasProfile(userId);
+      setHasProfile(exists);
 
-      if (error) {
-        logError('❌ Failed to check profile:', error.message);
-        setHasProfile(null);
-      } else {
-        setHasProfile(!!data);
-        logSuccess(`✅ Profile ${data ? 'found' : 'not found'} for user: ${session.user.id}`);
-      }
-
+      logSuccess(`✅ Profile ${exists ? 'found' : 'not found'} for user: ${userId}`);
       setHasProfileLoading(false);
     };
 
-    checkProfile();
+    check();
   }, [session?.user?.id]);
 
   return { hasProfile, hasProfileLoading };

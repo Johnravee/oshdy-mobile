@@ -6,15 +6,7 @@ export async function requestFCMPermission() {
   try {
     // Android 13+ requires runtime permission
     if (Platform.OS === 'android' && Platform.Version >= 33) {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-        {
-          title: 'Notification Permission',
-          message: 'We need permission to send you push notifications.',
-          buttonPositive: 'Allow',
-          buttonNegative: 'Deny',
-        }
-      );
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
 
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
         logError('Push Notification permission denied by system', null);

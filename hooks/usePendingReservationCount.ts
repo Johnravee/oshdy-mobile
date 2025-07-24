@@ -1,3 +1,10 @@
+
+
+import { useEffect, useState } from 'react';
+import { useProfileContext } from '@/context/ProfileContext';
+import { logInfo, logSuccess } from '@/utils/logger';
+import { getPendingReservationCount } from '@/lib/api/getPendingReservationCount';
+
 /**
  * @file usePendingReservationCount.ts
  * Custom hook to fetch the number of pending reservations for a given user.
@@ -6,12 +13,11 @@
  * @returns loadingPending - Loading state.
  */
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useProfileContext } from '@/context/ProfileContext';
-import { logInfo, logSuccess, logError } from '@/utils/logger';
 
-export const usePendingReservationCount = () => {
+export const usePendingReservationCount = (): {
+  pendingCount: number
+  loadingPending: boolean
+} => {
   const { profile } = useProfileContext();
   const [pendingCount, setPendingCount] = useState(0);
   const [loadingPending, setLoadingPending] = useState(false);
@@ -23,18 +29,11 @@ export const usePendingReservationCount = () => {
       setLoadingPending(true);
       logInfo('🔍 Checking for pending reservations...');
 
-      const { count, error } = await supabase
-        .from('reservations')
-        .select('*', { count: 'exact', head: true })
-        .eq('profile_id', profile.id)
-        .eq('status', 'pending');
+      const count = await getPendingReservationCount(profile.id)
 
-      if (error) {
-        logError('❌ Failed to fetch pending reservation count:', error);
-        setPendingCount(0);
-      } else {
-        logSuccess(`✅ Pending reservation count: ${count}`);
-        setPendingCount(count || 0);
+       if (typeof count === 'number') {
+        logSuccess(`✅ Completed reservation count: ${count}`);
+        setPendingCount(count);
       }
 
       setLoadingPending(false);

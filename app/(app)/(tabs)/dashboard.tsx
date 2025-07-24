@@ -6,7 +6,7 @@ import UserEventShortcuts from '@/components/ui/UserEventShortcuts'
 import Banner from '@/components/ui/banner'
 import HorizontalCarousel from '@/components/ui/HorizontalCarousel'
 import DashboardHeader from '@/components/ui/dashboardHeader'
-import { useTotalBookCountByUser } from '@/hooks/useTotalBookCountByUser'
+import { useCompletedReservationCount } from '@/hooks/useCompletedReservation'
 import { usePendingReservationCount } from '@/hooks/usePendingReservationCount'
 import { useCanceledReservationCount } from '@/hooks/useCanceledReservationCount'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router'
 export default function Dashboard() {
   const router = useRouter();
   const { profile } = useProfileContext();
-  const { totalCount } = useTotalBookCountByUser();
+  const { totalCount } = useCompletedReservationCount();
   const { pendingCount } = usePendingReservationCount();
   const { canceledCount } = useCanceledReservationCount();
 

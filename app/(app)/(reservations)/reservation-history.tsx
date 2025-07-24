@@ -35,7 +35,7 @@ const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🔄', '🏁', '❌'];
 
 export default function ReservationHistory() {
   const route = useRouter()
-  const { reservations, isFetching, error } = useFetchUserReservations();
+  const { reservations, isFetching } = useFetchUserReservations();
 
   const [selectedStatus, setSelectedStatus] = useState<string>(STATUSES[0]);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -73,15 +73,7 @@ export default function ReservationHistory() {
       .replace(/\b\w/g, (char) => char.toUpperCase()); // capitalize each word
   }
 
-  if (error) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white px-4">
-        <Text className="text-center text-red-600 font-semibold">
-          Something went wrong: {error}
-        </Text>
-      </View>
-    );
-  }
+ 
 
   return (
     <SafeAreaView className="flex-1 bg-white px-4 pt-4">

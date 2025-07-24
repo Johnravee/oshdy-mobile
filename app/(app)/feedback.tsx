@@ -18,8 +18,6 @@ import { logError, logSuccess } from '@/utils/logger';
 
 export default function FeedbackScreen() {
   const { profile } = useProfileContext();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -31,7 +29,7 @@ export default function FeedbackScreen() {
       return;
     }
 
-    if (!name || !email || !feedback) {
+    if (!profile.name || !profile.email || !feedback) {
       setShowError(true);
       return;
     }
@@ -39,11 +37,9 @@ export default function FeedbackScreen() {
     setIsSubmitting(true);
 
     try {
-      await insertFeedback(profile.id, name, email, feedback, 'App Improvement');
+      await insertFeedback(profile.id, profile.name , profile.email , feedback, 'App Improvement');
       logSuccess('Feedback submitted successfully.');
       setShowSuccess(true);
-      setName('');
-      setEmail('');
       setFeedback('');
     } catch (err: any) {
       logError('Feedback submission failed:', err.message);
@@ -67,28 +63,6 @@ export default function FeedbackScreen() {
             We’d love to hear your thoughts! Share your suggestions, issues, or experiences using
             our app to help us improve.
           </Text>
-
-          <View className="mb-5">
-            <Text className="text-base font-semibold text-gray-700 mb-1">Your Name</Text>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter your name"
-              className="border border-gray-300 rounded-xl p-3 text-base"
-            />
-          </View>
-
-          <View className="mb-5">
-            <Text className="text-base font-semibold text-gray-700 mb-1">Your Email</Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              className="border border-gray-300 rounded-xl p-3 text-base"
-            />
-          </View>
 
           <View className="mb-6">
             <Text className="text-base font-semibold text-gray-700 mb-1">Your Message</Text>

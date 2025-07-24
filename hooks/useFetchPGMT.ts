@@ -6,16 +6,13 @@
  */
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { PGMTDataType } from '@/types/pgmt-types';
 import { logInfo, logSuccess, logError } from '@/utils/logger';
+import { getPGMT } from '@/lib/api/getPGMT';
 
 /**
  * Hook to fetch PGMT data via Supabase RPC.
- * @returns {{
- *   pgmtData: PGMTDataType,
- *   pgmtLoading: boolean,
- * }}
+ * @returns { pgmtData, pgmtLoading }
  */
 export function usePGMTData(): {
   pgmtData: PGMTDataType;
@@ -33,22 +30,30 @@ export function usePGMTData(): {
   useEffect(() => {
     const fetchPGMTData = async () => {
       logInfo('📦 Fetching PGMT data...');
+      setPgmtLoading(true);
 
-      const { data, error } = await supabase.rpc('get_pgm_data');
+      try {
+        const data = await getPGMT();
 
-      if (error) {
-        logError('❌ Failed to fetch PGMT data:', error.message);
-      } else {
+        if (!data) {
+          throw new Error('PGMT data is null or empty.');
+        }
+        
+
         setPGMTData({
-          packages: data?.packages || [],
-          grazing: data?.grazing || [],
-          menu: data?.menu || [],
-          thememotif: data?.thememotif || [],
+          packages: data.packages || [],
+          grazing: data.grazing || [],
+          menu: data.menu || [],
+          thememotif: data.thememotif || [],
         });
-        logSuccess('✅ PGMT data fetched successfully');
-      }
 
-      setPgmtLoading(false);
+        logSuccess('✅ PGMT data fetched successfully');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        logError('❌ Failed to fetch PGMT data:', message);
+      } finally {
+        setPgmtLoading(false);
+      }
     };
 
     fetchPGMTData();

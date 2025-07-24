@@ -39,8 +39,10 @@ export default function ReservationStatus() {
   // Show spinner if no reservation_id
   if (!reservation_id) return <Spinner />;
 
+  const parseId = parseInt(reservation_id);
+
   // Fetch reservation data using custom hook (pass reservation_id)
-  const { reservations, isFetching, error } = useUserFetchReservationWithJoins(reservation_id);
+  const { reservations, isFetching } = useUserFetchReservationWithJoins(parseId);
 
   // find the current reservation or fallback
   const pendingReservation = reservations && reservations.length > 0 ? reservations[0] : null;
