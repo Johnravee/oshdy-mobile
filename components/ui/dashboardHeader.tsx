@@ -36,7 +36,6 @@ export default function DashboardHeader() {
               <FontAwesome name="user" size={18} color="#999" />
             </View>
           )}
-          <FontAwesome name="pause" size={20} color="#fff" />
         </View>
       </View>
 
