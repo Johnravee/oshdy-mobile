@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { useProfileContext } from '@/context/ProfileContext';
 import { useAuthContext } from '@/context/AuthContext';
 import { InserUserProfile } from '@/lib/api/insertUserProfile';
+import { logInfo } from '@/utils/logger';
 
 export default function ProfileForm() {
   const { profile, setProfile, profileLoading } = useProfileContext();
@@ -68,6 +69,8 @@ export default function ProfileForm() {
 
   const handleSave = async () => {
     if (!validateFields()) return;
+
+    logInfo('Saving profile with:', { name, contact, address });
 
     try {
       setLoading(true);

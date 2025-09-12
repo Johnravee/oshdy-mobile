@@ -30,12 +30,12 @@ import Spinner from '@/components/ui/spinner';
 import { useRouter } from 'expo-router';
 import BackButton from '@/components/ui/back-button';
 
-const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'ongoing', 'completed', 'canceled'];
+const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'ongoing', 'completed', 'canceled', 'done'];
 const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🔄', '🏁', '❌'];
 
 export default function ReservationHistory() {
   const route = useRouter()
-  const { reservations, isFetching } = useFetchUserReservations();
+  const { reservations = [], isFetching } = useFetchUserReservations();
 
   const [selectedStatus, setSelectedStatus] = useState<string>(STATUSES[0]);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -56,7 +56,7 @@ export default function ReservationHistory() {
     const lowerSearch = searchTerm.toLowerCase();
 
     return filteredByStatus.filter((res) => {
-      const packageStr = String(res.package?.name || '').toLowerCase();
+      const packageStr = String(res.packages?.name || '').toLowerCase();
       const celebrantStr = res.celebrant?.toLowerCase() || '';
       return packageStr.includes(lowerSearch) || celebrantStr.includes(lowerSearch);
     });
@@ -135,7 +135,7 @@ export default function ReservationHistory() {
           >
             <View className="flex-1 pr-2">
               <Text className="text-base font-semibold text-gray-800 mb-1">
-                Package: {item.package?.name || 'N/A'}
+                Package: {item.packages?.name || 'N/A'}
               </Text>
               <Text className="text-sm text-gray-600">
                 Receipt #: {item.receipt_number}

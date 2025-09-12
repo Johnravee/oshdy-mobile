@@ -39,7 +39,7 @@ export function useUserFetchReservationWithJoins(reservation_id: number): {
     logInfo(`📡 Fetching reservation [ID: ${reservation_id}] with joins...`);
 
     try {
-      const data = await getReservationFullJoinInformation(reservation_id)
+      const data = await getReservationFullJoinInformation(reservation_id, profile.id)
 
       logSuccess(`✅ Reservation fetch success [${data?.length || 0} result(s)]`);
       setReservations(data as Reservation[]);

@@ -8,11 +8,11 @@ import { logError } from "@/utils/logger";
  * @param {number} reservation_id - Reservation ID to fetch.
  * @returns {Promise<any[] | undefined>} Reservation data or undefined on error.
  */
-export const getReservationFullJoinInformation = async (reservation_id: number): Promise<any[] | undefined> => {
-  const { profile } = useProfileContext();
+export const getReservationFullJoinInformation = async (reservation_id: number, profile_id: number): Promise<any[] | undefined> => {
+  
 
   try {
-    if (!profile?.id) {
+    if (!profile_id) {
       logError('getReservationFullJoin -> profile id undefined:', null);
       return;
     }
@@ -21,10 +21,14 @@ export const getReservationFullJoinInformation = async (reservation_id: number):
       .from('reservations')
       .select(`
         *,
-        packages(id, name),
+         package_id,
+        packages (
+          id,
+          name
+        )
         grazing(id, name)
       `)
-      .eq('profile_id', profile.id)
+      .eq('profile_id', profile_id)
       .eq('id', reservation_id)
       .order('id', { ascending: false });
 

@@ -56,6 +56,8 @@ export default function ReservationStatus() {
     { label: 'Ongoing', icon: 'play-circle', description: 'Reservation in progress' },
     { label: 'Completed', icon: 'check', description: 'Reservation completed' },
     { label: 'Canceled', icon: 'times-circle', description: 'Reservation canceled' },
+    { label: 'Done', icon: 'times-circle', description: 'Reservation done' },
+
 
   ];
 

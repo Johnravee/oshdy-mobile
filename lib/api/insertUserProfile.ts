@@ -31,7 +31,6 @@ export const InserUserProfile = async (
     address,
     contact_number,
     fcm_token,
-    is_admin: false,
   };
 
   logInfo('👤 Inserting/updating user profile with payload:', payload);

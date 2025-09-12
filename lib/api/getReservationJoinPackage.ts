@@ -1,6 +1,6 @@
 
 import { supabase } from "../supabase";
-import { logError } from "@/utils/logger";
+import { logError, logInfo } from "@/utils/logger";
 
 /**
  * Fetches reservations with package details for the current user.
@@ -23,13 +23,16 @@ export const getReservationPackages = async (profileId: number): Promise<any[] |
         receipt_number,
         celebrant,
         status,
-        package (
+        package_id,
+        packages (
           id,
           name
         )
       `)
       .eq('profile_id', profileId)
       .order('id', { ascending: false });
+
+      logInfo('getReservationJoinPackage -> fetched data:', data);
 
     if (error) throw error;
     return data;

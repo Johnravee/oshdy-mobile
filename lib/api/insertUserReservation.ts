@@ -30,7 +30,7 @@ export const insertReservation = async (
     receipt_number: receiptId,
     profile_id: profileId,
     celebrant: event.celebrant,
-    package: Number(event.pkg.id),
+    package_id: Number(event.pkg.id),
     theme_motif_id: Number(event.theme.id),
     venue: event.venue,
     event_date,

@@ -124,7 +124,7 @@ export interface ReservationWithPackage {
   receipt_number: string;
   celebrant: string;
   status: string;
-  package?: Package; // Optional FK relation
+  packages?: Package; // Optional FK relation
 }
 
 
