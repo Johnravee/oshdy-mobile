@@ -30,8 +30,8 @@ import Spinner from '@/components/ui/spinner';
 import { useRouter } from 'expo-router';
 import BackButton from '@/components/ui/back-button';
 
-const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'ongoing', 'completed', 'canceled', 'done'];
-const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🔄', '🏁', '❌'];
+const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'completed', 'canceled', 'done'];
+const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🏁', '❌','🎉'];
 
 export default function ReservationHistory() {
   const route = useRouter()
@@ -150,7 +150,7 @@ export default function ReservationHistory() {
                   ${
                     item.status?.toLowerCase() === 'pending' ? 'bg-yellow-200' :
                     item.status?.toLowerCase() === 'confirmed' ? 'bg-blue-200' :
-                    item.status?.toLowerCase() === 'contract_signing' ? 'bg-purple-200' :
+                    item.status?.toLowerCase() === 'contract' ? 'bg-purple-200' :
                     item.status?.toLowerCase() === 'ongoing' ? 'bg-orange-200' :
                     item.status?.toLowerCase() === 'completed' ? 'bg-green-200' :
                     item.status?.toLowerCase() === 'revoked' ? 'bg-red-200' :

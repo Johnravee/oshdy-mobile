@@ -15,7 +15,7 @@ export const getCompletedReservationCount = async (
       .from('reservations')
       .select('*', { count: 'exact', head: true })
       .eq('profile_id', profileId)
-      .eq('status', 'completed');
+
 
     if (error) throw error;
 

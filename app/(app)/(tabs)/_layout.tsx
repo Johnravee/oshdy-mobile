@@ -2,13 +2,11 @@ import { Redirect, Tabs } from 'expo-router';
 import { useAuthContext } from '@/context/AuthContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { View } from 'react-native';
-import { useChatMessageContext } from '@/context/ChatMessageContext';
 import { useEffect } from 'react';
 
 
 export default function AppLayout() {
   const { session } = useAuthContext();
-  const { hasNewMessage } = useChatMessageContext(); 
 
   if (!session) {
     console.log("No session found, redirecting to login");
@@ -42,7 +40,7 @@ export default function AppLayout() {
           alignItems: 'center',
         },
         tabBarIconStyle: {
-          marginBottom: 2, // Optional: adjust spacing
+          marginBottom: 2, 
         },
       }}
     >
@@ -57,27 +55,6 @@ export default function AppLayout() {
       />
 
 
-      
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color, size }) => (
-            <View className="relative">
-              <FontAwesome name="comments" size={size} color={color} />
-              {hasNewMessage && (
-                <View
-                  className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full"
-                  style={{ transform: [{ translateX: 6 }, { translateY: 0 }] }}
-                />
-              )}
-            </View>
-          ),
-        }}
-      />
-
-
-     
 
   <Tabs.Screen
         name="more"

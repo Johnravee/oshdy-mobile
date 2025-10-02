@@ -6,7 +6,7 @@ import notifee, { AndroidImportance } from '@notifee/react-native';
 
 import { AuthProvider } from '@/context/AuthContext';
 import { ProfileProvider } from '@/context/ProfileContext';
-import { ChatMessageProvider } from '@/context/ChatMessageContext';
+
 import { useAuth } from '@/hooks/useAuth';
 import { requestFCMPermission } from '@/lib/requestFCMPermission';
 import { logError, logInfo, logSuccess } from '@/utils/logger';
@@ -83,10 +83,8 @@ export default function RootLayout() {
   return (
     <AuthProvider>
     <ProfileProvider>
-        <ChatMessageProvider>
           <DeepLinkBootstrapper />
           <Slot />
-        </ChatMessageProvider>
       </ProfileProvider>
     </AuthProvider>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProfileContext } from '@/context/ProfileContext';
 import { logInfo, logSuccess, logError } from '@/utils/logger';
-import { getCompletedReservationCount } from '@/lib/api/getCompletedReservationCount';
+import { getCompletedReservationCount } from '@/lib/api/getTotalReservationCount';
 
 /**
  * Custom hook to fetch the total number of completed reservations for the current user.

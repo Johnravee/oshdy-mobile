@@ -30,50 +30,45 @@ import Spinner from '@/components/ui/spinner';
 import { useUserFetchReservationWithJoins } from '@/hooks/useUserFetchResevationWithJoins';
 import BackButton from '@/components/ui/back-button';
 import { updateReservationStatusById } from '@/lib/api/updateReservationStatusById';
+import { getAssignedWorkersByReservationId } from '@/lib/api/getAssignedWorkersByReservationId';
+
+
 
 export default function ReservationStatus() {
-  // Extract reservation_id param from URL
   const { reservation_id } = useLocalSearchParams<{ reservation_id?: string }>();
   const [modalVisible, setModalVisible] = useState<null | 'details' | 'staff' | 'menu' | 'request'>(null);
+  const [assignedWorkers, setAssignedWorkers] = useState<any[]>([]);
+  const [loadingWorkers, setLoadingWorkers] = useState<boolean>(false);
 
-  // Show spinner if no reservation_id
   if (!reservation_id) return <Spinner />;
 
   const parseId = parseInt(reservation_id);
-
-  // Fetch reservation data using custom hook (pass reservation_id)
   const { reservations, isFetching } = useUserFetchReservationWithJoins(parseId);
-
-  // find the current reservation or fallback
   const pendingReservation = reservations && reservations.length > 0 ? reservations[0] : null;
   const pendingLoading = isFetching;
 
-  // Step definitions for reservation status
+  // Steps excluding "Canceled"
   const steps = [
     { label: 'Pending', icon: 'hourglass-half', description: 'Waiting for confirmation' },
     { label: 'Confirmed', icon: 'check-circle', description: 'Reservation confirmed' },
     { label: 'Contract Signing', icon: 'pencil-square-o', description: 'Sign the contract' },
-    { label: 'Ongoing', icon: 'play-circle', description: 'Reservation in progress' },
     { label: 'Completed', icon: 'check', description: 'Reservation completed' },
-    { label: 'Canceled', icon: 'times-circle', description: 'Reservation canceled' },
-    { label: 'Done', icon: 'times-circle', description: 'Reservation done' },
-
-
+    { label: 'Done', icon: 'check-circle', description: 'Reservation done' },
   ];
 
   const stepMap: Record<string, number> = {
     pending: 0,
     confirmed: 1,
-    contract_signing: 2,
+    contract: 2,
     ongoing: 3,
     completed: 4,
-    canceled: 5
+    done: 5,
   };
 
-  // Determine current step based on reservation status or default to pending
-  const currentStep = pendingReservation ? stepMap[pendingReservation.status] ?? 0 : 0;
+  const currentStatus = pendingReservation?.status ?? 'pending';
+  const currentStep = stepMap[currentStatus] ?? 0;
+  const isCanceled = currentStatus === 'canceled';
 
-  // Modal content renderer
   const renderModalContent = () => {
     if (!pendingReservation) return null;
 
@@ -92,7 +87,7 @@ export default function ReservationStatus() {
     switch (modalVisible) {
       case 'details':
         return (
-          <ScrollView className="p-6 " >
+          <ScrollView className="p-6">
             <Text className="text-2xl font-extrabold mb-6 text-blue-700 border-b border-blue-200 pb-2">
               🎉 Event Details
             </Text>
@@ -108,7 +103,7 @@ export default function ReservationStatus() {
 
       case 'menu':
         return (
-          <ScrollView className="p-6 " >
+          <ScrollView className="p-6">
             <Text className="text-2xl font-extrabold mb-6 text-green-700 border-b border-green-200 pb-2">
               🍽️ Event Menu
             </Text>
@@ -126,46 +121,61 @@ export default function ReservationStatus() {
           </ScrollView>
         );
 
-      case 'staff':
-        return (
-          <ScrollView className="p-6 " >
-            <Text className="text-2xl font-extrabold mb-6 text-purple-700 border-b border-purple-200 pb-2">
-              👥 Event Staff
-            </Text>
-            <Text className="text-dark text-base leading-relaxed">
-              Assigned staff info coming soon or loaded from another API.
-            </Text>
-          </ScrollView>
-        );
+     case 'staff':
+  return (
+    <ScrollView className="p-6">
+      <Text className="text-2xl font-extrabold mb-6 text-purple-700 border-b border-purple-200 pb-2">
+        👥 Event Staff
+      </Text>
 
-      case 'request':
-        return (
-          <ScrollView className="p-6 " >
-            <Text className="text-2xl font-extrabold mb-6 text-yellow-700 border-b border-yellow-200 pb-2">
-              ✉️ Request
+      {loadingWorkers ? (
+        <Spinner />
+      ) : assignedWorkers.length === 0 ? (
+        <Text className="text-dark text-base">No staff assigned yet.</Text>
+      ) : (
+        assignedWorkers.map((assignment) => (
+          <View
+            key={assignment.id}
+            className="bg-purple-50 rounded-md p-4 mb-3 border border-purple-100 shadow-sm"
+          >
+            <Text className="text-lg font-bold text-purple-900">
+              {assignment.workers?.name}
             </Text>
-            <Text className="text-dark text-base leading-relaxed">
-              You can place your custom requests related to your reservation here.
-            </Text>
-          </ScrollView>
-        );
+            <Text className="text-sm text-purple-800">Role: {assignment.workers?.role}</Text>
+            <Text className="text-sm text-purple-800">Contact: {assignment.workers?.contact}</Text>
+          </View>
+        ))
+      )}
+    </ScrollView>
+  );
 
       default:
         return null;
     }
   };
 
+
+  const fetchAssignedWorkers = async () => {
+  try {
+    setLoadingWorkers(true);
+    const workers = await getAssignedWorkersByReservationId(parseId);
+    setAssignedWorkers(workers);
+  } catch (err) {
+    console.error('Failed to load assigned workers:', err);
+  } finally {
+    setLoadingWorkers(false);
+  }
+};
+
+
   return (
     <SafeAreaView className="flex-1 bg-white pt-10 px-4">
-      <ScrollView showsVerticalScrollIndicator={false } >
-        {/* Back */}
-        <BackButton variant='dark' />
-
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <BackButton variant="dark" />
         <Text className="text-gray-500 mb-4">
           Here's the current status of your event reservation.
         </Text>
 
-        {/* Loading & Content */}
         {pendingLoading ? (
           <Spinner />
         ) : !pendingReservation ? (
@@ -178,11 +188,28 @@ export default function ReservationStatus() {
         ) : (
           <>
             {/* Progress Bar */}
-            <View className="bg-white border border-blue-200 rounded-xl p-6 shadow-sm">
-              <VerticalProgressStep steps={steps} activeSteps={currentStep} />
+            <View
+              className={`rounded-xl p-6 shadow-sm border ${
+                isCanceled ? 'bg-red-50 border-red-200' : 'bg-white border-blue-200'
+              }`}
+            >
+              {!isCanceled ? (
+                <VerticalProgressStep steps={steps} activeSteps={currentStep} />
+              ) : (
+                <View className="items-center">
+                  <FontAwesome name="times-circle" size={48} color="#DC2626" />
+                  <Text className="mt-4 text-xl font-bold text-red-600">Reservation Canceled</Text>
+                </View>
+              )}
               <View className="mt-4 items-center">
-                <Text className="text-sm text-secondary bg-blue-100 px-3 py-1 rounded-full font-medium">
-                  Current Status: {pendingReservation.status.replace('_', ' ').toUpperCase()}
+                <Text
+                  className={`text-sm px-3 py-1 rounded-full font-medium ${
+                    isCanceled
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-blue-100 text-secondary'
+                  }`}
+                >
+                  Current Status: {currentStatus.replace('_', ' ').toUpperCase()}
                 </Text>
               </View>
             </View>
@@ -197,13 +224,7 @@ export default function ReservationStatus() {
                 <Text className="text-secondary font-semibold text-lg">Event Details</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => setModalVisible('staff')}
-                className="w-full bg-white border border-gray-300 rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow"
-              >
-                <FontAwesome name="users" size={24} color="#2563EB" />
-                <Text className="text-secondary font-semibold text-lg">Event Staff</Text>
-              </TouchableOpacity>
+              
 
               <TouchableOpacity
                 onPress={() => setModalVisible('menu')}
@@ -213,56 +234,42 @@ export default function ReservationStatus() {
                 <Text className="text-secondary font-semibold text-lg">Event Menu</Text>
               </TouchableOpacity>
 
-             <TouchableOpacity
-                onPress={() => {
-                  if (pendingReservation.status !== 'pending' && pendingReservation.status !== 'canceled') {
-                    setModalVisible('request');
-                  }
-                }}
-                className={`w-full border rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow ${
-                  pendingReservation.status === 'pending' || pendingReservation.status === 'cancelled'
-                    ? 'bg-gray-100 border-gray-300'
-                    : 'bg-white border-gray-300'
-                }`}
-                disabled={pendingReservation.status === 'pending' || pendingReservation.status === 'canceled'}
-              >
-                <FontAwesome
-                  name="envelope"
-                  size={24}
-                  color={
-                    pendingReservation.status === 'pending' || pendingReservation.status === 'canceled'
-                      ? '#A0AEC0'
-                      : '#2563EB'
-                  }
-                />
-                <Text
-                  className={`font-semibold text-lg ${
-                    pendingReservation.status === 'pending' || pendingReservation.status === 'canceled'
-                      ? 'text-gray-400'
-                      : 'text-secondary'
-                  }`}
-                >
-                  Request
-                </Text>
-              </TouchableOpacity>
 
+              <TouchableOpacity
+                 onPress={() => {
+                  setModalVisible('staff');
+                  fetchAssignedWorkers(); 
+                }}
+                 className={`w-full border rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow ${
+                  currentStatus === 'pending'
+                  ? 'bg-gray-100 border-gray-300'
+                  : 'bg-white border-red-300'
+                }`}
+                disabled={currentStatus === 'pending'}
+              >
+                <FontAwesome name="users" size={24} color="#2563EB" />
+                <Text className="text-secondary font-semibold text-lg">Event Staff</Text>
+              </TouchableOpacity>
+           
+
+              {/* Cancel button */}
               <TouchableOpacity
                 onPress={() => updateReservationStatusById(reservation_id, 'canceled')}
                 className={`w-full border rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow ${
-                  pendingReservation.status === 'pending'
+                  currentStatus === 'pending'
                     ? 'bg-white border-red-300'
                     : 'bg-gray-100 border-gray-300'
                 }`}
-                disabled={pendingReservation.status !== 'pending'}
+                disabled={currentStatus !== 'pending'}
               >
                 <FontAwesome
                   name="times-circle"
                   size={24}
-                  color={pendingReservation.status === 'pending' ? '#DC2626' : '#A0AEC0'}
+                  color={currentStatus === 'pending' ? '#DC2626' : '#A0AEC0'}
                 />
                 <Text
                   className={`font-semibold text-lg ${
-                    pendingReservation.status === 'pending' ? 'text-red-600' : 'text-gray-400'
+                    currentStatus === 'pending' ? 'text-red-600' : 'text-gray-400'
                   }`}
                 >
                   Cancel

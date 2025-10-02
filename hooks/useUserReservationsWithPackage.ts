@@ -90,9 +90,10 @@ export const useFetchUserReservations = (): {
               case 'UPDATE':
                 return current.map((res) =>
                   res.id === newReservation.id
-                    ? { ...newReservation, package: res.package }
+                    ? { ...newReservation, package: res.packages }
                     : res
                 );
+
               case 'DELETE':
                 return current.filter((res) => res.id !== oldReservation.id);
               default:
