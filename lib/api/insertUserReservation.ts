@@ -5,28 +5,27 @@ import convertDateTime from '@/utils/convertDateTime';
 import { logInfo, logSuccess, logError } from '@/utils/logger';
 
 type InsertReservationResponse = {
-  data: any[] | null;
+  reservation: any | null;
   receiptId: string;
 };
 
 /**
- * Inserts a new reservation into the Supabase database.
+ * Inserts a new reservation and related menu orders into the database.
  *
- * @function insertReservation
  * @param {number} profileId - The ID of the user making the reservation.
- * @param {ReservationData} reservationData - The complete reservation data including event, guests, and menu.
- * @returns {Promise<InsertReservationResponse>} - An object containing the inserted data (or null) and the generated receipt ID.
- * @throws {Error} - Throws an error if the Supabase insert fails.
+ * @param {ReservationData} reservationData - All event, guest, and menu info.
+ * @returns {Promise<InsertReservationResponse>}
  */
 export const insertReservation = async (
   profileId: number,
   reservationData: ReservationData
 ): Promise<InsertReservationResponse> => {
   const receiptId = generateUniqueReceiptId();
-  const { event, guests, menu } = reservationData;
+  const { event, guests,  selectedMenuIds } = reservationData;
   const { event_date, event_time } = convertDateTime(event.eventDate, event.eventTime);
 
-  const payload = {
+  // 🧾 Step 1: Prepare main reservation data
+  const reservationPayload = {
     receipt_number: receiptId,
     profile_id: profileId,
     celebrant: event.celebrant,
@@ -39,19 +38,50 @@ export const insertReservation = async (
     adults_qty: parseInt(guests.adults),
     kids_qty: parseInt(guests.kids),
     grazing_id: Number(event.grazingTable.id),
-    menu: menu ? JSON.stringify(menu) : null,
     status: 'pending',
   };
 
-  logInfo('📦 Preparing to insert reservation with payload:', payload);
+  logInfo('📦 Preparing to insert reservation:', reservationPayload);
 
-  const { data, error } = await supabase.from('reservations').insert([payload]);
+  // 🪶 Step 2: Insert into `reservations` and get the new reservation ID
+  const { data: reservationDataResult, error: reservationError } = await supabase
+    .from('reservations')
+    .insert([reservationPayload])
+    .select('id')
+    .single();
 
-  if (error) {
-    logError('❌ Supabase insert error:', error.message);
-    throw new Error(error.message);
+  if (reservationError) {
+    logError('❌ Reservation insert failed:', reservationError.message);
+    throw new Error(reservationError.message);
   }
 
-  logSuccess(`✅ Reservation inserted with receipt ID: ${receiptId}`);
-  return { data, receiptId };
+  const reservationId = reservationDataResult.id;
+  logSuccess(`✅ Reservation created with ID: ${reservationId}`);
+
+  if (selectedMenuIds && selectedMenuIds.length > 0) {
+    const menuOrders = selectedMenuIds.map((menuId) => ({
+      reservation_id: reservationId,
+      menu_option_id: menuId,
+    }));
+
+    logInfo('🧩 Bulk inserting menu orders:', menuOrders);
+
+    const { error: menuError } = await supabase
+      .from('reservation_menu_orders')
+      .insert(menuOrders);
+
+    if (menuError) {
+      logError('❌ Menu order insert failed:', menuError.message);
+      throw new Error(menuError.message);
+    }
+
+    logSuccess(`✅ Inserted ${menuOrders.length} menu selections for reservation ${reservationId}`);
+  } else {
+    logInfo('⚠️ No menu items selected, skipping menu insert.');
+  }
+
+  return {
+    reservation: reservationDataResult,
+    receiptId,
+  };
 };

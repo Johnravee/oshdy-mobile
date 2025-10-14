@@ -96,6 +96,7 @@ export type GuestDetails = {
 export type Menu = {
   id: number;
   name: string;
+  category?: string;
 };
 
 /**
@@ -110,7 +111,30 @@ export type MenuSelection = {
   fillet: string;
   dessert: string;
   juice: string;
+  [key: string]: string;
 };
+
+/* ================================
+ * 🍽️ Reservation Menu Relations
+ * ================================ */
+
+/**
+ * Menu option referenced in a reservation_menu_orders row.
+ */
+export interface MenuOption {
+  id: number;
+  name: string;
+  category: string;
+}
+
+/**
+ * Reservation-to-menu relation table (reservation_menu_orders).
+ */
+export interface ReservationMenuOrder {
+  id: number;
+  menu_option_id: number;
+  menu_options?: MenuOption; // joined menu option details
+}
 
 /* ================================
  * 📋 Reservation Structures
@@ -127,11 +151,9 @@ export interface ReservationWithPackage {
   packages?: Package; // Optional FK relation
 }
 
-
 /**
- * Supabase reservation query result joined tables.
+ * Supabase reservation query result with joined tables.
  */
-
 export interface Reservation {
   id: number;
   receipt_number: string;
@@ -142,15 +164,23 @@ export interface Reservation {
   event_time: string;
   location: string;
   adults_qty: number;
-  package: number,
   kids_qty: number;
   status: string;
   created_at: string;
+  package: number;
   menu: any;
+
+  // ✅ Joined relations
   packages?: Package;
   grazing?: Grazing;
+
+  // ✅ NEW: menu join
+  reservation_menu_orders?: ReservationMenuOrder[];
 }
 
+/* ================================
+ * 🧾 Full Reservation Payload
+ * ================================ */
 
 /**
  * Complete reservation payload passed through form steps and submitted to Supabase.
@@ -159,4 +189,5 @@ export type ReservationData = {
   event: EventDetails;
   guests: GuestDetails;
   menu: MenuSelection;
+  selectedMenuIds?: number[];
 };

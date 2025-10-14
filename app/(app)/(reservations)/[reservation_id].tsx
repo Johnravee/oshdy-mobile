@@ -102,24 +102,34 @@ export default function ReservationStatus() {
         );
 
       case 'menu':
-        return (
-          <ScrollView className="p-6">
-            <Text className="text-2xl font-extrabold mb-6 text-green-700 border-b border-green-200 pb-2">
-              🍽️ Event Menu
+  return (
+    <ScrollView className="p-6">
+      <Text className="text-2xl font-extrabold mb-6 text-green-700 border-b border-green-200 pb-2">
+        🍽️ Event Menu
+      </Text>
+
+      {!pendingReservation.reservation_menu_orders ||
+      pendingReservation.reservation_menu_orders.length === 0 ? (
+        <Text className="text-gray-500 text-center mt-6">
+          No menu selected for this reservation.
+        </Text>
+      ) : (
+        pendingReservation.reservation_menu_orders.map((order) => (
+          <View
+            key={order.id}
+            className="bg-green-50 rounded-md p-3 mb-3 shadow-sm border border-green-100"
+          >
+            <Text className="text-base font-semibold text-green-900 capitalize">
+              {order.menu_options?.category}
             </Text>
-            {Object.entries(menuItems).map(([key, value]) => (
-              <View
-                key={key}
-                className="bg-green-50 rounded-md p-3 mb-3 shadow-sm border border-green-100"
-              >
-                <Text className="text-base font-semibold text-green-900 capitalize">
-                  {key.replace('_', ' ')}
-                </Text>
-                <Text className="text-sm text-green-800 mt-1">{value as string}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        );
+            <Text className="text-sm text-green-800 mt-1">
+              {order.menu_options?.name}
+            </Text>
+          </View>
+        ))
+      )}
+    </ScrollView>
+  );
 
      case 'staff':
   return (

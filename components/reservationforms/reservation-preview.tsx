@@ -2,36 +2,49 @@
  * @file reservation-preview.tsx
  * @component ReservationPreview
  * @description
- * This component provides a read-only summary view of all reservation data entered by the user.
- * It presents grouped sections for personal details, event information, guest count, and menu selections.
- * Each section is labeled with an emoji and styled card layout for clarity and ease of review.
+ * Read-only summary view of reservation data, showing readable menu names
+ * (instead of numeric IDs) by fetching from Supabase `menu_options`.
  *
- * @props {ReservationData} reservationData - The complete reservation state object to be previewed.
- *
- * @usage
- * Typically used on the final step of the reservation process, allowing users to verify their
- * inputs before submission. Helps prevent errors by making information visible in a structured way.
- *
- * @example
- * <ReservationPreview reservationData={data} />
- *
- * @tip Pair with a "Submit" button below this component to finalize the reservation.
- * @note Values marked as undefined will be shown as "N/A" for transparency.
- *
- * @author John Rave Mimay
- * @created 2025-06-15
+ * @author
+ * John Rave Mimay
+ * @updated 2025-10-13
  */
 
-
-import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, View, Text, ActivityIndicator } from 'react-native';
 import { ReservationData } from '../../types/reservation-types';
 import { useProfileContext } from '@/context/ProfileContext';
+import { supabase } from '@/lib/supabase';
 
 export default function ReservationPreview({ reservationData }: { reservationData: ReservationData }) {
-
   const { profile } = useProfileContext();
-    
+  const [menuNames, setMenuNames] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMenus = async () => {
+      setLoading(true);
+
+      const { data, error } = await supabase.from('menu_options').select('id, name');
+      if (error) {
+        console.error('Error loading menu options:', error);
+        setLoading(false);
+        return;
+      }
+
+      //Dictionary for quick lookup
+      const map: Record<string, string> = {};
+      data?.forEach((item) => {
+        map[item.id] = item.name;
+      });
+
+      setMenuNames(map);
+      setLoading(false);
+    };
+
+    fetchMenus();
+  }, []);
+
   const renderSection = (
     title: string,
     emoji: string,
@@ -53,6 +66,21 @@ export default function ReservationPreview({ reservationData }: { reservationDat
     </View>
   );
 
+  // Helper to get menu name by ID
+  const getMenuName = (id: number | string | undefined) => {
+    if (!id) return 'N/A';
+    return menuNames[id] || `ID: ${id}`; // fallback if still loading
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center p-6">
+        <ActivityIndicator size="large" color="#6366f1" />
+        <Text className="text-gray-500 mt-3">Loading menu options...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="p-4 bg-white">
       <Text className="text-3xl font-extrabold text-center text-gray-700 mb-6">🎉 Reservation Preview</Text>
@@ -66,12 +94,12 @@ export default function ReservationPreview({ reservationData }: { reservationDat
 
       {renderSection('Event Details', '📅', [
         { label: 'Celebrant', value: reservationData.event.celebrant },
-        { label: 'Package', value: reservationData.event.pkg.name },
-        { label: 'Theme', value: reservationData.event.theme.name },
+        { label: 'Package', value: reservationData.event.pkg?.name },
+        { label: 'Theme', value: reservationData.event.theme?.name },
         { label: 'Venue', value: reservationData.event.venue },
         { label: 'Date', value: reservationData.event.eventDate },
         { label: 'Time', value: reservationData.event.eventTime },
-        { label: 'Grazing Table', value: reservationData.event.grazingTable.name},
+        { label: 'Grazing Table', value: reservationData.event.grazingTable?.name },
         { label: 'Location', value: reservationData.event.location },
       ])}
 
@@ -82,14 +110,14 @@ export default function ReservationPreview({ reservationData }: { reservationDat
       ])}
 
       {renderSection('Menu', '🍽️', [
-        { label: 'Beef', value: reservationData.menu.beef },
-        { label: 'Chicken', value: reservationData.menu.chicken },
-        { label: 'Pork', value: reservationData.menu.pork },
-        { label: 'Fillet', value: reservationData.menu.fillet },
-        { label: 'Vegetable', value: reservationData.menu.vegetable },
-        { label: 'Pasta', value: reservationData.menu.pasta },
-        { label: 'Dessert', value: reservationData.menu.dessert },
-        { label: 'Juice', value: reservationData.menu.juice },
+        { label: 'Beef', value: getMenuName(reservationData.menu.beef) },
+        { label: 'Chicken', value: getMenuName(reservationData.menu.chicken) },
+        { label: 'Pork', value: getMenuName(reservationData.menu.pork) },
+        { label: 'Fillet', value: getMenuName(reservationData.menu.fillet) },
+        { label: 'Vegetable', value: getMenuName(reservationData.menu.vegetable) },
+        { label: 'Pasta', value: getMenuName(reservationData.menu.pasta) },
+        { label: 'Dessert', value: getMenuName(reservationData.menu.dessert) },
+        { label: 'Juice', value: getMenuName(reservationData.menu.juice) },
       ])}
     </ScrollView>
   );
