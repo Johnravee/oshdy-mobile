@@ -40,14 +40,12 @@ export default function ReservationHistory() {
   const [selectedStatus, setSelectedStatus] = useState<string>(STATUSES[0]);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const filteredByStatus = useMemo(() => {
-    if (selectedStatus.toLowerCase() === 'all') {
-      return reservations;
-    }
+  const normalizeKey = (s?: string) => (s || '').toLowerCase().replace(/[\s_]/g, '');
 
-    return reservations.filter(
-      (res) => res.status?.toLowerCase() === selectedStatus.toLowerCase()
-    );
+  const filteredByStatus = useMemo(() => {
+    if (selectedStatus.toLowerCase() === 'all') return reservations;
+    const wanted = normalizeKey(selectedStatus);
+    return reservations.filter((res) => normalizeKey(res.status) === wanted);
   }, [reservations, selectedStatus]);
 
   const filteredReservations = useMemo(() => {
@@ -68,9 +66,12 @@ export default function ReservationHistory() {
 
   function formatStatus(status?: string) {
     if (!status) return 'Unknown';
+    const key = normalizeKey(status);
+    if (key === 'contractsigning') return 'Contract Signing';
+    // Generic: underscores -> spaces + Title Case
     return status
-      .replace(/_/g, ' ') // replace underscores with spaces
-      .replace(/\b\w/g, (char) => char.toUpperCase()); // capitalize each word
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
  
@@ -145,33 +146,33 @@ export default function ReservationHistory() {
               </Text>
 
               {/* Status Badge */}
-              <View
-                className={`mt-2 self-start rounded-full px-3 py-1 shadow-sm
-                  ${
-                    item.status?.toLowerCase() === 'pending' ? 'bg-yellow-200' :
-                    item.status?.toLowerCase() === 'confirmed' ? 'bg-blue-200' :
-                    item.status?.toLowerCase() === 'contract' ? 'bg-purple-200' :
-                    item.status?.toLowerCase() === 'ongoing' ? 'bg-orange-200' :
-                    item.status?.toLowerCase() === 'completed' ? 'bg-green-200' :
-                    item.status?.toLowerCase() === 'revoked' ? 'bg-red-200' :
-                    'bg-gray-300'
-                  }`}
-              >
-                <Text
-                  className={`text-xs font-medium
-                    ${
-                      item.status?.toLowerCase() === 'pending' ? 'text-yellow-900' :
-                      item.status?.toLowerCase() === 'confirmed' ? 'text-blue-900' :
-                      item.status?.toLowerCase() === 'contract_signing' ? 'text-purple-900' :
-                      item.status?.toLowerCase() === 'ongoing' ? 'text-orange-900' :
-                      item.status?.toLowerCase() === 'completed' ? 'text-green-900' :
-                      item.status?.toLowerCase() === 'revoked' ? 'text-red-900' :
-                      'text-gray-800'
-                    }`}
-                >
-                  {formatStatus(item.status)}
-                </Text>
-              </View>
+              {(() => {
+                const key = normalizeKey(item.status);
+                const bg =
+                  key === 'pending' ? 'bg-yellow-200' :
+                  key === 'confirmed' ? 'bg-blue-200' :
+                  key === 'contractsigning' ? 'bg-purple-200' :
+                  key === 'ongoing' ? 'bg-orange-200' :
+                  key === 'completed' ? 'bg-green-200' :
+                  (key === 'canceled' || key === 'revoked') ? 'bg-red-200' :
+                  'bg-gray-300';
+                const text =
+                  key === 'pending' ? 'text-yellow-900' :
+                  key === 'confirmed' ? 'text-blue-900' :
+                  key === 'contractsigning' ? 'text-purple-900' :
+                  key === 'ongoing' ? 'text-orange-900' :
+                  key === 'completed' ? 'text-green-900' :
+                  (key === 'canceled' || key === 'revoked') ? 'text-red-900' :
+                  'text-gray-800';
+                return (
+                  <View className={`mt-2 self-start rounded-full px-3 py-1 shadow-sm ${bg}`}>
+                    <Text className={`text-xs font-medium ${text}`}>
+                      {formatStatus(item.status)}
+                    </Text>
+                  </View>
+                );
+              })()}
+              
             </View>
             <FontAwesome name="chevron-right" size={16} color="#6B7280" />
           </TouchableOpacity>

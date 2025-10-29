@@ -176,17 +176,31 @@ export default function EventDetailsForm({
             mode="date"
             value={new Date()}
             display="calendar"
+            minimumDate={new Date()}
             onChange={(event, selectedDate) => {
-              if (event.type === 'set' && selectedDate) {
-                setReservationData((prev) => ({
-                  ...prev,
-                  event: {
-                    ...prev.event,
-                    eventDate: selectedDate.toLocaleDateString(),
-                  },
-                }));
-              }
+              // Close the picker regardless of action
               setAlertVisible((prev) => ({ ...prev, datepicker: false }));
+
+              if (event.type !== 'set' || !selectedDate) return;
+
+              // Compare only the date portion (ignore time)
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const picked = new Date(selectedDate);
+              picked.setHours(0, 0, 0, 0);
+
+              if (picked < today) {
+                Alert.alert('Invalid date', 'Past dates are not allowed. Please select today or a future date.');
+                return;
+              }
+
+              setReservationData((prev) => ({
+                ...prev,
+                event: {
+                  ...prev.event,
+                  eventDate: selectedDate.toLocaleDateString(),
+                },
+              }));
             }}
           />
         )}

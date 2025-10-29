@@ -17,14 +17,14 @@ export default function MenuDetailsForm({
   // 🔍 Filter menu by category
   const filterByCategory = (category: string) => pgmtData.menu.filter((item) => item.category === category);
 
-  const PastaMenu = useMemo(() => filterByCategory('pasta'), [pgmtData.menu]);
-  const VegetableMenu = useMemo(() => filterByCategory('vegetable'), [pgmtData.menu]);
-  const ChickenMenu = useMemo(() => filterByCategory('chicken'), [pgmtData.menu]);
-  const PorkMenu = useMemo(() => filterByCategory('pork'), [pgmtData.menu]);
-  const BeefMenu = useMemo(() => filterByCategory('beef'), [pgmtData.menu]);
-  const FilletMenu = useMemo(() => filterByCategory('fish'), [pgmtData.menu]);
-  const DessertMenu = useMemo(() => filterByCategory('dessert'), [pgmtData.menu]);
-  const DrinksMenu = useMemo(() => filterByCategory('drinks'), [pgmtData.menu]);
+  const PastaMenu = useMemo(() => filterByCategory('Pasta'), [pgmtData.menu]);
+  const VegetableMenu = useMemo(() => filterByCategory('Vegetable'), [pgmtData.menu]);
+  const ChickenMenu = useMemo(() => filterByCategory('Chicken'), [pgmtData.menu]);
+  const PorkMenu = useMemo(() => filterByCategory('Pork'), [pgmtData.menu]);
+  const BeefMenu = useMemo(() => filterByCategory('Beef'), [pgmtData.menu]);
+  const FilletMenu = useMemo(() => filterByCategory('Fish'), [pgmtData.menu]);
+  const DessertMenu = useMemo(() => filterByCategory('Dessert'), [pgmtData.menu]);
+  const DrinksMenu = useMemo(() => filterByCategory('Drinks'), [pgmtData.menu]);
 
   if (pgmtLoading || !pgmtData) return <Spinner />;
 

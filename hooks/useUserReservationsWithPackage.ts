@@ -83,23 +83,21 @@ export const useFetchUserReservations = (): {
 
           logInfo(`Realtime event: ${payload.eventType}`, payload);
 
-          setReservations((current) => {
-            switch (payload.eventType) {
-              case 'INSERT':
-                return [...current, newReservation];
-              case 'UPDATE':
-                return current.map((res) =>
-                  res.id === newReservation.id
-                    ? { ...newReservation, package: res.packages }
-                    : res
-                );
-
-              case 'DELETE':
-                return current.filter((res) => res.id !== oldReservation.id);
-              default:
-                return current;
-            }
-          });
+          switch (payload.eventType) {
+            case 'INSERT':
+              setReservations((current) => [...current, newReservation]);
+              break;
+            case 'UPDATE':
+              // Preserve joined relations by refetching the full dataset
+              // since realtime payloads do not include joined tables.
+              fetchReservationsWithPackage();
+              break;
+            case 'DELETE':
+              setReservations((current) => current.filter((res) => res.id !== oldReservation.id));
+              break;
+            default:
+              break;
+          }
         }
       )
       .subscribe();

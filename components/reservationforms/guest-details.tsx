@@ -29,76 +29,160 @@
 
 
 import { View, Text, ScrollView } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import {GuestDetails, ReservationData } from '@/types/reservation-types';
 import InputComponent from '../ui/inputText';
 
+/**
+ * @param onValidationChange Optional callback to inform parent if form is valid
+ */
 export default function GuestDetailsForm({
   data,
   setReservationData,
+  onValidationChange,
 }: {
   data: GuestDetails;
   setReservationData: React.Dispatch<React.SetStateAction<ReservationData>>;
+  onValidationChange?: (valid: boolean) => void;
 }) {
+  // Convert to numbers for validation
+  const pax = parseInt(data.pax || '0', 10);
+  const adults = parseInt(data.adults || '0', 10);
+  const kids = parseInt(data.kids || '0', 10);
+  const sum = adults + kids;
+
+  // Validation logic
+  let errorMsg = '';
+  let canProceed = true;
+  if (pax > 0 && (adults > pax || kids > pax)) {
+    errorMsg = 'Adults or kids cannot exceed total Pax.';
+    canProceed = false;
+  } else if (pax > 0 && sum > pax) {
+    errorMsg = 'Sum of adults and kids cannot exceed total Pax.';
+    canProceed = false;
+  } else if (pax > 0 && sum < pax) {
+    errorMsg = 'Sum of adults and kids cannot be less than total Pax.';
+    canProceed = false;
+  }
+
+  // Inform parent of validation state
+  useEffect(() => {
+    if (onValidationChange) onValidationChange(canProceed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canProceed, pax, adults, kids]);
+
+  // Helper to clamp value
+  const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
+
   return (
     <ScrollView>
-        <View className="h-full w-full flex justify-evenly gap-5">
-          <Text className="text-dark font-bold text-2xl">Guest Details</Text>
-              <Text className="text-sm text-gray-500 w-full ">
-                Please enter the number of expected guests. This helps us plan your event more accurately and ensure enough food and seating.
-              </Text>
-          
-            
-                <InputComponent
-                label="Pax"
-                value={data.pax}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    guests: { ...prev.guests, pax: text },
-                  }))
-                }
-                keyboardType="phone-pad"
-                placeholder='e.g. 100'
-              />
+      <View className="h-full w-full flex justify-evenly gap-5">
+        <Text className="text-dark font-bold text-2xl">Guest Details</Text>
+        <Text className="text-sm text-gray-500 w-full ">
+          Please enter the number of expected guests. This helps us plan your event more accurately and ensure enough food and seating.
+        </Text>
 
-              <InputComponent
-                label="Number of Adults"
-                value={data.adults}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    guests: { ...prev.guests, adults: text },
-                  }))
-                }
-                keyboardType="phone-pad"
-                placeholder='e.g. 50'
-              />
+        <InputComponent
+          label="Pax"
+          value={data.pax}
+          placeholderTextColor="#999"
+          className='w-full'
+          onChangeText={(text) => {
+            // If pax is reduced, clamp adults/kids
+            const newPax = parseInt(text || '0', 10);
+            let newAdults = adults;
+            let newKids = kids;
+            if (newPax > 0) {
+              if (adults > newPax) newAdults = newPax;
+              if (kids > newPax) newKids = newPax;
+              if (newAdults + newKids > newPax) {
+                // Reduce kids first
+                const overflow = newAdults + newKids - newPax;
+                if (newKids >= overflow) newKids -= overflow;
+                else newAdults = clamp(newAdults - (overflow - newKids), 0, newPax);
+              }
+            }
+            setReservationData((prev) => ({
+              ...prev,
+              guests: {
+                ...prev.guests,
+                pax: text,
+                adults: String(newAdults),
+                kids: String(newKids),
+              },
+            }));
+          }}
+          keyboardType="phone-pad"
+          placeholder='e.g. 100'
+        />
 
-              <InputComponent
-                label="Number of Kids"
-                value={data.kids}
-                placeholderTextColor="#999"
-                className='w-full'
-                onChangeText={(text) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    guests: { ...prev.guests, kids: text },
-                  }))
-                }
-                keyboardType="phone-pad"
-                placeholder='e.g. 50'
-              />
-            
-            <Text className="text-xs text-gray-400 w-full py-5 text-center">
-              Tip: Total Pax should equal the number of Adults + Kids.
-            </Text>
-            </View>
+        <InputComponent
+          label="Number of Adults"
+          value={data.adults}
+          placeholderTextColor="#999"
+          className='w-full'
+          onChangeText={(text) => {
+            let val = parseInt(text || '0', 10);
+            if (val > pax) val = pax;
+            // Clamp kids if sum would exceed pax
+            let newKids = kids;
+            if (val + kids > pax) newKids = clamp(pax - val, 0, pax);
+            setReservationData((prev) => ({
+              ...prev,
+              guests: {
+                ...prev.guests,
+                adults: String(val),
+                kids: String(newKids),
+              },
+            }));
+          }}
+          keyboardType="phone-pad"
+          placeholder='e.g. 50'
+        />
 
+        <InputComponent
+          label="Number of Kids"
+          value={data.kids}
+          placeholderTextColor="#999"
+          className='w-full'
+          onChangeText={(text) => {
+            let val = parseInt(text || '0', 10);
+            if (val > pax) val = pax;
+            // Clamp adults if sum would exceed pax
+            let newAdults = adults;
+            if (val + adults > pax) newAdults = clamp(pax - val, 0, pax);
+            setReservationData((prev) => ({
+              ...prev,
+              guests: {
+                ...prev.guests,
+                kids: String(val),
+                adults: String(newAdults),
+              },
+            }));
+          }}
+          keyboardType="phone-pad"
+          placeholder='e.g. 50'
+        />
+
+        {errorMsg ? (
+          <Text className="text-xs text-red-500 w-full py-2 text-center">{errorMsg}</Text>
+        ) : (
+          <Text className="text-xs text-gray-400 w-full py-5 text-center">
+            Tip: Total Pax should equal the number of Adults + Kids.
+          </Text>
+        )}
+
+        {/* Example Next button (parent should use canProceed to enable/disable navigation) */}
+        {/*
+        <TouchableOpacity
+          className={`mt-4 rounded-md py-3 px-4 items-center ${canProceed ? 'bg-blue-600' : 'bg-gray-300'}`}
+          disabled={!canProceed}
+          onPress={...}
+        >
+          <Text className="text-white font-bold">Next</Text>
+        </TouchableOpacity>
+        */}
+      </View>
     </ScrollView>
-  )
+  );
 }

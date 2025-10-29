@@ -14,6 +14,8 @@
  */
 
 import React, { useState } from 'react';
+import AnimatedModal from '@/components/ui/animatedModal';
+import successAnim from '@/assets/images/lottie/success.json';
 import {
   View,
   Text,
@@ -30,15 +32,20 @@ import Spinner from '@/components/ui/spinner';
 import { useUserFetchReservationWithJoins } from '@/hooks/useUserFetchResevationWithJoins';
 import BackButton from '@/components/ui/back-button';
 import { updateReservationStatusById } from '@/lib/api/updateReservationStatusById';
+import MenuDetailsForm from '@/components/reservationforms/menu-details';
+import { updateReservationMenu } from '@/lib/api/updateReservationMenu';
 import { getAssignedWorkersByReservationId } from '@/lib/api/getAssignedWorkersByReservationId';
 
 
 
 export default function ReservationStatus() {
   const { reservation_id } = useLocalSearchParams<{ reservation_id?: string }>();
-  const [modalVisible, setModalVisible] = useState<null | 'details' | 'staff' | 'menu' | 'request'>(null);
+  const [modalVisible, setModalVisible] = useState<null | 'details' | 'staff' | 'menu' | 'request' | 'editMenu'>(null);
+  const [editMenuState, setEditMenuState] = useState<any>(null);
+  const [savingMenu, setSavingMenu] = useState(false);
   const [assignedWorkers, setAssignedWorkers] = useState<any[]>([]);
   const [loadingWorkers, setLoadingWorkers] = useState<boolean>(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   if (!reservation_id) return <Spinner />;
 
@@ -53,21 +60,26 @@ export default function ReservationStatus() {
     { label: 'Confirmed', icon: 'check-circle', description: 'Reservation confirmed' },
     { label: 'Contract Signing', icon: 'pencil-square-o', description: 'Sign the contract' },
     { label: 'Completed', icon: 'check', description: 'Reservation completed' },
-    { label: 'Done', icon: 'check-circle', description: 'Reservation done' },
+    { label: 'Done', icon: 'check-circle', description: 'All tasks finalized' },
   ];
 
   const stepMap: Record<string, number> = {
     pending: 0,
     confirmed: 1,
-    contract: 2,
-    ongoing: 3,
-    completed: 4,
-    done: 5,
+    contract_signing: 2,
+    completed: 3,
+    done: 4,
   };
 
-  const currentStatus = pendingReservation?.status ?? 'pending';
-  const currentStep = stepMap[currentStatus] ?? 0;
-  const isCanceled = currentStatus === 'canceled';
+  const rawStatus = pendingReservation?.status ?? 'pending';
+  const normalizedStatus = (() => {
+    const s = String(rawStatus).trim().toLowerCase();
+    // Handle DB variant without underscore
+    if (s === 'contractsigning') return 'contract_signing';
+    return s.replace(/\s+/g, '_');
+  })();
+  const currentStep = stepMap[normalizedStatus] ?? 0;
+  const isCanceled = normalizedStatus === 'canceled';
 
   const renderModalContent = () => {
     if (!pendingReservation) return null;
@@ -101,35 +113,138 @@ export default function ReservationStatus() {
           </ScrollView>
         );
 
-      case 'menu':
-  return (
-    <ScrollView className="p-6">
-      <Text className="text-2xl font-extrabold mb-6 text-green-700 border-b border-green-200 pb-2">
-        🍽️ Event Menu
-      </Text>
 
-      {!pendingReservation.reservation_menu_orders ||
-      pendingReservation.reservation_menu_orders.length === 0 ? (
-        <Text className="text-gray-500 text-center mt-6">
-          No menu selected for this reservation.
-        </Text>
-      ) : (
-        pendingReservation.reservation_menu_orders.map((order) => (
-          <View
-            key={order.id}
-            className="bg-green-50 rounded-md p-3 mb-3 shadow-sm border border-green-100"
-          >
-            <Text className="text-base font-semibold text-green-900 capitalize">
-              {order.menu_options?.category}
+      case 'menu':
+        // Only allow edit for these statuses
+        const canEditMenu = [
+          'pending',
+          'confirmed',
+          'contract_signing',
+          'contractsigning',
+          'completed',
+        ].includes(normalizedStatus);
+        return (
+          <ScrollView className="p-6">
+            <Text className="text-2xl font-extrabold mb-6 text-green-700 border-b border-green-200 pb-2">
+              🍽️ Event Menu
             </Text>
-            <Text className="text-sm text-green-800 mt-1">
-              {order.menu_options?.name}
+
+            {!pendingReservation.reservation_menu_orders ||
+            pendingReservation.reservation_menu_orders.length === 0 ? (
+              <Text className="text-gray-500 text-center mt-6">
+                No menu selected for this reservation.
+              </Text>
+            ) : (
+              pendingReservation.reservation_menu_orders.map((order) => (
+                <View
+                  key={order.id}
+                  className="bg-green-50 rounded-md p-3 mb-3 shadow-sm border border-green-100"
+                >
+                  <Text className="text-base font-semibold text-green-900 capitalize">
+                    {order.menu_options?.category}
+                  </Text>
+                  <Text className="text-sm text-green-800 mt-1">
+                    {order.menu_options?.name}
+                  </Text>
+                </View>
+              ))
+            )}
+            <TouchableOpacity
+              className={`mt-4 rounded-md py-3 px-4 items-center ${canEditMenu ? 'bg-blue-600' : 'bg-gray-300'}`}
+              disabled={!canEditMenu}
+              onPress={() => {
+                if (!canEditMenu) return;
+                // Build initial state from current menu selection
+                const menuSelection: any = {};
+                if (pendingReservation.reservation_menu_orders) {
+                  pendingReservation.reservation_menu_orders.forEach((order) => {
+                    if (order.menu_options?.category && order.menu_options?.id) {
+                      // Lowercase and match keys to MenuDetailsForm
+                      const key = order.menu_options.category.toLowerCase();
+                      menuSelection[key] = String(order.menu_options.id);
+                    }
+                  });
+                }
+                setEditMenuState({
+                  menu: menuSelection,
+                  selectedMenuIds: Object.values(menuSelection).map(Number),
+                });
+                setModalVisible('editMenu');
+              }}
+            >
+              <Text className="text-white font-bold">Edit Menu</Text>
+            </TouchableOpacity>
+            {!canEditMenu && (
+              <Text className="text-xs text-gray-500 mt-2 text-center">Menu can only be edited if status is Pending, Confirmed, Contract Signing, or Completed.</Text>
+            )}
+          </ScrollView>
+        );
+
+      case 'editMenu':
+        // Only allow edit if canEditMenu
+        if (![
+          'pending',
+          'confirmed',
+          'contract_signing',
+          'contractsigning',
+          'completed',
+        ].includes(normalizedStatus)) {
+          setModalVisible('menu');
+          return null;
+        }
+        return (
+          <View className="flex-1 p-6">
+            <Text className="text-2xl font-extrabold mb-6 text-blue-700 border-b border-blue-200 pb-2">
+              ✏️ Edit Event Menu
             </Text>
+            <MenuDetailsForm
+              data={editMenuState?.menu || {}}
+              setReservationData={(updater) => {
+                setEditMenuState((prev : any) => {
+                  if (typeof updater === 'function') {
+                    return updater(prev);
+                  }
+                  return updater;
+                });
+              }}
+            />
+            <TouchableOpacity
+              className="mt-6 bg-green-600 rounded-md py-3 px-4 items-center"
+              disabled={savingMenu}
+              onPress={async () => {
+                setSavingMenu(true);
+                const menuIds = editMenuState?.selectedMenuIds?.filter(Boolean) || [];
+                const { error } = await updateReservationMenu(parseId, menuIds);
+                setSavingMenu(false);
+                if (!error) {
+                  setShowSuccessModal(true);
+                } else {
+                  alert('Failed to update menu. Please try again.');
+                }
+              }}
+            >
+              <Text className="text-white font-bold">{savingMenu ? 'Saving...' : 'Save Menu'}</Text>
+            </TouchableOpacity>
+      {/* Success Modal */}
+      <AnimatedModal
+        visible={showSuccessModal}
+        title="Menu Updated!"
+        description="Your reservation menu was updated successfully."
+        animation={successAnim}
+        buttonText="OK"
+        onButtonPress={() => {
+          setShowSuccessModal(false);
+          setModalVisible(null);
+        }}
+      />
+            <TouchableOpacity
+              className="mt-3 bg-gray-200 rounded-md py-2 px-4 items-center"
+              onPress={() => setModalVisible('menu')}
+            >
+              <Text className="text-gray-700 font-semibold">Cancel</Text>
+            </TouchableOpacity>
           </View>
-        ))
-      )}
-    </ScrollView>
-  );
+        );
 
      case 'staff':
   return (
@@ -219,7 +334,7 @@ export default function ReservationStatus() {
                       : 'bg-blue-100 text-secondary'
                   }`}
                 >
-                  Current Status: {currentStatus.replace('_', ' ').toUpperCase()}
+                  Current Status: {normalizedStatus.replace(/_/g, ' ').toUpperCase()}
                 </Text>
               </View>
             </View>
@@ -251,11 +366,11 @@ export default function ReservationStatus() {
                   fetchAssignedWorkers(); 
                 }}
                  className={`w-full border rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow ${
-                  currentStatus === 'pending'
+                  normalizedStatus === 'pending'
                   ? 'bg-gray-100 border-gray-300'
                   : 'bg-white border-red-300'
                 }`}
-                disabled={currentStatus === 'pending'}
+                disabled={normalizedStatus === 'pending'}
               >
                 <FontAwesome name="users" size={24} color="#2563EB" />
                 <Text className="text-secondary font-semibold text-lg">Event Staff</Text>
@@ -266,20 +381,20 @@ export default function ReservationStatus() {
               <TouchableOpacity
                 onPress={() => updateReservationStatusById(reservation_id, 'canceled')}
                 className={`w-full border rounded-md p-4 mb-4 flex-row items-center justify-center gap-2 shadow ${
-                  currentStatus === 'pending'
+                  normalizedStatus === 'pending'
                     ? 'bg-white border-red-300'
                     : 'bg-gray-100 border-gray-300'
                 }`}
-                disabled={currentStatus !== 'pending'}
+                disabled={normalizedStatus !== 'pending'}
               >
                 <FontAwesome
                   name="times-circle"
                   size={24}
-                  color={currentStatus === 'pending' ? '#DC2626' : '#A0AEC0'}
+                  color={normalizedStatus === 'pending' ? '#DC2626' : '#A0AEC0'}
                 />
                 <Text
                   className={`font-semibold text-lg ${
-                    currentStatus === 'pending' ? 'text-red-600' : 'text-gray-400'
+                    normalizedStatus === 'pending' ? 'text-red-600' : 'text-gray-400'
                   }`}
                 >
                   Cancel
