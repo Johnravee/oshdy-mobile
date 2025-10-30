@@ -56,6 +56,8 @@
       "router": {
         "origin": false
       },
+      "SUPABASE_URL": "https://your-project.supabase.co",
+      "SUPABASE_ANON_KEY": "your-anon-key-here",
       "eas": {
         "projectId": "9437cd9f-4958-4f91-8a32-cd925763e8ba"
       }

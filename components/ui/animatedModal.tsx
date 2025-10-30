@@ -2,6 +2,7 @@
 import React from 'react';
 import { Modal, View, Text, Pressable, TouchableWithoutFeedback } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { FontAwesome } from '@expo/vector-icons';
 
 interface AnimatedModalProps {
   visible: boolean;
@@ -37,6 +38,14 @@ export default function AnimatedModal({
         <View className="flex-1 justify-center items-center bg-black/50">
           <TouchableWithoutFeedback>
             <View className="bg-white rounded-2xl p-5 w-11/12 items-center">
+              {/* Close button top-right */}
+              <Pressable
+                onPress={dismissable ? onClose : undefined}
+                className="absolute right-4 top-4 z-20 p-2 rounded-full"
+                hitSlop={10}
+              >
+                <FontAwesome name="close" size={18} color="#374151" />
+              </Pressable>
               <LottieView
                 source={animation}
                 autoPlay

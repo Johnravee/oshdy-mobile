@@ -106,7 +106,7 @@ export default function GuestDetailsForm({
               ...prev,
               guests: {
                 ...prev.guests,
-                pax: text,
+                pax: text,  
                 adults: String(newAdults),
                 kids: String(newKids),
               },

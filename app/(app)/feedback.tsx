@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import {
   View,
   Text,
@@ -19,6 +20,10 @@ import { logError, logSuccess } from '@/utils/logger';
 export default function FeedbackScreen() {
   const { profile } = useProfileContext();
   const [feedback, setFeedback] = useState('');
+  const { category: categoryParam } = useLocalSearchParams<{ category?: string }>();
+  const [category] = useState<string>(
+    typeof categoryParam === 'string' && categoryParam.length > 0 ? categoryParam : 'Client'
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -37,7 +42,7 @@ export default function FeedbackScreen() {
     setIsSubmitting(true);
 
     try {
-      await insertFeedback(profile.id, profile.name , profile.email , feedback, 'App Improvement');
+  await insertFeedback(profile.id, profile.name , profile.email , feedback, category);
       logSuccess('Feedback submitted successfully.');
       setShowSuccess(true);
       setFeedback('');
@@ -60,8 +65,8 @@ export default function FeedbackScreen() {
 
           <Text className="text-3xl font-bold text-gray-800 mb-6">📣 Feedback</Text>
           <Text className="text-base text-gray-600 mb-8 leading-relaxed">
-            We’d love to hear your thoughts! Share your suggestions, issues, or experiences using
-            our app to help us improve.
+            We’d love to hear about your experience. Share suggestions, report issues, or tell us
+            how your event went so we can improve our service.
           </Text>
 
           <View className="mb-6">
@@ -97,7 +102,7 @@ export default function FeedbackScreen() {
       <AnimatedModal
         visible={showSuccess}
         title="Feedback Submitted!"
-        description="Thank you for helping us improve the app. We value your thoughts and suggestions!"
+        description="Thanks — your feedback was received. We’ll use it to improve our service."
         animation={require('@/assets/images/lottie/success.json')}
         buttonText="Close"
         onButtonPress={() => setShowSuccess(false)}
