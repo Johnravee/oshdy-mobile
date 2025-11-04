@@ -9,7 +9,13 @@ import { ProfileProvider } from '@/context/ProfileContext';
 
 import { useAuth } from '@/hooks/useAuth';
 import { requestFCMPermission } from '@/lib/requestFCMPermission';
-import { logError, logInfo, logSuccess } from '@/utils/logger';
+import { initLocalNotifications } from '@/lib/notifications/local';
+import { logInfo, logSuccess } from '@/utils/logger';
+import SplashScreenOverlay from '@/components/ui/splash-screen';
+import React, { useState } from 'react';
+import { useAuthContext } from '@/context/AuthContext';
+import { useProfileContext } from '@/context/ProfileContext';
+import { startReservationStatusListener } from '@/lib/realtime/reservation-status-listener';
 
 
 /**
@@ -25,13 +31,14 @@ function DeepLinkBootstrapper() {
  * Sets up root-level context providers and handles push notifications.
  */
 export default function RootLayout() {
-
+  const [showSplash, setShowSplash] = useState(true);
 
 
   useEffect(() => {
-    // Initialize FCM & Notifee notification channel
-    createNotificationChannel();
-    requestFCMPermission();
+  // Initialize push & local notification capability globally
+  createNotificationChannel();
+  requestFCMPermission();
+  initLocalNotifications();
 
 
     // Handle foreground messages
@@ -84,8 +91,36 @@ export default function RootLayout() {
     <AuthProvider>
     <ProfileProvider>
           <DeepLinkBootstrapper />
+          <SplashGate onDone={() => setShowSplash(false)} />
+          <SplashScreenOverlay visible={showSplash} />
+          <RealtimeGate />
           <Slot />
       </ProfileProvider>
     </AuthProvider>
   );
+}
+
+// Small helper that uses contexts (must be inside providers) to determine when app is ready
+function SplashGate({ onDone }: { onDone: () => void }) {
+  const { init } = useAuthContext();
+  const { profileLoading } = useProfileContext();
+  useEffect(() => {
+    if (!init && !profileLoading) {
+      // Delay slightly to allow first screen mount before hiding overlay
+      const t = setTimeout(onDone, 400);
+      return () => clearTimeout(t);
+    }
+  }, [init, profileLoading]);
+  return null;
+}
+
+// Start realtime notifications globally once profile is available
+function RealtimeGate() {
+  const { profile } = useProfileContext();
+  useEffect(() => {
+    if (profile?.id) {
+      startReservationStatusListener(profile.id);
+    }
+  }, [profile?.id]);
+  return null;
 }

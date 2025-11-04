@@ -102,56 +102,8 @@ export default function Dashboard() {
                     }
                   }
 
-                  // show local notification when status changed
-                  if (normalizeStatus(newStatus) !== normalizeStatus(oldStatus)) {
-                    ;(async () => {
-                      try {
-                        const title = payload.new?.receipt_number
-                          ? `Reservation ${payload.new.receipt_number} updated`
-                          : `Reservation #${payload.new?.id} updated`;
-
-                        // Try to fetch the full reservation (to get package and date)
-                        let pkgName: string | undefined
-                        let eventDateStr: string | undefined
-                        const reservationId = payload.new?.id
-                        if (reservationId && profile?.id) {
-                          const full = await getReservationFullJoinInformation(reservationId, profile.id)
-                          const res = Array.isArray(full) && full.length ? full[0] : full?.[0] ?? full
-                          if (res) {
-                            // packages can be object or array depending on join
-                            if (res.packages) {
-                              if (Array.isArray(res.packages)) pkgName = res.packages[0]?.name
-                              else pkgName = res.packages?.name
-                            }
-                            if (res.event_date) eventDateStr = String(res.event_date)
-                          }
-                        }
-
-                        // fallback to payload fields if needed
-                        if (!pkgName) pkgName = payload.new?.pkg?.name ?? payload.new?.package_name ?? 'N/A'
-                        if (!eventDateStr) eventDateStr = payload.new?.event_date ?? payload.new?.eventDate
-
-                        const formattedDate = eventDateStr ? new Date(eventDateStr).toLocaleDateString() : 'N/A'
-                        const body = `Status: ${String(payload.new?.status || '')} • Package: ${pkgName} • Date: ${formattedDate}`
-
-                        await notifee.displayNotification({
-                          title,
-                          body,
-                          android: {
-                            channelId: channelIdRef.current ?? 'oshdy-default',
-                            smallIcon: 'ic_launcher',
-                            importance: AndroidImportance.HIGH,
-                            vibrationPattern: [300, 150, 300, 150],
-                            sound: 'default',
-                            pressAction: { id: 'default', launchActivity: 'default' },
-                          },
-                          ios: { sound: 'default' },
-                        });
-                      } catch (err) {
-                        console.warn('[Dashboard] notifee display error', err);
-                      }
-                    })();
-                  }
+                  // Notification display is now handled globally in RootLayout.
+                  // Keep Dashboard's feedback modal behavior only.
                 } catch (err) {
                   console.warn('[Dashboard] reservation payload handler error', err);
                 }

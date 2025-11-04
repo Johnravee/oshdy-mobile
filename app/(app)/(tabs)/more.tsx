@@ -34,15 +34,7 @@ export default function Profile() {
     }
   };
 
-  const handleRateApp = () => {
-  const url =
-    Platform.OS === 'ios'
-      ? 'itms-apps://itunes.apple.com/app/idYOUR_APP_ID'
-      : 'market://details?id=YOUR_PACKAGE_NAME';
-  Linking.openURL(url).catch(() => {
-    Alert.alert('Unable to open the store.');
-  });
-};
+
 
 
   return (
@@ -114,8 +106,7 @@ export default function Profile() {
         <View className="space-y-4 mt-3">
           <Text className="text-sm font-bold text-gray-500 uppercase">App</Text>
           <OptionItem icon="comment" text="Feedback" onPress={() => router.push('/(app)/feedback')} />
-          <OptionItem icon="info-circle" text="About App" onPress={() => router.push('/(app)/about')} />
-          <OptionItem icon="star" text="Rate This App"  onPress={handleRateApp} />
+          <OptionItem icon="info-circle" text="About App" onPress={() => router.push('/(app)/about')}  />
         </View>
 
         {/* Logout Section */}
