@@ -6,7 +6,7 @@
  * and exposes `profile`, `loading`, `error`, and `setProfile` through context.
  */
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { ProfileType, ProfileContextType } from "@/types/profile-types";
 import { useAuthContext } from "./AuthContext";
@@ -22,44 +22,44 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
 
   const { session } = useAuthContext();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!session?.user.id) {
+  const fetchProfile = useCallback(async () => {
+    if (!session?.user.id) {
+      setProfile(null);
+      setProfileLoading(false);
+      logInfo("👤 fetchProfile → No session found");
+      return;
+    }
+
+    setProfileLoading(true);
+    logInfo("👤 fetchProfile → Fetching profile for auth_id:", session.user.id);
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("auth_id", session.user.id)
+        .maybeSingle();
+
+      if (error) {
         setProfile(null);
-        setProfileLoading(false);
-        logInfo("👤 fetchProfile → No session found");
-        return;
+        logInfo("👤 fetchProfile → No profile found for auth_id:", session.user.id);
+      } else {
+        setProfile(data as ProfileType);
+        logSuccess("👤 fetchProfile → Profile fetched", data);
       }
-
-      setProfileLoading(true);
-      logInfo("👤 fetchProfile → Fetching profile for auth_id:", session.user.id);
-
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("auth_id", session.user.id)
-          .maybeSingle();
-
-        if (error) {
-            setProfile(null);
-            logInfo("👤 fetchProfile → No profile found for auth_id:", session.user.id);
-        } else {
-          setProfile(data as ProfileType);
-          logSuccess("👤 fetchProfile → Profile fetched", data);
-        }
-      } catch (err) {
-        logError("👤 fetchProfile → Unexpected error", err);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-
-    fetchProfile();
+    } catch (err) {
+      logError("👤 fetchProfile → Unexpected error", err);
+    } finally {
+      setProfileLoading(false);
+    }
   }, [session?.user.id]);
 
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, profileLoading }}>
+    <ProfileContext.Provider value={{ profile, setProfile, profileLoading, refreshProfile: fetchProfile }}>
       {children}
     </ProfileContext.Provider>
   );
