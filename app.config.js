@@ -13,10 +13,12 @@ try {
 
 export default ({ config }) => {
   return {
-	...config,
-	extra: {
-	  SUPABASE_URL: process.env.SUPABASE_URL || process.env.SUPABASEURL,
-	  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.SUPABASEANONKEY,
-	},
+  ...config,
+  // Merge with any existing `extra` from app.json so we don't lose fields like `extra.eas.projectId`
+  extra: {
+    ...(config.extra || {}),
+    SUPABASE_URL: process.env.SUPABASE_URL || process.env.SUPABASEURL,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.SUPABASEANONKEY,
+  },
   }
 }

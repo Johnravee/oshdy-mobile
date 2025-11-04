@@ -70,6 +70,7 @@ export const performOAuth = async (provider: 'google' | 'twitter' | 'notion') =>
     if (res.type === "success") {
       logSuccess("🔁 OAuth session completed, processing callback URL");
       await createSessionFromUrl(res.url);
+      // Navigation will be handled by the deep-link effect when Linking updates the URL
     } else {
       logInfo("⚠️ OAuth session cancelled or dismissed");
     }
@@ -113,25 +114,34 @@ export const useAuth = () => {
             return;
           }
 
-          const auth_id = session.user.id;
+          // Extra safety: confirm the session is persisted and available globally
+          const { data: sessionCheck } = await supabase.auth.getSession();
+          if (!sessionCheck.session) {
+            logError("❌ Session not yet available after setSession", null);
+            return;
+          }
+
+          const auth_id = sessionCheck.session.user.id;
           logInfo(`👤 Checking profile for auth_id: ${auth_id}`);
 
           const { data: profile, error } = await supabase
             .from("profiles")
             .select("*")
             .eq("auth_id", auth_id)
-            .single();
+            .maybeSingle();
 
           if (error || !profile) {
             logInfo("👤 Profile not found → Redirecting to onboarding");
             router.replace("/(app)/onboarding");
           } else {
             logSuccess("👤 Profile found → Redirecting to dashboard");
-            router.replace("/(app)/dashboard");
+            // Use the tabs dashboard route to match the app structure
+            router.replace("/(app)/(tabs)/dashboard");
           }
         })
         .catch((err) => {
-          logError("❌ Error during deep link session creation", err.message);
+          const message = err instanceof Error ? err.message : String(err);
+          logError("❌ Error during deep link session creation", message);
         });
     }
   }, [url]);
