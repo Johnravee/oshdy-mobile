@@ -23,29 +23,40 @@ WebBrowser.maybeCompleteAuthSession();
 const redirectTo = makeRedirectUri({ scheme: "myapp" });
 
 const createSessionFromUrl = async (url: string) => {
-  logInfo("🔁 Parsing redirect URL to extract tokens...");
+  logInfo("🔁 Parsing redirect URL to establish session...");
 
   const { params, errorCode } = QueryParams.getQueryParams(url);
   if (errorCode) throw new Error(errorCode);
 
-  const { access_token, refresh_token } = params;
-  if (!access_token || !refresh_token) {
-    logError("❌ Missing tokens from redirect URL", null);
-    return null;
+  const { code, access_token, refresh_token } = params as Record<string, string | undefined>;
+
+  // Preferred: PKCE flow returns a `code` param to exchange for a session
+  if (code) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      logError("❌ Failed to exchange auth code for session", error.message);
+      throw error;
+    }
+    logSuccess("✅ Session created via code exchange (PKCE)");
+    return data.session;
   }
 
-  const { data, error } = await supabase.auth.setSession({
-    access_token,
-    refresh_token,
-  });
-
-  if (error) {
-    logError("❌ Failed to set session from tokens", error.message);
-    throw error;
+  // Fallback: implicit flow returns access/refresh tokens directly
+  if (access_token && refresh_token) {
+    const { data, error } = await supabase.auth.setSession({
+      access_token,
+      refresh_token,
+    });
+    if (error) {
+      logError("❌ Failed to set session from tokens", error.message);
+      throw error;
+    }
+    logSuccess("✅ Session created from redirect tokens (implicit)");
+    return data.session;
   }
 
-  logSuccess("✅ Session successfully created from redirect URL");
-  return data.session;
+  logError("❌ No code or tokens found in redirect URL", params);
+  return null;
 };
 
 export const performOAuth = async (provider: 'google' | 'twitter' | 'notion') => {
@@ -56,6 +67,7 @@ export const performOAuth = async (provider: 'google' | 'twitter' | 'notion') =>
       provider,
       options: {
         redirectTo,
+        // Keep false for now since we manage the browser session explicitly below.
         skipBrowserRedirect: false,
       },
     });

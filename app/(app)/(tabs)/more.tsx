@@ -105,7 +105,6 @@ export default function Profile() {
         {/* App Section */}
         <View className="space-y-4 mt-3">
           <Text className="text-sm font-bold text-gray-500 uppercase">App</Text>
-          <OptionItem icon="comment" text="Feedback" onPress={() => router.push('/(app)/feedback')} />
           <OptionItem icon="info-circle" text="About App" onPress={() => router.push('/(app)/about')}  />
         </View>
 

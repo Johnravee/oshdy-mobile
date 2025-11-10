@@ -33,7 +33,7 @@ const actions = [
     icon: 'external-link',
     backgroundColor: '#FDF7E9',
     iconColor: '#F1C76E',
-    path: 'https://oshdyeventcateringservices.vercel.app/',
+    path: 'https://oshdywebsite.vercel.app/',
     isExternal: true,
   },
 ];

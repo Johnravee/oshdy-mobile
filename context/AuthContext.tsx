@@ -30,7 +30,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error } = await supabase.auth.getSession();
       if (error) {
-        logError("🔑 AuthProvider → Failed to get session", error.message);
+        const msg = typeof error === "object" && error ? (error as any).message : String(error);
+        logError("🔑 AuthProvider → Failed to get session", msg);
+
+        // If the stored refresh token is invalid/missing (revoked/rotated),
+        // clear local auth state so the app doesn't loop on this error.
+        if (msg?.toLowerCase().includes("invalid refresh token") || msg?.toLowerCase().includes("refresh token not found")) {
+          try {
+            // Local only: don't call the server, just clear cached session.
+            await supabase.auth.signOut({ scope: "local" });
+            logInfo("🧹 Cleared invalid local session due to bad refresh token");
+          } catch (e) {
+            logError("⚠️ Error clearing local session", e);
+          }
+        }
+
         setInit(false);
         return;
       }

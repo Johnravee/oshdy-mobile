@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   View,
   Text,
@@ -27,6 +27,9 @@ export default function FeedbackScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [hideSubmitButton, setHideSubmitButton] = useState(false);
+  const router = useRouter();
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSubmit = async () => {
     if (!profile) {
@@ -40,19 +43,36 @@ export default function FeedbackScreen() {
     }
 
     setIsSubmitting(true);
+    setHideSubmitButton(true); // prevent spam clicks immediately
 
     try {
-  await insertFeedback(profile.id, profile.name , profile.email , feedback, category);
+      await insertFeedback(profile.id, profile.name , profile.email , feedback, category);
       logSuccess('Feedback submitted successfully.');
       setShowSuccess(true);
       setFeedback('');
     } catch (err: any) {
       logError('Feedback submission failed:', err.message);
       setShowError(true);
+      // Allow user to retry after acknowledging error
+      setHideSubmitButton(false);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // When success modal opens, schedule redirect after 5 seconds
+  useEffect(() => {
+    if (showSuccess) {
+      redirectTimerRef.current = setTimeout(() => {
+        router.replace('/(app)/(tabs)/dashboard');
+      }, 5000);
+    }
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, [showSuccess, router]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -82,19 +102,21 @@ export default function FeedbackScreen() {
             />
           </View>
 
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-            className={`rounded-xl py-3 ${isSubmitting ? 'bg-gray-400' : 'bg-primary'}`}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text className="text-white text-center text-base font-semibold">
-                Submit Feedback
-              </Text>
-            )}
-          </TouchableOpacity>
+          {!hideSubmitButton && (
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              className={`rounded-xl py-3 ${isSubmitting ? 'bg-gray-400' : 'bg-primary'}`}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white text-center text-base font-semibold">
+                  Submit Feedback
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -102,20 +124,28 @@ export default function FeedbackScreen() {
       <AnimatedModal
         visible={showSuccess}
         title="Feedback Submitted!"
-        description="Thanks — your feedback was received. We’ll use it to improve our service."
+        description="Thanks — your feedback was received. Redirecting you to the dashboard..."
         animation={require('@/assets/images/lottie/success.json')}
         buttonText="Close"
-        onButtonPress={() => setShowSuccess(false)}
-        />
+        onButtonPress={() => {
+          setShowSuccess(false);
+          // Allow early manual redirect if user closes before timer fires
+          router.replace('/(app)/(tabs)/dashboard');
+        }}
+      />
 
       {/* Error Modal */}
       <AnimatedModal
         visible={showError}
-        title="Missing Information"
-        description="Please make sure to fill out all fields before submitting."
+        title="Missing / Error"
+        description="Please complete all fields or try submitting again."
         animation={require('@/assets/images/lottie/warning.json')}
         buttonText="Okay"
-        onButtonPress={() => setShowError(false)}
+        onButtonPress={() => {
+          setShowError(false);
+          // Re-enable submit button for retry
+          setHideSubmitButton(false);
+        }}
       />
     </SafeAreaView>
   );
