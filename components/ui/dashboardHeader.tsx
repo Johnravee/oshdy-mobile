@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { FontAwesome } from '@expo/vector-icons';
 import { useAuthContext } from '@/context/AuthContext';
@@ -9,6 +10,7 @@ import { IMAGES } from '@/constants/Images';
 export default function DashboardHeader() {
   const { session } = useAuthContext();
   const avatarUrl = session?.user?.user_metadata?.avatar_url;
+  const router = useRouter();
 
   const isValidAvatar = avatarUrl && avatarUrl.startsWith('http');
 
@@ -25,7 +27,12 @@ export default function DashboardHeader() {
           <Text className="text-white text-2xl font-bold">Dashboard</Text>
         </View>
 
-        <View className="flex-row items-center gap-3">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Go to profile"
+          onPress={() => router.push('/(tabs)/more')}
+          className="flex-row items-center gap-3"
+        >
           {isValidAvatar ? (
             <Image
               source={{ uri: avatarUrl }}
@@ -36,7 +43,7 @@ export default function DashboardHeader() {
               <FontAwesome name="user" size={18} color="#999" />
             </View>
           )}
-        </View>
+        </Pressable>
       </View>
 
       {/* Wave SVG at Bottom */}

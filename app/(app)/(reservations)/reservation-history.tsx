@@ -31,7 +31,7 @@ import { useRouter } from 'expo-router';
 import BackButton from '@/components/ui/back-button';
 
 const STATUSES = ['all', 'pending', 'confirmed', 'contract signing', 'completed', 'canceled', 'done'];
-const STATUS_EMOJIS = ['🗂️', '⏳', '✅', '📝', '🏁', '❌','🎉'];
+
 
 export default function ReservationHistory() {
   const route = useRouter()
@@ -99,7 +99,7 @@ export default function ReservationHistory() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex gap-2 w-100">
           {STATUSES.map((status, index) => (
             <Pressable
-              key={status}
+              key={index}
               onPress={() => setSelectedStatus(status)}
               className={`border border-gray-300 px-5 ${
                 selectedStatus === status ? 'bg-white' : 'bg-dark'
@@ -110,7 +110,7 @@ export default function ReservationHistory() {
                   selectedStatus === status ? 'text-dark' : 'text-white'
                 }`}
               >
-                {STATUS_EMOJIS[index]} {status.charAt(0).toUpperCase() + status.slice(1)}
+                {status.charAt(0).toUpperCase() + status.slice(1)}
               </Text>
             </Pressable>
           ))}
